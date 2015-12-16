@@ -1,0 +1,20 @@
+This module began as an adPython plugin (adPythonDataMatrix). The original
+plugin combined detection and reading of datamatrices with details about the
+geometry of the i04-1 sample pucks (see
+/home/ecw19626/datamatrix/test-images/barcode_43.tif for an example).
+
+The idea of this module is to contain the datamatrix detection/reading code
+without any of the details of the puck geometry. This module should provide a
+function which takes an image containing datamatrices and returns the decoded
+datamatrix strings and information about their position in the image.
+
+The adPython plugin worked by locating datamatrices and sending a region of
+interest containing a datamatrix to libdmtx, which would then itself attempt to
+locate and decode the datamatrix in the region of interest. This was unreliable
+so I decided to write a basic datamatrix decoder in Python. This doesn't cover
+the whole of the Data Matrix specification and doesn't (yet!) make use of the
+Reed-Solomon error correction bits built in to each datamatrix, but works
+faster and more reliably in conjunction with the rest of the module, compared
+to libdmtx.
+
+- Nic Bricknell
