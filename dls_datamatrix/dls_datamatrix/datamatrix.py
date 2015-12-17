@@ -20,9 +20,7 @@ This depends on the following classes:
     so that the slot number of each puin can be determined.
 
 """
-import sys
-if sys.version_info[0] < 3:
-    from __future__ import division
+from __future__ import division
 
 from pkg_resources import require;  require('numpy')
 

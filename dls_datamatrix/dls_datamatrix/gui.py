@@ -18,8 +18,8 @@ Currently there are two main types of error:
 """
 
 
-TEST_IMAGE_PATH = 'C:/PROJECTS_WORKSPACE/8815 Diamond/barcode/test-images/'
-TEST_OUTPUT_PATH = 'C:/PROJECTS_WORKSPACE/8815 Diamond/barcode/test-output/'
+TEST_IMAGE_PATH = '../tests/test-images/'
+TEST_OUTPUT_PATH = '../../test-output/'
 
 
 class BarcodeReader(QtGui.QMainWindow):

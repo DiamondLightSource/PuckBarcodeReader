@@ -5,7 +5,7 @@ import time
 # SHOULD BE OPEN CV 2.4.10
 
 # Directory storing all of the test images
-TEST_IMG_DIR = 'C:/PROJECTS_WORKSPACE/8815 Diamond/barcode/test-images/'
+TEST_IMG_DIR = './test-images/'
 
 # Barcode data that is expected to appear in each image of the pucks
 PUCK1_CODES = [['DF150E0101', 1], ['DF150E0144', 3], ['DF150E0016', 4], ['DF150E0156', 7], ['DF150E0129', 8],
