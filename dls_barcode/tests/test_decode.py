@@ -1,5 +1,5 @@
 import unittest
-from dls_datamatrix import *
+from dls_barcode import *
 
 
 cases = [

@@ -3,13 +3,13 @@ import math
 import numpy as np
 from scipy.optimize import fmin
 
-from image import CvImage
+from dls_barcode.image import CvImage
 
 
 class Aligner:
 
     def get_puck_alignment(self, grayscale_image, finder_patterns):
-        """Align the puck to find the correct slot number for each barcode
+        """Align the puck to find the correct slot number for each datamatrix
         """
         fp_radii = [fp.radius for fp in finder_patterns]
         fp_radius = sum(fp_radii) / len(fp_radii)

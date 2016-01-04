@@ -24,10 +24,8 @@ from __future__ import division
 
 from pkg_resources import require;  require('numpy')
 
-from locate import Locator
-from read import Reader
-from decode import Decoder
-from align import Aligner
+from datamatrix.datamatrix import DataMatrix
+from puck.align import Aligner
 
 """
 todo: New locator algorithm idea:
@@ -35,7 +33,7 @@ todo: New locator algorithm idea:
 1. look at light vs dark areas to find roughly where the puck is
 2. Crop the image to a rough square around the puck
 3. predict pin radius and do circle detection
-4. Draw square around each pin and perform barcode detection on it
+4. Draw square around each pin and perform datamatrix detection on it
 
 """
 
@@ -47,7 +45,7 @@ wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w],[w,0],[0,w],[-w,0],[0,-w],
 
 
 
-class DataMatrix:
+class Barcode:
     def __init__(self):
         self.pinSlot = None
         self.finderPattern = None
@@ -67,47 +65,13 @@ class DataMatrix:
         grayscale_img = cvimg.to_grayscale().img
 
         # Result objects
-        data_matricies = []
         puck = None
 
-        # Create utility objects
-        locator = Locator()
-        reader = Reader()
-        decoder = Decoder()
-        aligner = Aligner()
-
-        # Find all the datamatrix locations in the image
-        finder_patterns = locator.locate_datamatrices(grayscale_img)
-
-        # Read the datamatricies
-        for finder_pattern in finder_patterns:
-            dm = DataMatrix()
-            dm.finderPattern = finder_pattern
-
-            # Try a few different small offsets for the sample positions until we find one that works
-            for offset in wiggle_offsets:
-
-                # Read the bit array at the target location (with offset)
-                bit_array, sample_points = reader.read_bitarray(finder_pattern, offset, grayscale_img)
-
-                # If the bit array is valid, decode it and create a datamatrix object
-                if bit_array is not None:
-                    dm.bitArray = bit_array
-                    dm.sampleLocations = sample_points
-
-                    # Decode the bits from the barcode
-                    try:
-                        data, decoded_bytes = decoder.read_datamatrix(bit_array)
-                        dm.data = data
-                        dm.decodedBytes = decoded_bytes
-                        dm.errorMessage = ""
-                        break
-                    except Exception as ex:
-                        dm.errorMessage = ex.message
-
-            data_matricies.append(dm)
+        data_matricies = DataMatrix.ReadAllBarcodesInImage(grayscale_img)
+        finder_patterns = [dm.finderPattern for dm in data_matricies]
 
         # Align puck model with the image
+        aligner = Aligner()
         puck = aligner.get_puck_alignment(grayscale_img, finder_patterns)
 
         # Get sample pin slot numbers
@@ -116,6 +80,5 @@ class DataMatrix:
 
         # Sort barcodes by slot number
         data_matricies = sorted(data_matricies, key=lambda dm: dm.pinSlot)
-
 
         return data_matricies, puck

@@ -5,9 +5,10 @@
 # Also very useful: https://en.wikipedia.org/wiki/Data_Matrix#Encoding
 
 from functools import partial
-import numpy as np
-from reedsolo import RSDecode
 
+import numpy as np
+
+from reedsolo import RSDecode
 
 NUM_DATA_BYTES = 8
 

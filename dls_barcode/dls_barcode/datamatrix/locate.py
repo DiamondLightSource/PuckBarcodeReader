@@ -57,7 +57,7 @@ class Locator():
             morphed_image = self._do_morph(grayscale_image, blocksize=35, C=C)
 
             # TESTING
-            #cv2.imwrite("C:/PROJECTS_WORKSPACE/8815 Diamond/barcode/test-output/morph_test.jpg", morphed_image)
+            #cv2.imwrite("C:/PROJECTS_WORKSPACE/8815 Diamond/datamatrix/test-output/morph_test.jpg", morphed_image)
 
             # Find a bunch of contours in the image.
             contour_vertex_sets = self._get_contours(morphed_image)

@@ -1,10 +1,10 @@
 import unittest
 
-from dls_datamatrix import *
+from dls_barcode import *
 
 
 """
-The example barcode message "DF150E0443" appropriately encoded for datamatrix is:
+The example datamatrix message "DF150E0443" appropriately encoded for datamatrix is:
     [69, 71, 145, 49, 70, 134, 173, 129]
 after Reed-Solomon encoding this is:
     [69, 71, 145, 49, 70, 134, 173, 129, 195, 218, 3, 144, 228, 239, 62, 153, 67, 12]

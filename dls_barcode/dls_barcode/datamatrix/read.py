@@ -130,5 +130,5 @@ class Reader():
         for row in bitArray:
             true_bits = true_bits + sum(bool(x) for x in row)
 
-        # We assume that if almost all of the bits are True or False then its not likely to be a valid barcode
+        # We assume that if almost all of the bits are True or False then its not likely to be a valid datamatrix
         return true_bits < 0.9 * num_bits and true_bits > 0.1 * num_bits

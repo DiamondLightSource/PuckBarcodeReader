@@ -30,7 +30,7 @@ but I'm only testing on 2.5-3.2.
 Reed-Solomon Error code correction library
 Original from: https://pypi.python.org/pypi/reedsolo
 
-Modifications for use with Datamatrix barcode reader by Kris Ward (kris.ward@diamond.ac.uk)
+Modifications for use with Datamatrix by Kris Ward (kris.ward@diamond.ac.uk)
 
 """
 

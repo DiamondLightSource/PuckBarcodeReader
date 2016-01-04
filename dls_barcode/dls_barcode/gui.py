@@ -4,7 +4,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 
 from image import CvImage
-from datamatrix import DataMatrix
+from barcode import Barcode
 
 
 """
@@ -70,7 +70,7 @@ class BarcodeReader(QtGui.QMainWindow):
         self.highlightImageFrame.setStyleSheet("background-color: black")
         self.highlightImageFrame.setGeometry(0, 0, 700, 700)
 
-        # Create barcode table
+        # Create datamatrix table
         self.barcodeTable = QtGui.QTableWidget()
         self.barcodeTable.setFixedWidth(110)
         self.barcodeTable.setColumnCount(1)
@@ -164,7 +164,7 @@ class BarcodeReader(QtGui.QMainWindow):
 
         cv_image = CvImage(self.inputFilePath)
         try:
-            datamatricies, puck = DataMatrix.ScanImage(cv_image)
+            datamatricies, puck = Barcode.ScanImage(cv_image)
             self.refill_table_with_barcodes(datamatricies, puck)
             self.highlight_barcodes_from_image(cv_image, datamatricies, puck)
             if puck.error:

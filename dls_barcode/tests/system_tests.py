@@ -1,5 +1,5 @@
 #!/usr/bin/env dls-python
-from dls_datamatrix import *
+from dls_barcode import *
 import time
 
 # SHOULD BE OPEN CV 2.4.10
@@ -43,7 +43,7 @@ def run_tests():
 
         filename = TEST_IMG_DIR + file
         cv_image = CvImage(filename)
-        dms, puck = DataMatrix.ScanImage(cv_image)
+        dms, puck = Barcode.ScanImage(cv_image)
 
         pass_count = 0
         for expected_code in barcodes:
