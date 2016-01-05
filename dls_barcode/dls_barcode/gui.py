@@ -4,7 +4,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 
 from image import CvImage
-from barcode import Barcode
+from scan import Scan
 
 
 """
@@ -164,7 +164,7 @@ class BarcodeReader(QtGui.QMainWindow):
 
         cv_image = CvImage(self.inputFilePath)
         try:
-            datamatricies, puck = Barcode.ScanImage(cv_image)
+            datamatricies, puck = Scan.ScanImage(cv_image)
             self.refill_table_with_barcodes(datamatricies, puck)
             self.highlight_barcodes_from_image(cv_image, datamatricies, puck)
             if puck.error:
@@ -181,10 +181,10 @@ class BarcodeReader(QtGui.QMainWindow):
 
     def highlight_barcodes_from_image(self, cvimg, datamatricies, puck):
         # Draw features on image
-        cvimg.draw_puck_template(puck, CvImage.BLUE)
-        cvimg.draw_datamatrix_highlights(datamatricies, CvImage.GREEN, CvImage.RED)
-        cvimg.draw_puck_pin_circles(puck, CvImage.GREEN)
-        cvimg.draw_puck_pin_rois(puck, CvImage.ORANGE)
+        puck.draw_template(cvimg, CvImage.BLUE)
+        puck.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
+        puck.draw_pin_circles(cvimg, CvImage.GREEN)
+        puck.draw_pin_rois(cvimg, CvImage.ORANGE)
         cvimg.crop_image(puck.puck_center, 1.1*puck.puck_radius)
 
         # Save and display image

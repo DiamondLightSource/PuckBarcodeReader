@@ -3,49 +3,11 @@ import math
 import numpy as np
 from scipy.optimize import fmin
 
-from dls_barcode.image import CvImage
 
-
-class Aligner:
-
-    def get_puck_alignment(self, grayscale_image, finder_patterns):
-        """Align the puck to find the correct slot number for each datamatrix
-        """
-        fp_radii = [fp.radius for fp in finder_patterns]
-        fp_radius = sum(fp_radii) / len(fp_radii)
-
-        uncircled_pins = []
-        pin_circles = []
-        pin_rois = [];
-        for fp in finder_patterns:
-            # Get region of image that fully contains the pin
-            r = 2.5 * fp.radius
-            sub_img, roi = CvImage.sub_image(grayscale_image, fp.center, r)
-            pin_rois.append(roi)
-
-            # Find circle in the sub image
-            circle = CvImage.find_circle(sub_img, fp_radius, 2*fp_radius)
-            if circle:
-                circle[0][0] += roi[0]
-                circle[0][1] += roi[1]
-                pin_circles.append(circle)
-            else:
-                uncircled_pins.append(fp.center)
-
-        if not pin_circles:
-            raise Exception("No puck slots detected")
-
-        # Create representation of the puck based on positions of the pins
-        puck = Puck(pin_circles, pin_rois, uncircled_pins)
-
-        return puck
-
-    def get_slot_number(self, puck, finder_pattern):
-        return puck.closest_slot(finder_pattern.center)
-
-
-
-class TemplatePuck:
+class CircularPuckTemplate:
+    """ Defines a template for a type of sample holder that is a circular puck
+    that contains concentric circles (layers) of circular sample pins
+    """
     def __init__(self, type):
         self.puck_radius = 1
         self.center_radius = 0  # radius of puck center (relative to puck radius)
@@ -68,9 +30,9 @@ class TemplatePuck:
 
 
 class Puck:
-
-    def __init__(self, pin_circles, pin_rois, uncircled_pins=[]):
-        self.template = TemplatePuck("CPS_Universal")
+    def __init__(self, barcodes, pin_circles, pin_rois, uncircled_pins=[]):
+        self.barcodes = barcodes
+        self.template = CircularPuckTemplate("CPS_Universal")
         self.pin_circles = pin_circles
         self.pin_rois = pin_rois
         self.puck_center = self._puck_center_from_pin_circles(pin_circles, uncircled_pins)
@@ -90,6 +52,27 @@ class Puck:
             self._determine_puck_orientation()
         except Exception as ex:
             self.error = ex.message
+
+    def draw_template(self, cvimg, color):
+        cvimg.draw_dot(self.puck_center, color)
+        cvimg.draw_circle(self.puck_center, self.puck_radius, color)
+        cvimg.draw_circle(self.puck_center, self.center_radius, color)
+        for center in self.template_centers:
+            cvimg.draw_dot(center, color)
+            cvimg.draw_circle(center, self.slot_radius, color)
+
+    def draw_barcodes(self, cvimg, ok_color, bad_color):
+        for bc in self.barcodes:
+            bc.draw(cvimg, ok_color, bad_color)
+
+    def draw_pin_circles(self, cvimg, color):
+        for circle in self.pin_circles:
+            cvimg.draw_circle(center=circle[0], radius=circle[1], color=color)
+            cvimg.draw_dot(center=circle[0], color=color)
+
+    def draw_pin_rois(self, cvimg, color):
+        for roi in self.pin_rois:
+            cvimg.draw_rectangle(roi, color)
 
     def closest_slot(self, point):
         slot_sq = self.slot_radius * self.slot_radius
@@ -263,8 +246,3 @@ def _center_minimiser(center, layers):
         layer_errors = [(d-mean)**2 for d in distances]
         errors.extend(layer_errors)
     return sum(errors)
-
-
-
-
-

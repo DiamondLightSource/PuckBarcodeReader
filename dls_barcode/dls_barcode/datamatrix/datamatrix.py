@@ -2,6 +2,10 @@ from locate import Locator
 from read import Reader
 from decode import Decoder
 
+# We predict the location of the center of each square (pixel/bit) in the datamatrix based on the
+# size and location of the finder pattern, but this can sometimes be slightly off. If the initial
+# reading doesn't produce sensible results, we try to offset the estimated location of the squares
+# and try again.
 w = 0.25
 w2 = 0.5
 wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w],[w,0],[0,w],[-w,0],[0,-w],
@@ -10,13 +14,24 @@ wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w],[w,0],[0,w],[-w,0],[0,-w],
 
 class DataMatrix:
     def __init__(self):
-        self.pinSlot = None
-        self.finderPattern = None
-        self.sampleLocations = None
-        self.bitArray = None
-        self.decodedBytes = None
         self.data = None
-        self.errorMessage = ""
+        self.bounds = None
+        self.pinSlot = None
+        self._finderPattern = None
+        self._sampleLocations = None
+        self._bitArray = None
+        self._decodedBytes = None
+        self._errorMessage = ""
+
+    def draw(self, cvimg, ok_color, bad_color):
+        # draw circle and line highlights
+        fp = self._finderPattern
+        color = bad_color if self.data == None else ok_color
+        cvimg.draw_line(fp.c1, fp.c2, color)
+        cvimg.draw_line(fp.c1, fp.c3, color)
+        cvimg.draw_text(text=str(self.pinSlot), position=fp.center, color=color, centered=True)
+        for point in self._sampleLocations:
+            cvimg.draw_dot(tuple(point), color, 1)
 
     @staticmethod
     def ReadAllBarcodesInImage(grayscale_img):
@@ -39,7 +54,8 @@ class DataMatrix:
         # Read the datamatricies
         for finder_pattern in finder_patterns:
             dm = DataMatrix()
-            dm.finderPattern = finder_pattern
+            dm._finderPattern = finder_pattern
+            dm.bounds = (finder_pattern.center, finder_pattern.radius)
 
             # Try a few different small offsets for the sample positions until we find one that works
             for offset in wiggle_offsets:
@@ -49,18 +65,18 @@ class DataMatrix:
 
                 # If the bit array is valid, decode it and create a datamatrix object
                 if bit_array is not None:
-                    dm.bitArray = bit_array
-                    dm.sampleLocations = sample_points
+                    dm._bitArray = bit_array
+                    dm._sampleLocations = sample_points
 
                     # Decode the bits from the datamatrix
                     try:
                         data, decoded_bytes = decoder.read_datamatrix(bit_array)
                         dm.data = data
-                        dm.decodedBytes = decoded_bytes
-                        dm.errorMessage = ""
+                        dm._decodedBytes = decoded_bytes
+                        dm._errorMessage = ""
                         break
                     except Exception as ex:
-                        dm.errorMessage = ex.message
+                        dm._errorMessage = ex.message
 
             data_matricies.append(dm)
 

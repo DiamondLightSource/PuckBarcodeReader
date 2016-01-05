@@ -65,36 +65,6 @@ class CvImage:
             assert len(self.img.shape) == 2
             return CvImage(filename=None, img=self.img)
 
-    def draw_puck_template(self, puck, color):
-        self.draw_dot(puck.puck_center, color)
-        self.draw_circle(puck.puck_center, puck.puck_radius, color)
-        self.draw_circle(puck.puck_center, puck.center_radius, color)
-        for center in puck.template_centers:
-            self.draw_dot(center, color)
-            self.draw_circle(center, puck.slot_radius, color)
-
-    def draw_puck_pin_circles(self, puck, color):
-        for circle in puck.pin_circles:
-            self.draw_circle(center=circle[0], radius=circle[1], color=color)
-            self.draw_dot(center=circle[0], color=color)
-
-    def draw_puck_pin_rois(self, puck, color):
-        for roi in puck.pin_rois:
-            self.draw_rectangle(roi, color)
-
-    def draw_datamatrix_highlights(self, datamatricies, good_color, bad_color):
-        for matrix in datamatricies:
-            # Get the Finder Pattern for the datamatrix
-            fp = matrix.finderPattern
-
-            # draw circle and line highlights
-            color = bad_color if matrix.data == None else good_color
-            self.draw_line(fp.c1, fp.c2, color)
-            self.draw_line(fp.c1, fp.c3, color)
-            self.draw_text(text=str(matrix.pinSlot), position=fp.center, color=color, centered=True)
-            for point in matrix.sampleLocations:
-                self.draw_dot(tuple(point), color, 1)
-
     def crop_image(self, center, radius):
         self.img, _ = CvImage.sub_image(self.img, center, radius)
 

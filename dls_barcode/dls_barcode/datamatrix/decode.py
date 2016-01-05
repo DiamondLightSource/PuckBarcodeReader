@@ -5,7 +5,6 @@
 # Also very useful: https://en.wikipedia.org/wiki/Data_Matrix#Encoding
 
 from functools import partial
-
 import numpy as np
 
 from reedsolo import RSDecode
@@ -16,7 +15,6 @@ NUM_DATA_BYTES = 8
 class Decoder:
     """Class for decoding a datamatrix from an array of bits
     """
-
     def read_datamatrix(self, bitArray):
         encoded_bytes = self._extract_bytes(bitArray)
         decoded_bytes = self._correct_bytes(encoded_bytes)

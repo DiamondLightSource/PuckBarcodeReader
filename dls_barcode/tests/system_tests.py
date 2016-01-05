@@ -43,7 +43,7 @@ def run_tests():
 
         filename = TEST_IMG_DIR + file
         cv_image = CvImage(filename)
-        dms, puck = Barcode.ScanImage(cv_image)
+        dms, puck = Scan.ScanImage(cv_image)
 
         pass_count = 0
         for expected_code in barcodes:
