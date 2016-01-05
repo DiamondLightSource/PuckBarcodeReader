@@ -4,7 +4,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 
 from image import CvImage
-from scan import Scan
+from plate import Scanner
 
 
 """
@@ -70,7 +70,7 @@ class BarcodeReader(QtGui.QMainWindow):
         self.highlightImageFrame.setStyleSheet("background-color: black")
         self.highlightImageFrame.setGeometry(0, 0, 700, 700)
 
-        # Create datamatrix table
+        # Create barcode table
         self.barcodeTable = QtGui.QTableWidget()
         self.barcodeTable.setFixedWidth(110)
         self.barcodeTable.setColumnCount(1)
@@ -163,12 +163,13 @@ class BarcodeReader(QtGui.QMainWindow):
         self.console.setText("")
 
         cv_image = CvImage(self.inputFilePath)
+        gray_image = cv_image.to_grayscale().img
         try:
-            datamatricies, puck = Scan.ScanImage(cv_image)
-            self.refill_table_with_barcodes(datamatricies, puck)
-            self.highlight_barcodes_from_image(cv_image, datamatricies, puck)
-            if puck.error:
-                self.console.setText(puck.error)
+            plate = Scanner.ScanImage(gray_image)
+            self.refill_barcode_table(plate)
+            self.highlight_image_plate(cv_image, plate)
+            if plate.error:
+                self.console.setText(plate.error)
         except Exception as ex:
             self.console.setText(ex.message)
 
@@ -179,13 +180,12 @@ class BarcodeReader(QtGui.QMainWindow):
             QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         frame.setAlignment(QtCore.Qt.AlignCenter)
 
-    def highlight_barcodes_from_image(self, cvimg, datamatricies, puck):
+    def highlight_image_plate(self, cvimg, plate):
         # Draw features on image
-        puck.draw_template(cvimg, CvImage.BLUE)
-        puck.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
-        puck.draw_pin_circles(cvimg, CvImage.GREEN)
-        puck.draw_pin_rois(cvimg, CvImage.ORANGE)
-        cvimg.crop_image(puck.puck_center, 1.1*puck.puck_radius)
+        plate.draw_plate(cvimg, CvImage.BLUE)
+        plate.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
+        plate.draw_pins(cvimg, CvImage.GREEN)
+        plate.crop_image(cvimg)
 
         # Save and display image
         filename = TEST_OUTPUT_PATH + 'highlight_test.png'
@@ -193,8 +193,8 @@ class BarcodeReader(QtGui.QMainWindow):
         self.display_image_in_frame(filename, self.highlightImageFrame)
         self.tabs.setCurrentIndex(1)
 
-    def refill_table_with_barcodes(self, datamatricies, puck):
-        num_slots = puck.template.slots
+    def refill_barcode_table(self, plate):
+        num_slots = plate.num_slots
         self.barcodeTable.clearContents()
         self.barcodeTable.setRowCount(num_slots)
 
@@ -205,7 +205,7 @@ class BarcodeReader(QtGui.QMainWindow):
             barcode.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.barcodeTable.setItem(s, 0, barcode)
 
-        for dm in datamatricies:
+        for dm in plate.barcodes:
             slot = dm.pinSlot
             if slot < 1 or slot > num_slots:
                 continue

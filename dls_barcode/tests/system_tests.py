@@ -1,5 +1,5 @@
 #!/usr/bin/env dls-python
-from dls_barcode import *
+from dls_barcode import CvImage, Scanner
 import time
 
 # SHOULD BE OPEN CV 2.4.10
@@ -27,7 +27,7 @@ puck2_testcases = [(file, PUCK2_CODES) for file in puck2_files]
 # Create a list of test cases
 TEST_CASES = []
 TEST_CASES.extend(puck1_testcases)
-TEST_CASES.extend(puck2_testcases)
+#TEST_CASES.extend(puck2_testcases)
 
 
 def run_tests():
@@ -38,31 +38,33 @@ def run_tests():
     start = time.clock()
     for case in TEST_CASES:
         file = case[0]
-        barcodes = case[1]
-        total = total + len(barcodes)
+        expected_codes = case[1]
+        total += len(expected_codes)
 
         filename = TEST_IMG_DIR + file
         cv_image = CvImage(filename)
-        dms, puck = Scan.ScanImage(cv_image)
+        gray_image = cv_image.to_grayscale().img
+        plate = Scanner.ScanImage(gray_image)
+        barcodes = plate.barcodes
 
         pass_count = 0
-        for expected_code in barcodes:
+        for expected_code in expected_codes:
             text = expected_code[0]
             slot = expected_code[1]
 
             result = 0
-            for dm in dms:
+            for dm in barcodes:
                 if dm.data == text and dm.pinSlot == slot:
                     result = 1
                     break
 
-            pass_count = pass_count + result
+            pass_count += result
 
-        result = "pass" if pass_count == len(barcodes) else "FAIL"
-        print file, "-", result, " - ", pass_count, "/", len(barcodes), " matches  (", len(dms), "found )"
+        result = "pass" if pass_count == len(expected_codes) else "FAIL"
+        print file, "-", result, " - ", pass_count, "/", len(expected_codes), " matches  (", len(barcodes), "found )"
 
-        correct = correct + pass_count
-        found = found + len(dms)
+        correct += pass_count
+        found += len(barcodes)
 
     end = time.clock()
 
