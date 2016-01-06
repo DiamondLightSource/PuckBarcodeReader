@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import sys
+import os
+import uuid
 from PyQt4 import QtGui, QtCore
 
 from image import CvImage
 from plate import Scanner
-from store import StoreDialog, Store
+from store import StoreDialog, Store, Record
 
 
 """
@@ -21,14 +23,17 @@ Currently there are two main types of error:
 
 TEST_IMAGE_PATH = '../tests/test-images/'
 TEST_OUTPUT_PATH = '../../test-output/'
+STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
 
-STORE_FILE = '../tests/test-resources/store_input.txt'
+STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
 
 
 class BarcodeReader(QtGui.QMainWindow):
 
     def __init__(self):
         super(BarcodeReader, self).__init__()
+
+        self.store = Store.from_file(STORE_FILE)
 
         # GUI Elements
         self.tabs = None
@@ -149,9 +154,7 @@ class BarcodeReader(QtGui.QMainWindow):
         scan_menu.addAction(scan_action)
 
     def show_scanned_list_dialog(self):
-        # todo: instantiate store in constructor
-        store = Store.from_file(STORE_FILE)
-        dialog = StoreDialog(store)
+        dialog = StoreDialog(self.store)
         dialog.exec_()
 
     def new_image_from_file(self):
@@ -185,7 +188,10 @@ class BarcodeReader(QtGui.QMainWindow):
         try:
             plate = Scanner.ScanImage(gray_image)
             self.refill_barcode_table(plate)
-            self.highlight_image_plate(cv_image, plate)
+            id = str(uuid.uuid4())
+            filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+            self.highlight_image_plate(cv_image, plate, filename)
+            self.store_new_scan(plate, filename, id)
             if plate.error:
                 self.console.setText(plate.error)
         except Exception as ex:
@@ -198,18 +204,22 @@ class BarcodeReader(QtGui.QMainWindow):
             QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         frame.setAlignment(QtCore.Qt.AlignCenter)
 
-    def highlight_image_plate(self, cvimg, plate):
+    def highlight_image_plate(self, cvimg, plate, filename):
         # Draw features on image
         plate.draw_plate(cvimg, CvImage.BLUE)
         plate.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
-        plate.draw_pins(cvimg, CvImage.GREEN)
+        #plate.draw_pins(cvimg, CvImage.GREEN)
         plate.crop_image(cvimg)
 
         # Save and display image
-        filename = TEST_OUTPUT_PATH + 'highlight_test.png'
         cvimg.save_as(filename)
         self.display_image_in_frame(filename, self.highlightImageFrame)
         self.tabs.setCurrentIndex(1)
+
+    def store_new_scan(self, plate, imagepath, id):
+        barcodes = plate.barcodes_string().split(",")
+        record = Record(puck_type="CPS_PUCK", barcodes=barcodes, imagepath=imagepath, timestamp=0, id=id)
+        self.store.add_record(record)
 
     def refill_barcode_table(self, plate):
         num_slots = plate.num_slots

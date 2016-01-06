@@ -1,6 +1,8 @@
 
 #ToDo: detect and report unreadable pins
 
+BAD_DATA_SYMBOL = "XXXXXXX"
+
 class Plate():
     """ Represents a sample holder plate.
     """
@@ -18,6 +20,17 @@ class Plate():
 
         # Sort barcodes by slot number
         self.barcodes = sorted(barcodes, key=lambda bc: bc.pinSlot)
+
+    def barcodes_string(self):
+        """ Returns a string that is a comma-separated list of the barcode values.
+        Empty slots are represented by the empty string.
+        """
+        codes = [''] * self.num_slots
+        for bc in self.barcodes:
+            ind = bc.pinSlot - 1
+            codes[ind] = bc.data if bc.data != None else BAD_DATA_SYMBOL
+
+        return ",".join(codes)
 
 
     def draw_barcodes(self, cvimg, ok_color, bad_color):
