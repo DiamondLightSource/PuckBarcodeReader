@@ -61,14 +61,13 @@ def run_tests():
             pass_count += result
 
         result = "pass" if pass_count == len(expected_codes) else "FAIL"
-        print file, "-", result, " - ", pass_count, "/", len(expected_codes), " matches  (", len(barcodes), "found )"
+        print("{0} - {1}  -  {2}/{3} matches ({4} found)".format(file, result, pass_count, len(expected_codes), len(barcodes)))
 
         correct += pass_count
         found += len(barcodes)
 
     end = time.clock()
-
-    print "Summary |", end - start, "secs |", correct, "correct |", found, "found |", total, "total"
+    print("Summary | {0} secs | {1} correct | {2} found | {3} total".format(end-start, correct,found,total))
 
 
 if __name__ == '__main__':

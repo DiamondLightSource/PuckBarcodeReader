@@ -5,6 +5,7 @@ from PyQt4 import QtGui, QtCore
 
 from image import CvImage
 from plate import Scanner
+from store import StoreDialog, Store
 
 
 """
@@ -20,6 +21,8 @@ Currently there are two main types of error:
 
 TEST_IMAGE_PATH = '../tests/test-images/'
 TEST_OUTPUT_PATH = '../../test-output/'
+
+STORE_FILE = '../tests/test-resources/store_input.txt'
 
 
 class BarcodeReader(QtGui.QMainWindow):
@@ -128,6 +131,12 @@ class BarcodeReader(QtGui.QMainWindow):
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(QtGui.qApp.quit)
 
+        # scan list
+        scan_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Scanned List', self)
+        scan_action.setShortcut('Ctrl+S')
+        scan_action.setStatusTip('Display list of previously scanned barcodes')
+        scan_action.triggered.connect(self.show_scanned_list_dialog)
+
         # create menu bar
         menubar = self.menuBar()
         file_menu = menubar.addMenu('&File')
@@ -135,6 +144,15 @@ class BarcodeReader(QtGui.QMainWindow):
         file_menu.addAction(preview_action)
         file_menu.addAction(snap_action)
         file_menu.addAction(exit_action)
+
+        scan_menu = menubar.addMenu('&Scan')
+        scan_menu.addAction(scan_action)
+
+    def show_scanned_list_dialog(self):
+        # todo: instantiate store in constructor
+        store = Store.from_file(STORE_FILE)
+        dialog = StoreDialog(store)
+        dialog.exec_()
 
     def new_image_from_file(self):
         """Load a process (scan for barcodes) an image from file
