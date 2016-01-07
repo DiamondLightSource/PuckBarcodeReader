@@ -37,10 +37,10 @@ class Aligner:
         """
         if plate_type == "CPS":
             geometry = self._get_cps_puck_geometry(image, barcodes)
-            plate = Plate(barcodes, geometry)
+            plate = Plate(barcodes, geometry, plate_type)
         elif plate_type == "Square":
             geometry = self._get_square_geometry(image, barcodes)
-            plate = Plate(barcodes, geometry)
+            plate = Plate(barcodes, geometry, plate_type)
         else:
             raise Exception("Unrecognised Sample Plate Type")
         return plate

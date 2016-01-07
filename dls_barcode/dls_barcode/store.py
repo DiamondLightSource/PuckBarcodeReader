@@ -7,12 +7,11 @@ from PyQt4 import QtGui, QtCore
 from plate import BAD_DATA_SYMBOL, EMPTY_SLOT_SYMBOL
 
 
-# TODO: Actually get the puck type rather than hardcoding
 # TODO: Add a button to copy selected records to clipboard
 # TODO: Don't create a record if scan fails (example, the image with a single datamatrix)
-# TODO: Extra columns for number of slots and number of error barcodes
 # TODO: Refresh page on delete or new barcode
 # TODO: Allow option to disable image saving
+# TODO: Auto-select the first record on opening the window
 
 
 class Record:
@@ -25,7 +24,7 @@ class Record:
     IND_ID = 0
     IND_TIMESTAMP = 1
     IND_IMAGE = 2
-    IND_PUCK = 3
+    IND_PLATE = 3
     IND_BARCODES = 4
     NUM_RECORD_ITEMS = 5
 
@@ -34,9 +33,9 @@ class Record:
     BC_SEPARATOR = ","
     DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, puck_type, barcodes, imagepath, timestamp=0, id=0):
+    def __init__(self, plate_type, barcodes, imagepath, timestamp=0, id=0):
         """
-        :param puck_type: the type of the sample holder plate (string)
+        :param plate_type: the type of the sample holder plate (string)
         :param barcodes: ordered array of strings giving the barcodes in each slot
             of the plate in order. Empty slots should be denoted by empty strings, and invalid
             barcodes by the BAD_DATA_SYMBOL.
@@ -47,7 +46,7 @@ class Record:
         """
         self.timestamp = float(timestamp)
         self.imagepath = imagepath
-        self.puck_type = puck_type
+        self.plate_type = plate_type
         self.barcodes = barcodes
         self.id = str(id)
 
@@ -78,10 +77,10 @@ class Record:
         id = items[Record.IND_ID]
         timestamp = float(items[Record.IND_TIMESTAMP])
         image = items[Record.IND_IMAGE]
-        puck_type = items[Record.IND_PUCK]
+        puck_type = items[Record.IND_PLATE]
         barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
 
-        return Record(puck_type=puck_type, barcodes=barcodes, timestamp=timestamp, imagepath=image, id=id)
+        return Record(plate_type=puck_type, barcodes=barcodes, timestamp=timestamp, imagepath=image, id=id)
 
     def to_string(self):
         """ Converts a scan record object into a string that can be stored in a file
@@ -91,7 +90,7 @@ class Record:
         items[Record.IND_ID] = str(self.id)
         items[Record.IND_TIMESTAMP] = str(self.timestamp)
         items[Record.IND_IMAGE] = self.imagepath
-        items[Record.IND_PUCK] = self.puck_type
+        items[Record.IND_PLATE] = self.plate_type
         items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self.barcodes)
         return Record.ITEM_SEPARATOR.join(items)
 
@@ -190,6 +189,8 @@ class StoreDialog(QtGui.QDialog):
     COLOR_GREEN = QtGui.QColor(0, 255, 0, 100)
     COLOR_GRAY = QtGui.QColor(128, 128, 128, 100)
 
+    COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
+
     def __init__(self, store):
         super(StoreDialog, self).__init__()
         self._store = store
@@ -204,14 +205,16 @@ class StoreDialog(QtGui.QDialog):
     def _initUI(self):
         # Create record table - lists all the records in the store
         self._recordTable = QtGui.QTableWidget(self)
-        self._recordTable.setFixedWidth(300)
+        self._recordTable.setFixedWidth(410)
         self._recordTable.setFixedHeight(600)
-        self._recordTable.setColumnCount(4)
-        self._recordTable.setHorizontalHeaderLabels(['Date', 'Time', 'PuckType', 'Barcodes'])
+        self._recordTable.setColumnCount(len(StoreDialog.COLUMNS))
+        self._recordTable.setHorizontalHeaderLabels(StoreDialog.COLUMNS)
         self._recordTable.setColumnWidth(0, 70)
         self._recordTable.setColumnWidth(1, 55)
         self._recordTable.setColumnWidth(2, 85)
         self._recordTable.setColumnWidth(3, 60)
+        self._recordTable.setColumnWidth(4, 60)
+        self._recordTable.setColumnWidth(5, 60)
         self._recordTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self._recordTable.setRowCount(len(self._store.records))
         self._fill_record_table(self._store)
@@ -259,7 +262,7 @@ class StoreDialog(QtGui.QDialog):
         vbox.addStretch(1)
         self.setLayout(vbox)
 
-        self.setGeometry(100, 100, 900, 700)
+        self.setGeometry(100, 100, 1020, 650)
         self.setWindowTitle('Previously Scanned Items')
         self.show()
 
@@ -267,9 +270,17 @@ class StoreDialog(QtGui.QDialog):
         """ Populate the record table with all of the records in the store.
         """
         for n, record in enumerate(store.records):
-            items = [record.date, record.time, record.puck_type, record.num_valid_barcodes]
+            items = [record.date, record.time, record.plate_type, record.num_valid_barcodes,
+                     record.num_invalid_barcodes, record.num_empty_slots]
+
+            if record.num_invalid_barcodes == 0:
+                color = StoreDialog.COLOR_GREEN
+            else:
+                color = StoreDialog.COLOR_RED
+
             for m, item in enumerate(items):
                 newitem = QtGui.QTableWidgetItem(str(item))
+                newitem.setBackgroundColor(color)
                 newitem.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
                 self._recordTable.setItem(n, m, newitem)
 

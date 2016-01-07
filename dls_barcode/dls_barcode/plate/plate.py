@@ -7,10 +7,11 @@ EMPTY_SLOT_SYMBOL = ''
 class Plate():
     """ Represents a sample holder plate.
     """
-    def __init__(self, barcodes, geometry):
+    def __init__(self, barcodes, geometry, type):
         self.num_slots = geometry.num_slots
         self.error = geometry.error
         self.barcodes = barcodes
+        self.type = type
 
         self._geometry = geometry
 

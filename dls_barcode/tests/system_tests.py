@@ -1,6 +1,8 @@
 #!/usr/bin/env dls-python
-from dls_barcode import CvImage, Scanner
+from dls_barcode import CvImage, Scanner, Store, Record
 import time
+import uuid
+import os
 
 # SHOULD BE OPEN CV 2.4.10
 
@@ -29,8 +31,31 @@ TEST_CASES = []
 TEST_CASES.extend(puck1_testcases)
 #TEST_CASES.extend(puck2_testcases)
 
+TEST_OUTPUT_PATH = '../../test-output/'
+STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
+STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
+STORE = Store.from_file(STORE_FILE)
+
+
+def store_scan(plate, cvimg):
+
+    id = str(uuid.uuid4())
+    filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+
+    plate.draw_plate(cvimg, CvImage.BLUE)
+    plate.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
+    plate.crop_image(cvimg)
+    cvimg.save_as(filename)
+
+    barcodes = plate.barcodes_string().split(",")
+    record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
+    self.store.add_record(record)
+
+
+
 
 def run_tests():
+
     # Run all of the test cases
     total = 0
     correct = 0

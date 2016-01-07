@@ -218,7 +218,7 @@ class BarcodeReader(QtGui.QMainWindow):
 
     def store_new_scan(self, plate, imagepath, id):
         barcodes = plate.barcodes_string().split(",")
-        record = Record(puck_type="CPS_PUCK", barcodes=barcodes, imagepath=imagepath, timestamp=0, id=id)
+        record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=imagepath, timestamp=0, id=id)
         self.store.add_record(record)
 
     def refill_barcode_table(self, plate):
