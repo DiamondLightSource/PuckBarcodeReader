@@ -1,5 +1,5 @@
 
-#ToDo: detect and report unreadable pins
+# TODO: detect and report unreadable pins
 
 BAD_DATA_SYMBOL = "XXXXXXX"
 EMPTY_SLOT_SYMBOL = ''

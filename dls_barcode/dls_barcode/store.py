@@ -9,10 +9,16 @@ from PyQt4 import QtGui, QtCore
 from plate import BAD_DATA_SYMBOL, EMPTY_SLOT_SYMBOL
 
 
+# MAJOR:
 # TODO: Don't create a record if scan fails (example, the image with a single datamatrix)
 # TODO: Refresh page on delete or new barcode
 # TODO: Allow option to disable image saving
 # TODO: Auto-select the first record on opening the window
+
+# MINOR:
+# todo: allow delete key to be used for deletion
+# todo: allow record selection with arrow keys
+
 
 
 class Record:
@@ -220,7 +226,7 @@ class StoreDialog(QtGui.QDialog):
         self._recordTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self._recordTable.setRowCount(len(self._store.records))
         self._fill_record_table(self._store)
-        self._recordTable.cellClicked.connect(self._new_row_selected)
+        self._recordTable.cellPressed.connect(self._new_row_selected)
 
         # Create barcode table - lists all the barcode sin a record
         self._barcodeTable = QtGui.QTableWidget()
@@ -239,10 +245,10 @@ class StoreDialog(QtGui.QDialog):
         self.imageFrame.setFixedHeight(600)
 
         # Delete button - deletes selected records
-        delBtn = QtGui.QPushButton('Delete')
-        delBtn.setToolTip('Delete selected scan/s')
-        delBtn.resize(delBtn.sizeHint())
-        delBtn.clicked.connect(self._delete_selected_records)
+        deleteBtn = QtGui.QPushButton('Delete')
+        deleteBtn.setToolTip('Delete selected scan/s')
+        deleteBtn.resize(deleteBtn.sizeHint())
+        deleteBtn.clicked.connect(self._delete_selected_records)
 
         # Clipboard button - copy the selected barcodes to the clipboard
         clipboardBtn = QtGui.QPushButton('Copy To Clipboard')
@@ -260,8 +266,8 @@ class StoreDialog(QtGui.QDialog):
 
         hbox2 = QtGui.QHBoxLayout()
         hbox2.setSpacing(10)
-        hbox2.addWidget(delBtn)
         hbox2.addWidget(clipboardBtn)
+        hbox2.addWidget(deleteBtn)
         hbox2.addStretch(1)
 
         vbox = QtGui.QVBoxLayout()
@@ -376,13 +382,14 @@ class StoreDialog(QtGui.QDialog):
         can paste it elsewhere.
         """
         rows = self._recordTable.selectionModel().selectedRows()
-        rows = [row.row() for row in rows].sort()
+        rows = sorted([row.row() for row in rows])
         barcodes = []
         for row in rows:
             record = self._store.get_record(row)
             barcodes.extend(record.barcodes)
 
-        pyperclip.copy('\n'.join(barcodes))
+        if barcodes:
+            pyperclip.copy('\n'.join(barcodes))
         #spam = pyperclip.paste()
 
 

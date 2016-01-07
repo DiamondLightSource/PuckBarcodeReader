@@ -4,7 +4,7 @@ import numpy as np
 from scipy.optimize import fmin
 
 
-class CpsPuckTemplate:
+class UnipuckTemplate:
     """ Defines the layout of a type of sample holder that is a circular puck
     that contains concentric circles (layers) of sample pins.
     """
@@ -18,18 +18,18 @@ class CpsPuckTemplate:
         self.layer_radii = [0.371, 0.788]  # distance of center of a pin of a given concentric layer from center of puck
 
 
-class CpsPuck:
+class Unipuck:
     def __init__(self, pin_circles, pin_rois, uncircled_pins=None):
         if uncircled_pins is None:
             uncircled_pins = []
 
-        self.template = CpsPuckTemplate()
+        self.template = UnipuckTemplate()
         self.num_slots = self.template.slots
 
         self.pin_circles = pin_circles
         self.pin_rois = pin_rois
-        self.puck_center = CpsPuck._puck_center_from_pin_circles(pin_circles, uncircled_pins)
-        self.puck_radius = CpsPuck._calculate_puck_size(pin_circles, self.puck_center, self.template)
+        self.puck_center = Unipuck._puck_center_from_pin_circles(pin_circles, uncircled_pins)
+        self.puck_radius = Unipuck._calculate_puck_size(pin_circles, self.puck_center, self.template)
 
         self.template_centers = []
         self.scale = self.puck_radius
@@ -126,7 +126,7 @@ class CpsPuck:
         first_layer = distances[:layer_break]
         second_layer = distances[layer_break:]
 
-        # todo: this currently assumes a CPSUniversal puck
+        # todo: this currently assumes a Unipuck
         second_layer_radius = np.median(np.array(second_layer))
         puck_radius = int(second_layer_radius / template.layer_radii[1])
         return puck_radius

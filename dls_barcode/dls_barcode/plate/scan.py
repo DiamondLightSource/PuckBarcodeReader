@@ -1,7 +1,7 @@
 from __future__ import division
 from dls_barcode.image import CvImage
 from dls_barcode.datamatrix import DataMatrix
-from cps_puck import CpsPuck
+from unipuck import Unipuck
 from plate import Plate
 
 from pkg_resources import require;  require('numpy')
@@ -28,15 +28,15 @@ class Scanner:
     @staticmethod
     def _determine_plate_type(image):
         # ToDo: determine from the image
-        return "CPS"
+        return "Unipuck"
 
 
 class Aligner:
     def get_plate(self, image, barcodes, plate_type):
         """Align the puck to find the correct slot number for each datamatrix
         """
-        if plate_type == "CPS":
-            geometry = self._get_cps_puck_geometry(image, barcodes)
+        if plate_type == "Unipuck":
+            geometry = self._get_unipuck_geometry(image, barcodes)
             plate = Plate(barcodes, geometry, plate_type)
         elif plate_type == "Square":
             geometry = self._get_square_geometry(image, barcodes)
@@ -45,7 +45,7 @@ class Aligner:
             raise Exception("Unrecognised Sample Plate Type")
         return plate
 
-    def _get_cps_puck_geometry(self, image, barcodes):
+    def _get_unipuck_geometry(self, image, barcodes):
         # Find the average radius of the barcode symbols
         barcode_bounds = [barcode.bounds for barcode in barcodes]
         radii = [r for (c, r) in barcode_bounds]
@@ -73,7 +73,7 @@ class Aligner:
             raise Exception("No puck slots detected")
 
         # Create representation of the puck geometry based on positions of the pins
-        geometry = CpsPuck(pin_circles, pin_rois, uncircled_pins)
+        geometry = Unipuck(pin_circles, pin_rois, uncircled_pins)
         return geometry
 
     def _get_square_geometry(self, image, barcodes):
