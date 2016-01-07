@@ -26,6 +26,7 @@ TEST_OUTPUT_PATH = '../../test-output/'
 STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
 
 STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
+LAST_IMAGE = TEST_OUTPUT_PATH + 'last_image.jpg'
 
 
 class BarcodeReader(QtGui.QMainWindow):
@@ -186,12 +187,23 @@ class BarcodeReader(QtGui.QMainWindow):
         cv_image = CvImage(self.inputFilePath)
         gray_image = cv_image.to_grayscale().img
         try:
+            # Scan the image for barcodes
             plate = Scanner.ScanImage(gray_image)
             self.refill_barcode_table(plate)
-            id = str(uuid.uuid4())
-            filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
-            self.highlight_image_plate(cv_image, plate, filename)
-            self.store_new_scan(plate, filename, id)
+
+            # Highlight the image and display it
+            self.highlight_image_plate(cv_image, plate)
+            cv_image.save_as(LAST_IMAGE)
+            self.display_image_in_frame(LAST_IMAGE, self.highlightImageFrame)
+            self.tabs.setCurrentIndex(1)
+
+            # If the scan was successful, store the results
+            if plate.scan_ok:
+                id = str(uuid.uuid4())
+                filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+                self.store_new_scan(plate, filename, id)
+
+            # If an error message was generated, display it
             if plate.error:
                 self.console.setText(plate.error)
         except Exception as ex:
@@ -204,17 +216,13 @@ class BarcodeReader(QtGui.QMainWindow):
             QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         frame.setAlignment(QtCore.Qt.AlignCenter)
 
-    def highlight_image_plate(self, cvimg, plate, filename):
+    def highlight_image_plate(self, cvimg, plate):
         # Draw features on image
         plate.draw_plate(cvimg, CvImage.BLUE)
         plate.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
         #plate.draw_pins(cvimg, CvImage.GREEN)
         plate.crop_image(cvimg)
 
-        # Save and display image
-        cvimg.save_as(filename)
-        self.display_image_in_frame(filename, self.highlightImageFrame)
-        self.tabs.setCurrentIndex(1)
 
     def store_new_scan(self, plate, imagepath, id):
         barcodes = plate.barcodes_string().split(",")

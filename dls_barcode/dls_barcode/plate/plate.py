@@ -15,10 +15,15 @@ class Plate():
 
         self._geometry = geometry
 
+        self.scan_ok = geometry.aligned
+
         # Get sample pin slot numbers
         for bc in barcodes:
-            center = bc.bounds[0]
-            bc.pinSlot = geometry.closest_slot(center)
+            if geometry.aligned:
+                center = bc.bounds[0]
+                bc.pinSlot = geometry.closest_slot(center)
+            else:
+                bc.pinSlot = "NA"
 
         # Sort barcodes by slot number
         self.barcodes = sorted(barcodes, key=lambda bc: bc.pinSlot)

@@ -39,6 +39,7 @@ class Unipuck:
         self.center_radius = self.scale * self.template.center_radius
         self.slot_radius = self.scale * self.template.slot_radius
 
+        self.aligned = False
         self.error = None
 
         try:
@@ -154,8 +155,12 @@ class Unipuck:
             errors.append([angle, sse])
 
         average_error = best_sse / self.puck_radius**2 / len(pin_centers)
-        if average_error > 0.003:
+        if average_error < 0.003:
+            self.aligned = True
+        else:
             raise Exception("Failed to align puck")
+            self.aligned = False
+
         self._set_rotation(best_angle)
 
 
