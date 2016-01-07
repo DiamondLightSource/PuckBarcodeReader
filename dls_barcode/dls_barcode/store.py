@@ -2,12 +2,13 @@ import time
 import datetime
 import uuid
 import os
+
+import pyperclip
 from PyQt4 import QtGui, QtCore
 
 from plate import BAD_DATA_SYMBOL, EMPTY_SLOT_SYMBOL
 
 
-# TODO: Add a button to copy selected records to clipboard
 # TODO: Don't create a record if scan fails (example, the image with a single datamatrix)
 # TODO: Refresh page on delete or new barcode
 # TODO: Allow option to disable image saving
@@ -187,6 +188,7 @@ class StoreDialog(QtGui.QDialog):
 
     COLOR_RED = QtGui.QColor(255, 0, 0, 100)
     COLOR_GREEN = QtGui.QColor(0, 255, 0, 100)
+    COLOR_BLUE = QtGui.QColor(0, 0, 255, 100)
     COLOR_GRAY = QtGui.QColor(128, 128, 128, 100)
 
     COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
@@ -205,7 +207,7 @@ class StoreDialog(QtGui.QDialog):
     def _initUI(self):
         # Create record table - lists all the records in the store
         self._recordTable = QtGui.QTableWidget(self)
-        self._recordTable.setFixedWidth(410)
+        self._recordTable.setFixedWidth(420)
         self._recordTable.setFixedHeight(600)
         self._recordTable.setColumnCount(len(StoreDialog.COLUMNS))
         self._recordTable.setHorizontalHeaderLabels(StoreDialog.COLUMNS)
@@ -242,6 +244,12 @@ class StoreDialog(QtGui.QDialog):
         delBtn.resize(delBtn.sizeHint())
         delBtn.clicked.connect(self._delete_selected_records)
 
+        # Clipboard button - copy the selected barcodes to the clipboard
+        clipboardBtn = QtGui.QPushButton('Copy To Clipboard')
+        clipboardBtn.setToolTip('Copy barcodes for the selected record to the clipboard')
+        clipboardBtn.resize(clipboardBtn.sizeHint())
+        clipboardBtn.clicked.connect(self._copy_selected_record_to_clipboard)
+
         # Create layout
         hbox = QtGui.QHBoxLayout()
         hbox.setSpacing(10)
@@ -253,6 +261,7 @@ class StoreDialog(QtGui.QDialog):
         hbox2 = QtGui.QHBoxLayout()
         hbox2.setSpacing(10)
         hbox2.addWidget(delBtn)
+        hbox2.addWidget(clipboardBtn)
         hbox2.addStretch(1)
 
         vbox = QtGui.QVBoxLayout()
@@ -273,10 +282,12 @@ class StoreDialog(QtGui.QDialog):
             items = [record.date, record.time, record.plate_type, record.num_valid_barcodes,
                      record.num_invalid_barcodes, record.num_empty_slots]
 
-            if record.num_invalid_barcodes == 0:
+            if record.num_valid_barcodes == record.num_slots:
                 color = StoreDialog.COLOR_GREEN
-            else:
+            elif record.num_invalid_barcodes > 0:
                 color = StoreDialog.COLOR_RED
+            else:
+                color = StoreDialog.COLOR_BLUE
 
             for m, item in enumerate(items):
                 newitem = QtGui.QTableWidgetItem(str(item))
@@ -358,6 +369,21 @@ class StoreDialog(QtGui.QDialog):
                 records_to_delete.append(record)
 
             self._store.delete_records(records_to_delete)
+
+    def _copy_selected_record_to_clipboard(self):
+        """ Called when the copy to clipboard button is pressed. Copies the list/s of
+        barcodes for the currently selected records to the clipboard so that the user
+        can paste it elsewhere.
+        """
+        rows = self._recordTable.selectionModel().selectedRows()
+        rows = [row.row() for row in rows].sort()
+        barcodes = []
+        for row in rows:
+            record = self._store.get_record(row)
+            barcodes.extend(record.barcodes)
+
+        pyperclip.copy('\n'.join(barcodes))
+        #spam = pyperclip.paste()
 
 
 

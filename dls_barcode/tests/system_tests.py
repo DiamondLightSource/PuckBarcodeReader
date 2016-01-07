@@ -49,7 +49,7 @@ def store_scan(plate, cvimg):
 
     barcodes = plate.barcodes_string().split(",")
     record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
-    self.store.add_record(record)
+    STORE.add_record(record)
 
 
 
@@ -71,6 +71,7 @@ def run_tests():
         gray_image = cv_image.to_grayscale().img
         plate = Scanner.ScanImage(gray_image)
         barcodes = plate.barcodes
+        store_scan(plate, cv_image)
 
         pass_count = 0
         for expected_code in expected_codes:
