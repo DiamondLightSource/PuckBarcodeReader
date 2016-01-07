@@ -2,6 +2,7 @@
 #ToDo: detect and report unreadable pins
 
 BAD_DATA_SYMBOL = "XXXXXXX"
+EMPTY_SLOT_SYMBOL = ''
 
 class Plate():
     """ Represents a sample holder plate.
@@ -25,10 +26,10 @@ class Plate():
         """ Returns a string that is a comma-separated list of the barcode values.
         Empty slots are represented by the empty string.
         """
-        codes = [''] * self.num_slots
+        codes = [EMPTY_SLOT_SYMBOL] * self.num_slots
         for bc in self.barcodes:
             ind = bc.pinSlot - 1
-            codes[ind] = bc.data if bc.data != None else BAD_DATA_SYMBOL
+            codes[ind] = bc.data if bc.data is not None else BAD_DATA_SYMBOL
 
         return ",".join(codes)
 

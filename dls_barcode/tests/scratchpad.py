@@ -15,7 +15,7 @@ rec2 = Record(puck_type="CPS_Puck", barcodes=bcs2, imagepath="C:\\temp\\image2.j
 
 store = Store(filepath=INPUT_FILE, records=[rec1, rec2])
 
-store.to_file()
+store._to_file()
 
 
 # READ
@@ -23,7 +23,7 @@ store.to_file()
 store2 = Store.from_file(INPUT_FILE)
 print(store2.filepath)
 for record in store2.Records:
-    print record.formatted_date()
+    print record._formatted_date()
     print record.puck_type
     print record.imagepath
     print record.barcodes
