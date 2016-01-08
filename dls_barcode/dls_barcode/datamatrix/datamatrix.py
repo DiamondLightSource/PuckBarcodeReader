@@ -11,6 +11,8 @@ w2 = 0.5
 wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w],[w,0],[0,w],[-w,0],[0,-w],
                     [w2, w2],[-w2,-w2],[w2,-w2],[-w2,w2],[w2,0],[0,w2],[-w2,0],[0,-w2]]
 
+BAD_DATA_SYMBOL = "XXXXXXX"
+
 
 class DataMatrix:
     def __init__(self):
@@ -26,7 +28,7 @@ class DataMatrix:
     def draw(self, cvimg, ok_color, bad_color):
         # draw circle and line highlights
         fp = self._finderPattern
-        color = bad_color if self.data == None else ok_color
+        color = bad_color if self.data == BAD_DATA_SYMBOL else ok_color
         cvimg.draw_line(fp.c1, fp.c2, color)
         cvimg.draw_line(fp.c1, fp.c3, color)
         cvimg.draw_text(text=str(self.pinSlot), position=fp.center, color=color, centered=True)
@@ -77,6 +79,7 @@ class DataMatrix:
                         break
                     except Exception as ex:
                         dm._errorMessage = ex.message
+                        dm.data = BAD_DATA_SYMBOL
 
             data_matricies.append(dm)
 

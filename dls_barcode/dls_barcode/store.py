@@ -6,7 +6,8 @@ import os
 import pyperclip
 from PyQt4 import QtGui, QtCore
 
-from plate import BAD_DATA_SYMBOL, EMPTY_SLOT_SYMBOL
+from plate import EMPTY_SLOT_SYMBOL
+from datamatrix import BAD_DATA_SYMBOL
 
 
 # MAJOR:

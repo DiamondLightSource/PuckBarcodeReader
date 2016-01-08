@@ -6,8 +6,8 @@ import uuid
 from PyQt4 import QtGui, QtCore
 
 from image import CvImage
-from plate import Scanner
-from plate import BAD_DATA_SYMBOL, EMPTY_SLOT_SYMBOL
+from plate import Scanner, EMPTY_SLOT_SYMBOL
+from datamatrix import BAD_DATA_SYMBOL
 from store import StoreDialog, Store, Record
 
 
