@@ -36,8 +36,6 @@ class BarcodeReader(QtGui.QMainWindow):
     def __init__(self):
         super(BarcodeReader, self).__init__()
 
-        self.store = Store.from_file(STORE_FILE)
-
         # GUI Elements
         self.tabs = None
         self.originalImageFrame = None
@@ -122,10 +120,10 @@ class BarcodeReader(QtGui.QMainWindow):
         load_action.triggered.connect(self.new_image_from_file)
 
         # preview action
-        preview_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Preview', self)
-        preview_action.setShortcut('Ctrl+W')
-        preview_action.setStatusTip('Show webcam preview')
-        preview_action.triggered.connect(ContinuousScan.stream_webcam)
+        live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
+        live_action.setShortcut('Ctrl+W')
+        live_action.setStatusTip('Capture continuously from camera')
+        live_action.triggered.connect(self.start_live_capture)
 
         # exit action
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -146,11 +144,12 @@ class BarcodeReader(QtGui.QMainWindow):
 
         scan_menu = menubar.addMenu('&Scan')
         scan_menu.addAction(load_action)
-        scan_menu.addAction(preview_action)
+        scan_menu.addAction(live_action)
         scan_menu.addAction(list_action)
 
     def show_scanned_list_dialog(self):
-        dialog = StoreDialog(self.store)
+        store = Store.from_file(STORE_FILE)
+        dialog = StoreDialog(store)
         dialog.exec_()
 
     def new_image_from_file(self):
@@ -165,6 +164,9 @@ class BarcodeReader(QtGui.QMainWindow):
             self.setWindowTitle('Diamond Puck Barcode Scanner - ' + filepath)
             self.process_image(filepath)
 
+    def start_live_capture(self):
+        store = Store.from_file(STORE_FILE)
+        ContinuousScan.stream_webcam(store)
 
     def process_image(self, filepath):
         self.inputFilePath = filepath
@@ -215,7 +217,8 @@ class BarcodeReader(QtGui.QMainWindow):
     def store_new_scan(self, plate, imagepath, id):
         barcodes = plate.barcodes()
         record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=imagepath, timestamp=0, id=id)
-        self.store.add_record(record)
+        store = Store.from_file(STORE_FILE)
+        store.add_record(record)
 
     def refill_barcode_table(self, plate):
         num_slots = plate.num_slots

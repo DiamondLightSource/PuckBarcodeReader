@@ -4,6 +4,9 @@ import cv2
 import os
 import uuid
 import time
+import winsound
+
+from store import Record
 
 
 from image import CvImage
@@ -11,8 +14,6 @@ from image import CvImage
 def perform_scan_worker(task_queue, plate_queue):
     # process image
     from plate import Scanner
-
-    print os.getpid(),"scanner"
 
     while True:
         frame = task_queue.get(True)
@@ -30,7 +31,7 @@ def perform_scan_worker(task_queue, plate_queue):
         print "End scan", time.time() - timer, "secs"
 
 def save_record_worker(plate_queue, store):
-    print os.getpid(),"record saver"
+    # TODO: store list of recent scans that haven't met the required number; try to combine them together to make a whole scan
 
     # TODO: this is hardcoded at present
     REQUIRED_BARCODES = 10
@@ -53,7 +54,7 @@ def save_record_worker(plate_queue, store):
 
 
 def store_record(plate, cv_image, store):
-    from store import Record
+
 
     # Save the scan results to the store
     print "Scan Recorded"
@@ -69,19 +70,19 @@ def store_record(plate, cv_image, store):
     record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
     store.add_record(record)
 
+    Freq = 4000 # Set Frequency To 2500 Hertz
+    Dur = 500 # Set Duration To 1000 ms == 1 second
+    winsound.Beep(Freq,Dur)
+
 
 class ContinuousScan:
     @staticmethod
-    def stream_webcam(self):
+    def stream_webcam(store):
 
         cap = cv2.VideoCapture(0)
         cap.set(3,1920)
         cap.set(4,1080)
 
-        from store import Store
-
-        STORE_FILE = '../../test-output/demo_store.txt'
-        store = Store.from_file(STORE_FILE)
         img_interval = 0.5
         timer = time.time()
 
@@ -97,7 +98,7 @@ class ContinuousScan:
             _, frame = cap.read()
             CvImage.CurrentWebcamFrame = frame
             small = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)
-            cv2.imshow('frame', small)
+            cv2.imshow('Barcode Scanner', small)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
