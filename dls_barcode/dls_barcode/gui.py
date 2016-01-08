@@ -7,6 +7,7 @@ from PyQt4 import QtGui, QtCore
 
 from image import CvImage
 from plate import Scanner
+from plate import BAD_DATA_SYMBOL, EMPTY_SLOT_SYMBOL
 from store import StoreDialog, Store, Record
 
 
@@ -111,25 +112,25 @@ class BarcodeReader(QtGui.QMainWindow):
         self.show()
 
     def init_menu_bar(self):
-        """Create and populate the manu bar
+        """Create and populate the menu bar
         """
         # load action
-        load_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Load Image', self)
+        load_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From File...', self)
         load_action.setShortcut('Ctrl+L')
-        load_action.setStatusTip('Load Image')
+        load_action.setStatusTip('Load image from file to scan')
         load_action.triggered.connect(self.new_image_from_file)
 
         # snap action
-        preview_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Webcam Preview', self)
+        snap_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From Camera', self)
+        snap_action.setShortcut('Ctrl+T')
+        snap_action.setStatusTip('Capture single image from camera')
+        snap_action.triggered.connect(self.new_image_from_camera)
+
+        # preview action
+        preview_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Preview', self)
         preview_action.setShortcut('Ctrl+W')
         preview_action.setStatusTip('Show webcam preview')
         preview_action.triggered.connect(CvImage.stream_webcam)
-
-        # snap action
-        snap_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Capture Image From Webcam', self)
-        snap_action.setShortcut('Ctrl+T')
-        snap_action.setStatusTip('Load Capture Image From Webcam')
-        snap_action.triggered.connect(self.new_image_from_camera)
 
         # exit action
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -138,21 +139,21 @@ class BarcodeReader(QtGui.QMainWindow):
         exit_action.triggered.connect(QtGui.qApp.quit)
 
         # scan list
-        scan_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Scanned List', self)
-        scan_action.setShortcut('Ctrl+S')
-        scan_action.setStatusTip('Display list of previously scanned barcodes')
-        scan_action.triggered.connect(self.show_scanned_list_dialog)
+        list_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Previous Scans', self)
+        list_action.setShortcut('Ctrl+S')
+        list_action.setStatusTip('Display list of previously scanned barcodes')
+        list_action.triggered.connect(self.show_scanned_list_dialog)
 
         # create menu bar
         menubar = self.menuBar()
         file_menu = menubar.addMenu('&File')
-        file_menu.addAction(load_action)
-        file_menu.addAction(preview_action)
-        file_menu.addAction(snap_action)
         file_menu.addAction(exit_action)
 
         scan_menu = menubar.addMenu('&Scan')
-        scan_menu.addAction(scan_action)
+        scan_menu.addAction(load_action)
+        scan_menu.addAction(preview_action)
+        scan_menu.addAction(snap_action)
+        scan_menu.addAction(list_action)
 
     def show_scanned_list_dialog(self):
         dialog = StoreDialog(self.store)
@@ -177,8 +178,6 @@ class BarcodeReader(QtGui.QMainWindow):
         frame.save_as(filename)
         self.process_image(filename)
 
-
-
     def process_image(self, filepath):
         self.inputFilePath = filepath
         self.display_image_in_frame(self.inputFilePath, self.originalImageFrame)
@@ -201,6 +200,7 @@ class BarcodeReader(QtGui.QMainWindow):
             if plate.scan_ok:
                 id = str(uuid.uuid4())
                 filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+                cv_image.save_as(filename)
                 self.store_new_scan(plate, filename, id)
 
             # If an error message was generated, display it
@@ -234,31 +234,22 @@ class BarcodeReader(QtGui.QMainWindow):
         self.barcodeTable.clearContents()
         self.barcodeTable.setRowCount(num_slots)
 
-        # Colour empty boxes grey
-        for s in range(num_slots):
-            barcode = QtGui.QTableWidgetItem()
-            barcode.setBackgroundColor(QtGui.QColor(128, 128, 128, 100))
-            barcode.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.barcodeTable.setItem(s, 0, barcode)
+        for index, slot in enumerate(plate.slots):
+            barcode = slot.get_barcode()
 
-        for dm in plate.barcodes:
-            slot = dm.pinSlot
-            if slot < 1 or slot > num_slots:
-                continue
-
-            index = slot - 1
-
-            # Barcode data column
-            if dm.data is not None:
-                barcode = QtGui.QTableWidgetItem(dm.data)
-                barcode.setBackgroundColor(QtGui.QColor(0, 255, 0, 100))
-                barcode.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-                self.barcodeTable.setItem(index, 0, barcode)
+            # Select appropriate background color
+            if barcode == BAD_DATA_SYMBOL:
+                color = StoreDialog.COLOR_RED
+            elif barcode == EMPTY_SLOT_SYMBOL:
+                color = StoreDialog.COLOR_GRAY
             else:
-                barcode = QtGui.QTableWidgetItem("")
-                barcode.setBackgroundColor(QtGui.QColor(255, 0, 0, 100))
-                barcode.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-                self.barcodeTable.setItem(index, 0, barcode)
+                color = StoreDialog.COLOR_GREEN
+
+            # Set table item
+            barcode = QtGui.QTableWidgetItem(barcode)
+            barcode.setBackgroundColor(color)
+            barcode.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.barcodeTable.setItem(index, 0, barcode)
 
 def main():
     app = QtGui.QApplication(sys.argv)

@@ -1,5 +1,6 @@
 
 # TODO: detect and report unreadable pins
+# TODO: check if two barcodes have the same pin slot number
 
 BAD_DATA_SYMBOL = "XXXXXXX"
 EMPTY_SLOT_SYMBOL = ''
@@ -10,39 +11,39 @@ class Plate():
     def __init__(self, barcodes, geometry, type):
         self.num_slots = geometry.num_slots
         self.error = geometry.error
-        self.barcodes = barcodes
         self.type = type
-
         self._geometry = geometry
 
         self.scan_ok = geometry.aligned
 
-        # Get sample pin slot numbers
-        for bc in barcodes:
-            if geometry.aligned:
-                center = bc.bounds[0]
-                bc.pinSlot = geometry.closest_slot(center)
-            else:
-                bc.pinSlot = "NA"
+        # Initialize slots as empty
+        self.slots = [Slot(i, None) for i in range(self.num_slots)]
 
-        # Sort barcodes by slot number
-        self.barcodes = sorted(barcodes, key=lambda bc: bc.pinSlot)
+        # If sample holder is aligned, fill appropriate slots with the correct barcodes
+        # If alignment failed, just fill slots from the start as no ordering possible.
+        if geometry.aligned:
+            for bc in barcodes:
+                center = bc.bounds[0]
+                slot_num = geometry.closest_slot(center)
+                bc.pinSlot = slot_num
+                self.slots[slot_num-1] = Slot(number=slot_num, barcode=bc)
+        else:
+            for i, bc in enumerate(barcodes):
+                bc.pinSlot = "NA"
+                self.slots[i] = Slot(i, bc)
 
     def barcodes_string(self):
         """ Returns a string that is a comma-separated list of the barcode values.
         Empty slots are represented by the empty string.
         """
-        codes = [EMPTY_SLOT_SYMBOL] * self.num_slots
-        for bc in self.barcodes:
-            ind = bc.pinSlot - 1
-            codes[ind] = bc.data if bc.data is not None else BAD_DATA_SYMBOL
-
+        codes = [slot.get_barcode() for slot in self.slots]
         return ",".join(codes)
 
 
     def draw_barcodes(self, cvimg, ok_color, bad_color):
-        for bc in self.barcodes:
-            bc.draw(cvimg, ok_color, bad_color)
+        for slot in self.slots:
+            if slot.contains_pin():
+                slot.barcode.draw(cvimg, ok_color, bad_color)
 
     def draw_plate(self, cvimg, color):
         self._geometry.draw_plate(cvimg, color)
@@ -52,3 +53,33 @@ class Plate():
 
     def crop_image(self, cvimg):
         self._geometry.crop_image(cvimg)
+
+
+class Slot:
+    """ Represents a single pin slot in a sample holder.
+    """
+    def __init__(self, number, barcode):
+        self.number = number
+        self.barcode = barcode
+
+    def contains_pin(self):
+        """ Returns True if the slot contains a pin (regardless of whether
+        the barcode is valid)
+        """
+        return self.barcode is not None
+
+    def contains_valid_barcode(self):
+        """ Returns true if the slot contains a pin with a valid barcode
+        """
+        return self.contains_pin() \
+               and self.barcode.data != EMPTY_SLOT_SYMBOL \
+               and self.barcode.data != BAD_DATA_SYMBOL
+
+    def get_barcode(self):
+        """ Gets a string representation of the barcode dat; returns an empty
+        string if slot is empty
+        """
+        if self.contains_pin():
+            return self.barcode.data
+        else:
+            return EMPTY_SLOT_SYMBOL

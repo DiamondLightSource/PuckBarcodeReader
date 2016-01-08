@@ -10,14 +10,13 @@ from plate import BAD_DATA_SYMBOL, EMPTY_SLOT_SYMBOL
 
 
 # MAJOR:
-# TODO: Don't create a record if scan fails (example, the image with a single datamatrix)
 # TODO: Refresh page on delete or new barcode
-# TODO: Allow option to disable image saving
 # TODO: Auto-select the first record on opening the window
 
 # MINOR:
 # todo: allow delete key to be used for deletion
 # todo: allow record selection with arrow keys
+# todo: Allow option to disable image saving
 
 
 

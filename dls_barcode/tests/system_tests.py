@@ -70,7 +70,7 @@ def run_tests():
         cv_image = CvImage(filename)
         gray_image = cv_image.to_grayscale().img
         plate = Scanner.ScanImage(gray_image)
-        barcodes = plate.barcodes
+        barcodes = [slot.barcode for slot in plate.slots if slot.contains_pin()]
         store_scan(plate, cv_image)
 
         pass_count = 0
