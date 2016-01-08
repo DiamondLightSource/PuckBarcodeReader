@@ -9,6 +9,7 @@ from image import CvImage
 from plate import Scanner, EMPTY_SLOT_SYMBOL
 from datamatrix import BAD_DATA_SYMBOL
 from store import StoreDialog, Store, Record
+from continuous import ContinuousScan
 
 
 """
@@ -120,17 +121,11 @@ class BarcodeReader(QtGui.QMainWindow):
         load_action.setStatusTip('Load image from file to scan')
         load_action.triggered.connect(self.new_image_from_file)
 
-        # snap action
-        snap_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From Camera', self)
-        snap_action.setShortcut('Ctrl+T')
-        snap_action.setStatusTip('Capture single image from camera')
-        snap_action.triggered.connect(self.new_image_from_camera)
-
         # preview action
         preview_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Preview', self)
         preview_action.setShortcut('Ctrl+W')
         preview_action.setStatusTip('Show webcam preview')
-        preview_action.triggered.connect(CvImage.stream_webcam)
+        preview_action.triggered.connect(ContinuousScan.stream_webcam)
 
         # exit action
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -152,7 +147,6 @@ class BarcodeReader(QtGui.QMainWindow):
         scan_menu = menubar.addMenu('&Scan')
         scan_menu.addAction(load_action)
         scan_menu.addAction(preview_action)
-        scan_menu.addAction(snap_action)
         scan_menu.addAction(list_action)
 
     def show_scanned_list_dialog(self):
@@ -171,12 +165,6 @@ class BarcodeReader(QtGui.QMainWindow):
             self.setWindowTitle('Diamond Puck Barcode Scanner - ' + filepath)
             self.process_image(filepath)
 
-    def new_image_from_camera(self):
-        #frame = CvImage.capture_image_from_camera()
-        frame = CvImage.get_current_webcam_frame()
-        filename = TEST_OUTPUT_PATH + 'camtest.png'
-        frame.save_as(filename)
-        self.process_image(filename)
 
     def process_image(self, filepath):
         self.inputFilePath = filepath

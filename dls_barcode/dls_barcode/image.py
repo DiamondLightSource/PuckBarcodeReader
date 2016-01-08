@@ -17,9 +17,6 @@ class CvImage:
     ORANGE = (0,128,255)
     PURPLE = (255,0,128)
 
-    CurrentWebcamFrame = None
-
-
     def __init__(self, filename, img=None):
         if filename is not None:
             self.img = cv2.imread(filename)
@@ -108,25 +105,5 @@ class CvImage:
         print "Taking image"
         ret, frame = camera.read()
         return CvImage(None, frame)
-
-    @staticmethod
-    def stream_webcam():
-        cap = cv2.VideoCapture(0)
-        cap.set(3,1920)
-        cap.set(4,1080)
-        while(True):
-            _, frame = cap.read()
-            CvImage.CurrentWebcamFrame = frame
-            small = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)
-            cv2.imshow('frame', small)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-        cap.release()
-        cv2.destroyAllWindows()
-
-    @staticmethod
-    def get_current_webcam_frame():
-        return CvImage(None, CvImage.CurrentWebcamFrame)
 
 
