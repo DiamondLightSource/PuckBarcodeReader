@@ -101,6 +101,17 @@ class Record:
         items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self.barcodes)
         return Record.ITEM_SEPARATOR.join(items)
 
+    def any_barcode_matches(self, plate):
+        """ Returns true if the record contains any barcode which is also
+        contained by the specified plate
+        """
+        barcodes = [bc for bc in plate.barcodes() if bc != '' and bc != BAD_DATA_SYMBOL]
+        for bc in barcodes:
+            if bc in self.barcodes:
+                return True
+
+        return False
+
     def _formatted_date(self):
         """ Provides a human-readable form of the datetime stamp
         """
@@ -125,7 +136,7 @@ class Store:
     def get_record(self, index):
         """ Get record by index where the 0th record is the most recent
         """
-        return self.records[index]
+        return self.records[index] if self.records else None
 
     def add_record(self, record):
         """ Add a new record to the store and save to the backing file.

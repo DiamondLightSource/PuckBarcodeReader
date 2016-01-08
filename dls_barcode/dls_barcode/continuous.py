@@ -30,27 +30,44 @@ def perform_scan_worker(task_queue, plate_queue):
         print "End scan", time.time() - timer, "secs"
 
 def save_record_worker(plate_queue, store):
-    from store import Record
-
     print os.getpid(),"record saver"
+
+    # TODO: this is hardcoded at present
+    REQUIRED_BARCODES = 10
 
     while True:
         (plate, cv_image) = plate_queue.get(True)
 
-        # If the scan was successful, store the results
+        # Scan must be correctly aligned to be useful
         if plate.scan_ok:
-            print "Scan Recorded"
-            plate.draw_plate(cv_image, CvImage.BLUE)
-            plate.draw_barcodes(cv_image, CvImage.GREEN, CvImage.RED)
-            plate.crop_image(cv_image)
+            # Image must have a full puck
+            print plate.num_valid_barcodes
 
-            id = str(uuid.uuid4())
-            STORE_IMAGE_PATH = '../../test-output/img_store/'
-            filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
-            cv_image.save_as(filename)
-            barcodes = plate.barcodes_string().split(",")
-            record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
-            store.add_record(record)
+            if plate.num_valid_barcodes == REQUIRED_BARCODES:
+                # Plate mustn't have any barcodes that match the last successful scan
+                last_record = store.get_record(0)
+
+                if not last_record or not last_record.any_barcode_matches(plate):
+                    store_record(plate, cv_image, store)
+
+
+
+def store_record(plate, cv_image, store):
+    from store import Record
+
+    # Save the scan results to the store
+    print "Scan Recorded"
+    plate.draw_plate(cv_image, CvImage.BLUE)
+    plate.draw_barcodes(cv_image, CvImage.GREEN, CvImage.RED)
+    plate.crop_image(cv_image)
+
+    id = str(uuid.uuid4())
+    STORE_IMAGE_PATH = '../../test-output/img_store/'
+    filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+    cv_image.save_as(filename)
+    barcodes = plate.barcodes()
+    record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
+    store.add_record(record)
 
 
 class ContinuousScan:
@@ -72,7 +89,8 @@ class ContinuousScan:
         task_queue = multiprocessing.Queue()
         result_queue = multiprocessing.Queue()
 
-        scanner_pool = multiprocessing.Pool(3, perform_scan_worker, (task_queue, result_queue,) )
+        num_scanners = multiprocessing.cpu_count()
+        scanner_pool = multiprocessing.Pool(num_scanners, perform_scan_worker, (task_queue, result_queue,) )
         record_pool = multiprocessing.Pool(1, save_record_worker, (result_queue, store,))
 
         while(True):

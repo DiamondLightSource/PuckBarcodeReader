@@ -226,6 +226,7 @@ def _partition(numbers):
     """Splits a list of numbers into two groups. Assumes the numbers are samples randomly
     around one of two median values. Used to split the
     """
+    # TODO: this occasionally throws an exception if one of the slices (for mean) is empty
     if len(numbers) < 3:
         return 0
     numbers.sort()

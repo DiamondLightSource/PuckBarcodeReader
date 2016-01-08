@@ -47,7 +47,7 @@ def store_scan(plate, cvimg):
     plate.crop_image(cvimg)
     cvimg.save_as(filename)
 
-    barcodes = plate.barcodes_string().split(",")
+    barcodes = plate.barcodes()
     record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
     STORE.add_record(record)
 
@@ -71,7 +71,7 @@ def run_tests():
         gray_image = cv_image.to_grayscale().img
         plate = Scanner.ScanImage(gray_image)
         barcodes = [slot.barcode for slot in plate.slots if slot.contains_pin()]
-        store_scan(plate, cv_image)
+        #store_scan(plate, cv_image)
 
         pass_count = 0
         for expected_code in expected_codes:

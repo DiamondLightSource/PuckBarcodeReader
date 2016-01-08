@@ -32,13 +32,13 @@ class Plate():
                 bc.pinSlot = "NA"
                 self.slots[i] = Slot(i, bc)
 
-    def barcodes_string(self):
-        """ Returns a string that is a comma-separated list of the barcode values.
-        Empty slots are represented by the empty string.
-        """
-        codes = [slot.get_barcode() for slot in self.slots]
-        return ",".join(codes)
+        self.num_empty_slots = len([slot for slot in self.slots if not slot.contains_pin()])
+        self.num_valid_barcodes = len([slot for slot in self.slots if slot.contains_valid_barcode()])
 
+    def barcodes(self):
+        """ Returns a list of barcode strings. Empty slots are represented by the empty string.
+        """
+        return [slot.get_barcode() for slot in self.slots]
 
     def draw_barcodes(self, cvimg, ok_color, bad_color):
         for slot in self.slots:
