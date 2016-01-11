@@ -32,6 +32,11 @@ class Plate():
                 bc.pinSlot = "NA"
                 self.slots[i] = Slot(i, bc)
 
+        self._sort_slots()
+
+
+    def _sort_slots(self):
+        self.slots.sort(key=lambda slot: slot.number)
         self.num_empty_slots = len([slot for slot in self.slots if not slot.contains_pin()])
         self.num_valid_barcodes = len([slot for slot in self.slots if slot.contains_valid_barcode()])
 
@@ -53,6 +58,66 @@ class Plate():
 
     def crop_image(self, cvimg):
         self._geometry.crop_image(cvimg)
+
+    def has_slots_in_common(self, plateB):
+        """ Returns true if the specified plate has any slots with valid barcodes in
+        common with this plate.
+        """
+        plateA = self
+        if plateA.type != plateB.type:
+            return False
+
+        for i, slotA in enumerate(plateA.slots):
+            slotB = plateB.slots[i]
+            if slotA.contains_valid_barcode():
+                if slotA.get_barcode() == slotB.get_barcode():
+                    return True
+
+        return False
+
+    def merge(self, partial_plate):
+        """ Merge this plate with another plate to make a new plate. This is used if
+        each plate is from a partially successful scan, i.e., some of the barcodes were
+        captured but some were missed. By combining the two plates we can hopefully capture
+        every barcode.
+        """
+        plateB = partial_plate
+
+        # Raise exception if plate type incompatible
+        if self.type != plateB.type:
+            raise Exception("Cannot merge plate of type '{}' with one of type '{}'".format(self.type, plateB.type))
+
+        slots = []
+
+        # TODO: implement transform function
+        # a_to_b_transform = geometry.create_mapping(plateB._geometry)
+
+        print("A: {}; B: {}".format(self.num_valid_barcodes, plateB.num_valid_barcodes))
+
+        # TODO: throw exception if the two barcodes in the same slot do not match
+        test_before = max(plateB.num_valid_barcodes, self.num_valid_barcodes)
+        for i, slotA in enumerate(self.slots):
+            slotB = plateB.slots[i]
+            if slotA.contains_valid_barcode():
+                slot = slotA
+            elif plateB.slots[i].contains_valid_barcode():
+                slot = slotB
+                # TODO: transform location of B barcode - so that printing of barcodes on image is about right
+            else:
+                slot = slotA
+
+            slots.append(Slot(i, slot.barcode))
+
+        self.slots = slots
+        self._sort_slots()
+
+        if self.num_valid_barcodes < test_before:
+            print("VERY BAD THING!")
+        elif self.num_valid_barcodes > test_before:
+            print("GOOD MERGE!")
+
+        print(" - {} Barcodes in Merge".format(self.num_valid_barcodes))
+
 
 
 class Slot:

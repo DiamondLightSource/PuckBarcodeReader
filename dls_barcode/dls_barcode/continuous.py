@@ -6,12 +6,12 @@ import uuid
 import time
 import winsound
 import multiprocessing
-from PyQt4 import QtGui, QtCore
 
 from store import Record
-
-
 from image import CvImage
+
+# TODO: this is hardcoded at present
+REQUIRED_BARCODES = 16
 
 def capture_worker(camera_num, task_queue, continuous_scanner):
 
@@ -21,8 +21,10 @@ def capture_worker(camera_num, task_queue, continuous_scanner):
     cap.set(4,1080)
 
     # Set snapshot interval
-    img_interval = 0.33
+    img_interval = 0.5
     timer = time.time()
+
+    # TODO: stop scanning if too many images in queue
 
     while(True):
         _, frame = cap.read()
@@ -36,9 +38,9 @@ def capture_worker(camera_num, task_queue, continuous_scanner):
             timer = time.time()
             task_queue.put(frame)
 
+    # Clean up camera and kill the worker threads
     cap.release()
     cv2.destroyAllWindows()
-    print("Capture terminating...")
     continuous_scanner.kill_workers()
 
 def perform_scan_worker(task_queue, plate_queue):
@@ -62,15 +64,10 @@ def perform_scan_worker(task_queue, plate_queue):
         except Exception as ex:
             pass
 
-        print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
-
-    print("Scanner terminating...")
+        #print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
 
 def save_record_worker(plate_queue, store):
-    # TODO: store list of recent scans that haven't met the required number; try to combine them together to make a whole scan
-
-    # TODO: this is hardcoded at present
-    REQUIRED_BARCODES = 10
+    partial_plate = None
 
     while True:
         # Get next result from queue, terminate if a queue contains a 'None' sentinel
@@ -80,18 +77,29 @@ def save_record_worker(plate_queue, store):
 
         # Scan must be correctly aligned to be useful
         if plate.scan_ok:
-            # Image must have a full puck
             print("{} Barcodes in scan".format(plate.num_valid_barcodes))
 
+            # Plate mustn't have any barcodes that match the last successful scan
+            last_record = store.get_record(0)
+            if last_record and last_record.any_barcode_matches(plate):
+                continue
+
+            # Attempt to merge it with the previous partial plate scan if they have any barcodes in common
+            if plate.num_valid_barcodes < REQUIRED_BARCODES:
+                if partial_plate and plate.has_slots_in_common(partial_plate):
+                    plate.merge(partial_plate)
+                    partial_plate = plate
+                    print("{} Barcodes in Merge".format(plate.num_valid_barcodes))
+                else:
+                    if partial_plate and not plate.has_slots_in_common(partial_plate):
+                        print ("none in common")
+                    print("no partial plate")
+                    partial_plate = plate
+
+            # If the plate has the required number of barcodes, store it
             if plate.num_valid_barcodes == REQUIRED_BARCODES:
-                # Plate mustn't have any barcodes that match the last successful scan
-                last_record = store.get_record(0)
-
-                if not last_record or not last_record.any_barcode_matches(plate):
-                    store_record(plate, cv_image, store)
-
-    print("Result Processor terminating...")
-
+                store_record(plate, cv_image, store)
+                partial_plate = None
 
 
 def store_record(plate, cv_image, store):
