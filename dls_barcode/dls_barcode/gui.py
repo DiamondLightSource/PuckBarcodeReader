@@ -166,7 +166,18 @@ class BarcodeReader(QtGui.QMainWindow):
 
     def start_live_capture(self):
         store = Store.from_file(STORE_FILE)
-        ContinuousScan.stream_webcam(store)
+        scanner = ContinuousScan()
+        #ContinuousScan.data_downloaded.connect(self.new_live_result)
+        scanner.stream_webcam(store, camera_num=0)
+
+
+    '''
+    def new_live_result(self, plate, cv_image):
+        self.refill_barcode_table(plate)
+        self.display_image_in_frame(LAST_IMAGE, self.highlightImageFrame)
+        self.tabs.setCurrentIndex(1)
+    '''
+
 
     def process_image(self, filepath):
         self.inputFilePath = filepath
