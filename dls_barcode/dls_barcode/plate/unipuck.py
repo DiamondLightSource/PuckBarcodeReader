@@ -19,22 +19,18 @@ class UnipuckTemplate:
 
 
 class Unipuck:
-    def __init__(self, pin_circles, pin_rois, uncircled_pins=None):
-        if uncircled_pins is None:
-            uncircled_pins = []
-
+    def __init__(self, pin_centers):
         self.template = UnipuckTemplate()
         self.num_slots = self.template.slots
 
-        self.pin_circles = pin_circles
-        self.pin_rois = pin_rois
+        self.pin_centers = pin_centers
 
         self.aligned = False
         self.error = None
 
         try:
-            self.puck_center = Unipuck._puck_center_from_pin_circles(pin_circles, uncircled_pins)
-            self.puck_radius = Unipuck._calculate_puck_size(pin_circles, self.puck_center, self.template)
+            self.puck_center = Unipuck._find_puck_center(pin_centers)
+            self.puck_radius = Unipuck._calculate_puck_size(pin_centers, self.puck_center, self.template)
 
             self.template_centers = []
             self.scale = self.puck_radius
@@ -60,15 +56,6 @@ class Unipuck:
         center = self.template_centers[pin_number-1]
         cvimg.draw_circle(center, self.slot_radius, color, thickness=int(self.slot_radius*0.2))
 
-    def draw_pins(self, cvimg, color):
-        for circle in self.pin_circles:
-            cvimg.draw_circle(center=circle[0], radius=circle[1], color=color)
-            cvimg.draw_dot(center=circle[0], color=color)
-
-        # Draw the region of interest squares around each pin
-        for roi in self.pin_rois:
-            cvimg.draw_rectangle(roi, color)
-
     def crop_image(self, cvimg):
         cvimg.crop_image(self.puck_center, 1.1*self.puck_radius)
 
@@ -82,24 +69,21 @@ class Unipuck:
         return 0
 
     @staticmethod
-    def _puck_center_from_pin_circles(pin_circles, uncircled_pins):
-        """Calculate approximate center point of the puck from positions of some (or all) of the
-        center points of the pin slots.
+    def _find_puck_center(pin_centers):
+        """Calculate approximate center point of the puck from positions of the center points
+        of the pin slots.
 
         Within each layer there may be some missing points, so if we calculate the center
-        position of the puck by averaging the center
-        positions of the slots, the results will be a bit out. Instead, we use the average
-        center position (the centroid) as a starting point and divide the slots into
-        two groups based on how close they are to the centroid. As long as not too many slots
-        are missing, the division into groups should work well. We then iterate over different
-        values for the puck center position, attempting to find a location that is equidistant
-        from all of the slot centers.
+        position of the puck by averaging the center positions of the slots, the results will
+        be a bit out. Instead, we use the average center position (the centroid) as a starting
+        point and divide the slots into two groups based on how close they are to the centroid.
+        As long as not too many slots are missing, the division into groups should work well.
+        We then iterate over different values for the puck center position, attempting to find
+        a location that is equidistant from all of the slot centers.
         """
-        pin_centers = [circle[0] for circle in pin_circles]
-        pin_centers.extend((uncircled_pins))
         centroid = calculate_centroid(pin_centers)
 
-        # calculate distance from center to each pin-center
+        # Calculate distance from center to each pin-center
         distances = [[p,distance(p, centroid)] for p in pin_centers]
         distances = sorted(distances, key=lambda distance: distance[1])
         layer_break = _partition([d for p, d in distances])
@@ -108,7 +92,7 @@ class Unipuck:
         second_layer = [[x,y] for (x,y), d in distances[layer_break:]]
         layer = first_layer if len(first_layer) > len(second_layer) else second_layer
 
-        #for the outer layer, perform a minimisation
+        # For the outer layer, perform a minimisation
         center = fmin(func=_center_minimiser, x0=centroid, args=tuple([[first_layer, second_layer]]), xtol=1, disp=False)
         center = tuple([int(center[0]), int(center[1])])
 
@@ -116,13 +100,13 @@ class Unipuck:
 
 
     @staticmethod
-    def _calculate_puck_size(pin_circles, center, template):
+    def _calculate_puck_size(pin_centers, puck_center, template):
         """Calculate the size of the puck in image pixels.
         First determine the average distance from the puck center to each layer, then infer the
         puck size from this through knowledge of the puck's geometry
         """
         # calculate distance from center to each pin-center
-        distances = [distance(p[0], center) for p in pin_circles]
+        distances = [distance(p, puck_center) for p in pin_centers]
         distances.sort()
         layer_break = _partition(distances)
 
@@ -146,12 +130,11 @@ class Unipuck:
         errors = []
         best_sse = 10000000
         best_angle = 0
-        pin_centers = [circle[0] for circle in self.pin_circles]
         for a in range(360):
             angle = a / (180 / math.pi)
             self._set_rotation(angle)
             sse = 0
-            for p in pin_centers:
+            for p in self.pin_centers:
                 sse += self._shortest_sq_distance(p)
             if sse < best_sse:
                 best_sse = sse
@@ -159,7 +142,7 @@ class Unipuck:
 
             errors.append([angle, sse])
 
-        average_error = best_sse / self.puck_radius**2 / len(pin_centers)
+        average_error = best_sse / self.puck_radius**2 / len(self.pin_centers)
         if average_error < 0.003:
             self.aligned = True
         else:

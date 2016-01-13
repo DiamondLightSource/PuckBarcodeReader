@@ -85,14 +85,3 @@ class DataMatrix:
         locator = Locator()
         finder_patterns = locator.locate_datamatrices(grayscale_img)
         return finder_patterns
-
-    @staticmethod
-    def ReadAllBarcodesInImage(gray_img, finder_patterns):
-        """Searches a grayscale image for any data matricies that it can find, reads and decodes them
-        and returns them as a list of DataMatrix objects
-        """
-
-        # Read the datamatricies
-        data_matricies = [DataMatrix(fp, gray_img) for fp in finder_patterns]
-
-        return data_matricies
