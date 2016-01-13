@@ -41,7 +41,7 @@ class Unipuck:
 
     def draw_plate(self, cvimg, color):
         cvimg.draw_dot(self._puck_center, color)
-        cvimg.draw_circle(self._puck_center, self._puck_radius, color)
+        cvimg.draw_circle(self._puck_center, self._puck_radius, color, thickness=int(0.05*self._puck_radius))
         cvimg.draw_circle(self._puck_center, self._center_radius, color)
         for center in self._template_centers:
             cvimg.draw_dot(center, color)

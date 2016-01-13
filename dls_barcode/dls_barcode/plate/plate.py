@@ -1,5 +1,3 @@
-from dls_barcode.datamatrix import BAD_DATA_SYMBOL
-
 
 # TODO: detect and report unreadable pins
 # TODO: check if two barcodes have the same pin slot number

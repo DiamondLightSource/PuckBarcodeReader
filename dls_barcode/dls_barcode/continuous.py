@@ -9,6 +9,7 @@ import multiprocessing
 
 from store import Record
 from image import CvImage
+from plate import Scanner
 
 # TODO: Handle non-full pucks
 
@@ -58,10 +59,52 @@ def capture_worker(camera_num, task_queue, overlay_queue, continuous_scanner):
     cv2.destroyAllWindows()
     continuous_scanner.kill_workers()
 
+
+def SINGLE_THREAD_scanner_worker(task_queue, overlay_queue, store):
+    partial_plate = None
+
+    while True:
+        # Get next image from queue (terminate if a queue contains a 'None' sentinel)
+        frame = task_queue.get(True)
+        if frame is None:
+            break
+
+        # Make grayscale version of image
+        cv_image = CvImage(None, frame)
+        gray_image = cv_image.to_grayscale().img
+
+        # TODO: scan but include previous plate
+        plate = Scanner.ScanImage(gray_image, partial_plate)
+
+        # Scan must be correctly aligned to be useful
+        if plate.scan_ok:
+            # Plate mustn't have any barcodes that match the last successful scan
+            last_record = store.get_record(0)
+            if last_record and last_record.any_barcode_matches(plate):
+                overlay_queue.put(Overlay(None, SCANNED_TAG))
+                continue
+
+            # Attempt to merge it with the previous partial plate scan if they have any barcodes in common
+            if plate.num_valid_barcodes < plate.num_slots:
+                if partial_plate and plate.has_slots_in_common(partial_plate):
+                    plate.merge(partial_plate)
+                    partial_plate = plate
+                    overlay_queue.put(Overlay(plate))
+                else:
+                    partial_plate = plate
+                    overlay_queue.put(Overlay(plate))
+
+            # If the plate has the required number of barcodes, store it
+            if plate.num_valid_barcodes == plate.num_slots:
+                overlay_queue.put(Overlay(plate))
+                store_record(plate, cv_image, store)
+                partial_plate = None
+
+
+
+
 def perform_scan_worker(task_queue, plate_queue):
     # process image
-    from plate import Scanner
-
     while True:
         # Get next image from queue, terminate if a queue contains a 'None' sentinel
         frame = task_queue.get(True)
@@ -69,6 +112,8 @@ def perform_scan_worker(task_queue, plate_queue):
             break
 
         timer = time.time()
+
+        # Make grayscale version of image
         cv_image = CvImage(filename=None, img=frame)
         gray_image = cv_image.to_grayscale().img
 
@@ -79,13 +124,14 @@ def perform_scan_worker(task_queue, plate_queue):
         except Exception as ex:
             pass
 
-        print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
+        print("Scan Duration: {0:.3f} secs ({1} per slot)".format(time.time() - timer, (time.time() - timer)/16))
+
 
 def save_record_worker(plate_queue, overlay_queue, store):
     partial_plate = None
 
     while True:
-        # Get next result from queue, terminate if a queue contains a 'None' sentinel
+        # Get next result from queue (terminate if a queue contains a 'None' sentinel)
         (plate, cv_image) = plate_queue.get(True)
         if plate is None:
             break
@@ -113,8 +159,6 @@ def save_record_worker(plate_queue, overlay_queue, store):
                 overlay_queue.put(Overlay(plate))
                 store_record(plate, cv_image, store)
                 partial_plate = None
-        else:
-           overlay_queue.put(Overlay(None))
 
 
 def store_record(plate, cv_image, store):
@@ -141,7 +185,7 @@ class ContinuousScan:
         self.task_queue = multiprocessing.Queue()
         self.overlay_queue = multiprocessing.Queue()
         self.result_queue = multiprocessing.Queue()
-        self.num_scanners = multiprocessing.cpu_count()
+        self.num_scanners = multiprocessing.cpu_count() - 1
 
     def stream_webcam(self, store, camera_num):
         capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue, self,))
@@ -155,16 +199,20 @@ class ContinuousScan:
 
 
 class Overlay:
-    def __init__(self, plate, text=None):
-        self.plate = plate
-        self.text = text
+    def __init__(self, plate, text=None, lifetime=1):
+        self._plate = plate
+        self._text = text
+        self._lifetime = lifetime
+
+        self._start_time = time.time()
 
     def draw_on_image(self, image):
         cv_image = CvImage(filename=None, img=image)
 
-        if self.plate is not None:
-            self.plate.draw_plate(cv_image, CvImage.BLUE)
-            self.plate.draw_pins(cv_image)
+        if time.time() - self._start_time < self._lifetime:
+            if self._plate is not None:
+                self._plate.draw_plate(cv_image, CvImage.BLUE)
+                self._plate.draw_pins(cv_image)
 
-        if self.text is not None:
-            cv_image.draw_text(SCANNED_TAG, cv_image.center(), CvImage.GREEN, centered=True, scale=3)
+            if self._text is not None:
+                cv_image.draw_text(SCANNED_TAG, cv_image.center(), CvImage.GREEN, centered=True, scale=3)
