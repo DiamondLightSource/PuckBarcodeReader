@@ -15,15 +15,18 @@ BAD_DATA_SYMBOL = "XXXXXXXXXX"
 
 
 class DataMatrix:
-    def __init__(self, finder_pattern):
+    def __init__(self, finder_pattern, gray_img):
+        """ Representation of a DataMatrix in an image.
+        """
         self._finder_pattern = finder_pattern
-
         self.pinSlot = None
         self._data = None
         self._error_message = ""
-
         self._read_ok = False
         self._damaged_symbol = False
+
+        # Read the data contained in the barcode from the image
+        self._read(gray_img)
 
     def data(self):
         if self._read_ok:
@@ -42,7 +45,7 @@ class DataMatrix:
     def is_unreadable(self):
         return self._damaged_symbol
 
-    def read(self, gray_image):
+    def _read(self, gray_image):
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
@@ -76,21 +79,20 @@ class DataMatrix:
         cvimg.draw_text(text=str(self.pinSlot), position=fp.center, color=color, centered=True)
 
     @staticmethod
-    def ReadAllBarcodesInImage(grayscale_img):
+    def LocateAllBarcodesInImage(grayscale_img):
+        """ Searches the image for all datamatrix finder patterns
+        """
+        locator = Locator()
+        finder_patterns = locator.locate_datamatrices(grayscale_img)
+        return finder_patterns
+
+    @staticmethod
+    def ReadAllBarcodesInImage(gray_img, finder_patterns):
         """Searches a grayscale image for any data matricies that it can find, reads and decodes them
         and returns them as a list of DataMatrix objects
         """
-        data_matricies = []
-        puck = None
-
-        # Find all the datamatrix locations in the image
-        locator = Locator()
-        finder_patterns = locator.locate_datamatrices(grayscale_img)
 
         # Read the datamatricies
-        for finder_pattern in finder_patterns:
-            dm = DataMatrix(finder_pattern)
-            dm.read(grayscale_img)
-            data_matricies.append(dm)
+        data_matricies = [DataMatrix(fp, gray_img) for fp in finder_patterns]
 
         return data_matricies

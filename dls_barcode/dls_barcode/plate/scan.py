@@ -10,22 +10,26 @@ MIN_POINTS_FOR_ALIGNMENT = 6
 
 class Scanner:
     @staticmethod
-    def ScanImage(grayscale_img):
+    def ScanImage(gray_img):
         """Searches the image for all Data Matrix, reads and decodes them
         and returns them as a list of DataMatrix objects
         """
 
         # Determine the plate type from markers in the image
-        plate_type = Scanner._determine_plate_type(grayscale_img)
+        plate_type = Scanner._determine_plate_type(gray_img)
 
-        # Locate and read all the barcodes (data matricies) in the image
-        barcodes = DataMatrix.ReadAllBarcodesInImage(grayscale_img)
+        # Locate all the barcodes (data matricies) in the image
+        finder_patterns = DataMatrix.LocateAllBarcodesInImage(gray_img)
+        symbol_locations = [fp.bounds() for fp in finder_patterns]
 
         # Align plate (sample holder) model with the image
         aligner = Aligner()
-        plate = aligner.get_plate(grayscale_img, barcodes, plate_type)
+        geometry = aligner.get_geometry(gray_img, symbol_locations, plate_type)
 
-        return plate
+        # Read all the barcodes (data matricies) in the image
+        barcodes = DataMatrix.ReadAllBarcodesInImage(gray_img, finder_patterns)
+
+        return Plate(barcodes, geometry, plate_type)
 
     @staticmethod
     def _determine_plate_type(image):
@@ -34,29 +38,26 @@ class Scanner:
 
 
 class Aligner:
-    def get_plate(self, image, barcodes, plate_type):
+    def get_geometry(self, image, symbol_locations, plate_type):
         """Align the puck to find the correct slot number for each datamatrix
         """
         if plate_type == "Unipuck":
-            geometry = self._get_unipuck_geometry(image, barcodes)
-            plate = Plate(barcodes, geometry, plate_type)
+            geometry = self._get_unipuck_geometry(image, symbol_locations)
         elif plate_type == "Square":
-            geometry = self._get_square_geometry(image, barcodes)
-            plate = Plate(barcodes, geometry, plate_type)
+            geometry = self._get_square_geometry(image, symbol_locations)
         else:
             raise Exception("Unrecognised Sample Plate Type")
-        return plate
+        return geometry
 
-    def _get_unipuck_geometry(self, image, barcodes):
+    def _get_unipuck_geometry(self, image, symbol_locations):
         # Find the average radius of the barcode symbols
-        barcode_bounds = [barcode.bounds() for barcode in barcodes]
-        radii = [r for (c, r) in barcode_bounds]
+        radii = [r for (c, r) in symbol_locations]
         avg_radius = sum(radii) / len(radii)
 
         uncircled_pins = []
         pin_circles = []
         pin_rois = [];
-        for (center, radius) in barcode_bounds:
+        for (center, radius) in symbol_locations:
             # Get region of image that fully contains the pin
             r = 2.5 * radius
             sub_img, roi = CvImage.sub_image(image, center, r)
