@@ -1,5 +1,6 @@
 from pkg_resources import require;  require('numpy')
 import cv2
+import numpy as np
 
 class CvImage:
     """Class that wraps an OpenCV image and can perform various
@@ -64,6 +65,11 @@ class CvImage:
 
     def crop_image(self, center, radius):
         self.img, _ = CvImage.sub_image(self.img, center, radius)
+
+    @staticmethod
+    def blank(width, height):
+        blank_image = np.zeros((height,width,3), np.uint8)
+        return CvImage(filename=None, img=blank_image)
 
     @staticmethod
     def sub_image(img, center, radius):

@@ -6,6 +6,8 @@ from plate import Plate
 
 from pkg_resources import require;  require('numpy')
 
+MIN_POINTS_FOR_ALIGNMENT = 6
+
 class Scanner:
     @staticmethod
     def ScanImage(grayscale_img):
@@ -71,6 +73,8 @@ class Aligner:
 
         if not pin_circles:
             raise Exception("No puck slots detected")
+        elif len(pin_circles) < MIN_POINTS_FOR_ALIGNMENT:
+            raise Exception("Not enough barcodes for alignment")
 
         # Create representation of the puck geometry based on positions of the pins
         geometry = Unipuck(pin_circles, pin_rois, uncircled_pins)

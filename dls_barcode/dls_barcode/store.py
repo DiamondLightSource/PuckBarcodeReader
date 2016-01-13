@@ -100,6 +100,7 @@ class Record:
         items[Record.IND_PLATE] = self.plate_type
         items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self.barcodes)
         return Record.ITEM_SEPARATOR.join(items)
+        return Record.ITEM_SEPARATOR.join(items)
 
     def any_barcode_matches(self, plate):
         """ Returns true if the record contains any barcode which is also

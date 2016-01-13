@@ -80,7 +80,7 @@ def run_tests():
 
             result = 0
             for dm in barcodes:
-                if dm.data == text and dm.pinSlot == slot:
+                if dm.data() == text and dm.pinSlot == slot:
                     result = 1
                     break
 

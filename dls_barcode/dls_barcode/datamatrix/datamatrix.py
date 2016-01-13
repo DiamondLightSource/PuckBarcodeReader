@@ -11,12 +11,14 @@ w2 = 0.5
 wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w],[w,0],[0,w],[-w,0],[0,-w],
                     [w2, w2],[-w2,-w2],[w2,-w2],[-w2,w2],[w2,0],[0,w2],[-w2,0],[0,-w2]]
 
-BAD_DATA_SYMBOL = "XXXXXXX"
+BAD_DATA_SYMBOL = "XXXXXXXXXX"
+
+# TODO: validation of the barcode based on a format, e.g. NNxxxNxxxx
 
 
 class DataMatrix:
     def __init__(self):
-        self.data = None
+        self._data = None
         self.bounds = None
         self.pinSlot = None
         self._finderPattern = None
@@ -25,10 +27,27 @@ class DataMatrix:
         self._decodedBytes = None
         self._errorMessage = ""
 
+        self._read_ok = False
+        self._damaged_symbol = False
+
+    def data(self):
+        if self._read_ok:
+            return self._data
+        elif self._damaged_symbol:
+            return BAD_DATA_SYMBOL
+        else:
+            return ''
+
+    def is_valid(self):
+        return self._read_ok
+
+    def is_unreadable(self):
+        return self._damaged_symbol
+
     def draw(self, cvimg, ok_color, bad_color):
         # draw circle and line highlights
         fp = self._finderPattern
-        color = bad_color if self.data == BAD_DATA_SYMBOL else ok_color
+        color = bad_color if self.is_unreadable() else ok_color
         cvimg.draw_line(fp.c1, fp.c2, color)
         cvimg.draw_line(fp.c1, fp.c3, color)
         cvimg.draw_text(text=str(self.pinSlot), position=fp.center, color=color, centered=True)
@@ -40,8 +59,6 @@ class DataMatrix:
         """Searches a grayscale image for any data matricies that it can find, reads and decodes them
         and returns them as a list of DataMatrix objects
         """
-
-        # Result objects
         data_matricies = []
         puck = None
 
@@ -73,13 +90,15 @@ class DataMatrix:
                     # Decode the bits from the datamatrix
                     try:
                         data, decoded_bytes = decoder.read_datamatrix(bit_array)
-                        dm.data = data
+                        dm._data = data
                         dm._decodedBytes = decoded_bytes
+                        dm._read_ok = True
                         dm._errorMessage = ""
                         break
                     except Exception as ex:
                         dm._errorMessage = ex.message
-                        dm.data = BAD_DATA_SYMBOL
+                        dm._data = BAD_DATA_SYMBOL
+                        dm._damaged_symbol = True
 
             data_matricies.append(dm)
 

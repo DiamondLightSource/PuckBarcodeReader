@@ -28,21 +28,22 @@ class Unipuck:
 
         self.pin_circles = pin_circles
         self.pin_rois = pin_rois
-        self.puck_center = Unipuck._puck_center_from_pin_circles(pin_circles, uncircled_pins)
-        self.puck_radius = Unipuck._calculate_puck_size(pin_circles, self.puck_center, self.template)
-
-        self.template_centers = []
-        self.scale = self.puck_radius
-        self.rotation = 0
-
-        self.puck_radius = self.scale
-        self.center_radius = self.scale * self.template.center_radius
-        self.slot_radius = self.scale * self.template.slot_radius
 
         self.aligned = False
         self.error = None
 
         try:
+            self.puck_center = Unipuck._puck_center_from_pin_circles(pin_circles, uncircled_pins)
+            self.puck_radius = Unipuck._calculate_puck_size(pin_circles, self.puck_center, self.template)
+
+            self.template_centers = []
+            self.scale = self.puck_radius
+            self.rotation = 0
+
+            self.puck_radius = self.scale
+            self.center_radius = self.scale * self.template.center_radius
+            self.slot_radius = self.scale * self.template.slot_radius
+
             self._determine_puck_orientation()
         except Exception as ex:
             self.error = ex.message
@@ -54,6 +55,10 @@ class Unipuck:
         for center in self.template_centers:
             cvimg.draw_dot(center, color)
             cvimg.draw_circle(center, self.slot_radius, color)
+
+    def draw_pin_highlight(self, cvimg, color, pin_number):
+        center = self.template_centers[pin_number-1]
+        cvimg.draw_circle(center, self.slot_radius, color, thickness=int(self.slot_radius*0.2))
 
     def draw_pins(self, cvimg, color):
         for circle in self.pin_circles:
@@ -216,9 +221,14 @@ def _center_minimiser(center, layers):
     for layer in layers:
         distances = [distance_sq(p, center) for p in layer]
         distances.sort()
+
+        if not any(distances):
+            print "EMPTY MEAN"
+
         mean = np.mean(distances)
         layer_errors = [(d-mean)**2 for d in distances]
         errors.extend(layer_errors)
+
     return sum(errors)
 
 
@@ -226,13 +236,15 @@ def _partition(numbers):
     """Splits a list of numbers into two groups. Assumes the numbers are samples randomly
     around one of two median values. Used to split the
     """
-    # TODO: this occasionally throws an exception if one of the slices (for mean) is empty
     if len(numbers) < 3:
         return 0
     numbers.sort()
     s = 0
     break_point = 0
     while s < len(numbers):
+        if not numbers[:s+1] or not numbers[-s-1:]:
+            raise Exception("Empty slice")
+
         av1 = np.mean(numbers[:s+1])
         av2 = np.mean(numbers[-s-1:])
         s += 1
