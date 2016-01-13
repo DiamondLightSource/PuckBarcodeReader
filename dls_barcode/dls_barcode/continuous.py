@@ -10,14 +10,13 @@ import multiprocessing
 from store import Record
 from image import CvImage
 
-# TODO: this is hardcoded at present
-REQUIRED_BARCODES = 16
+# TODO: Handle non-full pucks
+
 Q_LIMIT = 4
+SCANNED_TAG = "Already Scanned"
 
 
-
-def capture_worker(camera_num, task_queue, template_highlight_queue, continuous_scanner):
-
+def capture_worker(camera_num, task_queue, overlay_queue, continuous_scanner):
     # Initialize camera
     cap = cv2.VideoCapture(camera_num)
     cap.set(3,1920)
@@ -27,29 +26,32 @@ def capture_worker(camera_num, task_queue, template_highlight_queue, continuous_
     img_interval = 0.5
     timer = time.time()
 
-    lastest_highlight = None
+    lastest_overlay = Overlay(None)
 
     while(True):
+        # Capture the next frame from the camera
         _, frame = cap.read()
         CvImage.CurrentWebcamFrame = frame
 
+        # Add the frame to the task queue to be processed
         process_frame = time.time() - timer > img_interval
         if process_frame and task_queue.qsize() < Q_LIMIT:
             timer = time.time()
-            task_queue.put(frame)
+            # Make a copy of image so the overlay doesn't overwrite it
+            task_queue.put(frame.copy())
 
-        if not template_highlight_queue.empty():
-            lastest_highlight = template_highlight_queue.get(False)
+        # Get the latest overlay
+        while not overlay_queue.empty():
+            lastest_overlay = overlay_queue.get(False)
 
-        if lastest_highlight is not None:
-            draw_markup_template(lastest_highlight, frame)
+        # Draw the overlay on the frame
+        lastest_overlay.draw_on_image(frame)
 
+        # Display the frame on the screen
         small = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)
         cv2.imshow('Barcode Scanner', small)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-
 
     # Clean up camera and kill the worker threads
     cap.release()
@@ -77,9 +79,9 @@ def perform_scan_worker(task_queue, plate_queue):
         except Exception as ex:
             pass
 
-        #print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
+        print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
 
-def save_record_worker(plate_queue, finder_image_queue, store):
+def save_record_worker(plate_queue, overlay_queue, store):
     partial_plate = None
 
     while True:
@@ -93,33 +95,26 @@ def save_record_worker(plate_queue, finder_image_queue, store):
             # Plate mustn't have any barcodes that match the last successful scan
             last_record = store.get_record(0)
             if last_record and last_record.any_barcode_matches(plate):
-                print("Barcodes Match previous scan")
+                overlay_queue.put(Overlay(None, SCANNED_TAG))
                 continue
 
             # Attempt to merge it with the previous partial plate scan if they have any barcodes in common
-            if plate.num_valid_barcodes < REQUIRED_BARCODES:
+            if plate.num_valid_barcodes < plate.num_slots:
                 if partial_plate and plate.has_slots_in_common(partial_plate):
                     plate.merge(partial_plate)
                     partial_plate = plate
-                    print("{} Barcodes in Merge, {}".format(plate.num_valid_barcodes, plate.barcodes()))
-                    finder_image_queue.put(plate)
+                    overlay_queue.put(Overlay(plate))
                 else:
                     partial_plate = plate
-                    print("{} Barcodes in Scan".format(plate.num_valid_barcodes))
-                    finder_image_queue.put(plate)
+                    overlay_queue.put(Overlay(plate))
 
             # If the plate has the required number of barcodes, store it
-            if plate.num_valid_barcodes == REQUIRED_BARCODES:
-                finder_image_queue.put(None)
+            if plate.num_valid_barcodes == plate.num_slots:
+                overlay_queue.put(Overlay(plate))
                 store_record(plate, cv_image, store)
                 partial_plate = None
-
-
-
-def draw_markup_template(plate, image):
-    cv_image = CvImage(filename=None, img=image)
-    plate.draw_plate(cv_image, CvImage.BLUE)
-    plate.draw_pins(cv_image)
+        else:
+           overlay_queue.put(Overlay(None))
 
 
 def store_record(plate, cv_image, store):
@@ -128,9 +123,7 @@ def store_record(plate, cv_image, store):
     print "Scan Recorded"
     winsound.Beep(4000, 500) # frequency, duration
 
-    #plate.draw_plate(cv_image, CvImage.BLUE)
-    #plate.draw_barcodes(cv_image, CvImage.GREEN, CvImage.RED)
-    #plate.draw_pins(cv_image)
+    Overlay(plate).draw_on_image(cv_image.img)
     plate.crop_image(cv_image)
 
     id = str(uuid.uuid4())
@@ -142,20 +135,18 @@ def store_record(plate, cv_image, store):
     store.add_record(record)
 
 
-
-class ContinuousScan():
+class ContinuousScan:
 
     def __init__(self):
         self.task_queue = multiprocessing.Queue()
-        self.image_queue = multiprocessing.Queue()
+        self.overlay_queue = multiprocessing.Queue()
         self.result_queue = multiprocessing.Queue()
         self.num_scanners = multiprocessing.cpu_count()
 
-
     def stream_webcam(self, store, camera_num):
-        capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.image_queue, self,) )
+        capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue, self,))
         scanner_pool = multiprocessing.Pool(self.num_scanners, perform_scan_worker, (self.task_queue, self.result_queue,) )
-        record_pool = multiprocessing.Pool(1, save_record_worker, (self.result_queue, self.image_queue, store,))
+        record_pool = multiprocessing.Pool(1, save_record_worker, (self.result_queue, self.overlay_queue, store,))
 
     def kill_workers(self):
         self.result_queue.put((None, None))
@@ -163,5 +154,17 @@ class ContinuousScan():
             self.task_queue.put(None)
 
 
+class Overlay:
+    def __init__(self, plate, text=None):
+        self.plate = plate
+        self.text = text
 
+    def draw_on_image(self, image):
+        cv_image = CvImage(filename=None, img=image)
 
+        if self.plate is not None:
+            self.plate.draw_plate(cv_image, CvImage.BLUE)
+            self.plate.draw_pins(cv_image)
+
+        if self.text is not None:
+            cv_image.draw_text(SCANNED_TAG, cv_image.center(), CvImage.GREEN, centered=True, scale=3)

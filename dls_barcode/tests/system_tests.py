@@ -73,7 +73,7 @@ def run_tests():
         #store_scan(plate, cv_image)
 
         pass_count = 0
-        num_found = len([s for s in plate.slots if s.contains_valid_barcode()])
+        num_found = len([s for s in plate.slots if s.contains_pin()])
         for expected_code in expected_codes:
             text = expected_code[0]
             slot = expected_code[1]

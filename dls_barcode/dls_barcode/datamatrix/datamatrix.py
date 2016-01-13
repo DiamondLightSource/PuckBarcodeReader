@@ -62,12 +62,14 @@ class DataMatrix:
                 try:
                     self._data = decoder.read_datamatrix(bit_array)
                     self._read_ok = True
+                    self._damaged_symbol = False
                     self._error_message = ""
                     break
                 except Exception as ex:
-                    self._error_message = ex.message
                     self._data = BAD_DATA_SYMBOL
+                    self._read_ok = False
                     self._damaged_symbol = True
+                    self._error_message = ex.message
 
     def draw(self, cvimg, ok_color, bad_color):
         # draw circle and line highlights
@@ -75,7 +77,6 @@ class DataMatrix:
         color = bad_color if self.is_unreadable() else ok_color
         cvimg.draw_line(fp.c1, fp.c2, color)
         cvimg.draw_line(fp.c1, fp.c3, color)
-        cvimg.draw_text(text=str(self.pinSlot), position=fp.center, color=color, centered=True)
 
     @staticmethod
     def LocateAllBarcodesInImage(grayscale_img):

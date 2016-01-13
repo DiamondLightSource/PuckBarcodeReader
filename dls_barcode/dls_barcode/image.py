@@ -33,6 +33,10 @@ class CvImage:
         cv2.imshow('dbg', self.img)
         cv2.waitKey(0)
 
+    def center(self):
+        height, width = self.img.shape[:2]
+        return (width/2, height/2)
+
     def draw_rectangle(self, roi, color, thickness=2):
         top_left = tuple([roi[0], roi[1]])
         bottom_right = tuple([roi[2], roi[3]])
@@ -47,11 +51,11 @@ class CvImage:
     def draw_line(self, p1, p2, color, thickness=2):
         cv2.line(self.img, p1, p2, color, thickness=thickness)
 
-    def draw_text(self, text, position, color, centered=False):
+    def draw_text(self, text, position, color, centered=False, scale=1.5, thickness=3):
         if centered:
-            textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.5, thickness=3)[0]
+            textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
             position = (position[0]-textsize[0]/2, position[1]+textsize[1]/2)
-        cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.5, color=color, thickness=3)
+        cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, color=color, thickness=thickness)
 
     def to_grayscale(self):
         """Convert the image to a grey image.

@@ -56,7 +56,9 @@ class Plate():
         #self._geometry.draw_pins(cvimg, color)
         from dls_barcode import CvImage
         for i, slot in enumerate(self.slots):
-            if slot.contains_valid_barcode():
+            if slot.contains_unreadable_barcode():
+                color = CvImage.ORANGE
+            elif slot.contains_valid_barcode():
                 color = CvImage.GREEN
             else:
                 color = CvImage.RED
@@ -127,6 +129,11 @@ class Slot:
         """ Returns true if the slot contains a pin with a valid barcode
         """
         return self.contains_pin() and self.barcode.is_valid()
+
+    def contains_unreadable_barcode(self):
+        """ Returns true if the slot contains a pin with an unreadable barcode
+        """
+        return self.contains_pin() and self.barcode.is_unreadable()
 
     def get_barcode(self):
         """ Gets a string representation of the barcode dat; returns an empty

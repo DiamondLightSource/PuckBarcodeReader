@@ -5,6 +5,8 @@ from scipy.optimize import fmin
 
 MIN_POINTS_FOR_ALIGNMENT = 6
 
+# TODO: better handling for relatively small numbers of pins
+
 
 class UnipuckTemplate:
     """ Defines the layout of a type of sample holder that is a circular puck
@@ -48,6 +50,7 @@ class Unipuck:
     def draw_pin_highlight(self, cvimg, color, pin_number):
         center = self._template_centers[pin_number - 1]
         cvimg.draw_circle(center, self._slot_radius, color, thickness=int(self._slot_radius * 0.2))
+        cvimg.draw_text(str(pin_number), center, color, centered=True)
 
     def crop_image(self, cvimg):
         cvimg.crop_image(self._puck_center, 1.1 * self._puck_radius)
@@ -125,7 +128,6 @@ class Unipuck:
         first_layer = distances[:layer_break]
         second_layer = distances[layer_break:]
 
-        # todo: this currently assumes a Unipuck
         second_layer_radius = np.median(np.array(second_layer))
         puck_radius = int(second_layer_radius / template.layer_radii[1])
         return puck_radius
