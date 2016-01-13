@@ -30,11 +30,9 @@ class Reader():
 
         # Determine the pixel locations to sample
         datamatrix_samples = np.empty((n, n))
-        sample_points = []
         grid = self._datamatrix_sample_points(*finder_pattern.pack(), offset=offset, n=n)
         for ((x, y), point) in grid:
             datamatrix_samples[y, x] = int(self._window_average(cv_img, point))
-            sample_points.append(point)
 
 
         thresholds = [self._threshold(datamatrix_samples, val) for val in range(256)]
@@ -47,11 +45,7 @@ class Reader():
         # Flip the datamatrix so its reference corner is at large i, small j.
         # Also now remove the border (reference edges and timing patterns).
         bitArray = self._threshold(datamatrix_samples, best_threshold_value)[::-1, :][1:-1, 1:-1]
-
-        if self._sanity_check(bitArray):
-            return bitArray, sample_points
-        else:
-            return None, sample_points
+        return bitArray if self._sanity_check(bitArray) else None
 
     def _smart_minimum(self, data):
         """Return the index half-way between the outermost minimising indices.

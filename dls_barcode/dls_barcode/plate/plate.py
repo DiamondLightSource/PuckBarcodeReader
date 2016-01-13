@@ -24,7 +24,7 @@ class Plate():
         # If alignment failed, just fill slots from the start as no ordering possible.
         if geometry.aligned:
             for bc in barcodes:
-                center = bc.bounds[0]
+                center = bc.bounds()[0]
                 slot_num = geometry.closest_slot(center)
                 bc.pinSlot = slot_num
                 self.slots[slot_num-1] = Slot(number=slot_num, barcode=bc)

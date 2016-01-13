@@ -33,6 +33,9 @@ class FinderPattern():
     def point_in_radius(self, point):
         return (point[0] - self.center[0])**2 + (point[1] - self.center[1])**2 < self.radius
 
+    def bounds(self):
+        return (self.center, self.radius)
+
 
 class Locator():
     """Utility for finding the positions of all of the datamatrix barcodes

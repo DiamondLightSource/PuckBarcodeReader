@@ -19,7 +19,7 @@ class Decoder:
         encoded_bytes = self._extract_bytes(bitArray)
         decoded_bytes = self._correct_bytes(encoded_bytes)
         data = self._interpret_bytes(decoded_bytes)
-        return data, decoded_bytes
+        return data
 
     def _extract_bytes(self, bits):
         """Convert the array of bits into a set of raw bytes according to

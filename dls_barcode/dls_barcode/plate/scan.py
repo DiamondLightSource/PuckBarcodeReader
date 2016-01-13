@@ -49,7 +49,7 @@ class Aligner:
 
     def _get_unipuck_geometry(self, image, barcodes):
         # Find the average radius of the barcode symbols
-        barcode_bounds = [barcode.bounds for barcode in barcodes]
+        barcode_bounds = [barcode.bounds() for barcode in barcodes]
         radii = [r for (c, r) in barcode_bounds]
         avg_radius = sum(radii) / len(radii)
 
