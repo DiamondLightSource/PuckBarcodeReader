@@ -6,7 +6,6 @@ from plate import Plate
 
 from pkg_resources import require;  require('numpy')
 
-MIN_POINTS_FOR_ALIGNMENT = 6
 
 class Scanner:
     @staticmethod
@@ -26,7 +25,10 @@ class Scanner:
         geometry = Scanner._get_geometry(gray_img, pin_centers, plate_type)
 
         # Read all the barcodes (data matricies) in the image
-        barcodes = [DataMatrix(fp, gray_img) for fp in finder_patterns]
+        if geometry.is_aligned():
+            barcodes = [DataMatrix(fp, gray_img) for fp in finder_patterns]
+        else:
+            barcodes = []
 
         return Plate(barcodes, geometry, plate_type)
 
@@ -43,9 +45,10 @@ class Scanner:
             geometry = Unipuck(pin_centers)
         elif plate_type == "Square":
             # TODO: implement square sample holders
-            geometry = None
+            raise Exception("Geometry not yet implemented")
         else:
             raise Exception("Unrecognised Sample Plate Type")
+
         return geometry
 
 

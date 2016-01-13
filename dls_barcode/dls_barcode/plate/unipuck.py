@@ -3,6 +3,8 @@ import math
 import numpy as np
 from scipy.optimize import fmin
 
+MIN_POINTS_FOR_ALIGNMENT = 6
+
 
 class UnipuckTemplate:
     """ Defines the layout of a type of sample holder that is a circular puck
@@ -22,51 +24,58 @@ class Unipuck:
     def __init__(self, pin_centers):
         self.template = UnipuckTemplate()
         self.num_slots = self.template.slots
-
-        self.pin_centers = pin_centers
+        self._pin_centers = pin_centers
 
         self.aligned = False
         self.error = None
 
-        try:
-            self.puck_center = Unipuck._find_puck_center(pin_centers)
-            self.puck_radius = Unipuck._calculate_puck_size(pin_centers, self.puck_center, self.template)
+        if len(pin_centers) >= MIN_POINTS_FOR_ALIGNMENT:
+            self._perform_alignment()
+        else:
+            self.error = "Not enough pins for alignment"
 
-            self.template_centers = []
-            self.scale = self.puck_radius
-            self.rotation = 0
-
-            self.puck_radius = self.scale
-            self.center_radius = self.scale * self.template.center_radius
-            self.slot_radius = self.scale * self.template.slot_radius
-
-            self._determine_puck_orientation()
-        except Exception as ex:
-            self.error = ex.message
+    def is_aligned(self):
+        return self.aligned
 
     def draw_plate(self, cvimg, color):
-        cvimg.draw_dot(self.puck_center, color)
-        cvimg.draw_circle(self.puck_center, self.puck_radius, color)
-        cvimg.draw_circle(self.puck_center, self.center_radius, color)
-        for center in self.template_centers:
+        cvimg.draw_dot(self._puck_center, color)
+        cvimg.draw_circle(self._puck_center, self._puck_radius, color)
+        cvimg.draw_circle(self._puck_center, self._center_radius, color)
+        for center in self._template_centers:
             cvimg.draw_dot(center, color)
-            cvimg.draw_circle(center, self.slot_radius, color)
+            cvimg.draw_circle(center, self._slot_radius, color)
 
     def draw_pin_highlight(self, cvimg, color, pin_number):
-        center = self.template_centers[pin_number-1]
-        cvimg.draw_circle(center, self.slot_radius, color, thickness=int(self.slot_radius*0.2))
+        center = self._template_centers[pin_number - 1]
+        cvimg.draw_circle(center, self._slot_radius, color, thickness=int(self._slot_radius * 0.2))
 
     def crop_image(self, cvimg):
-        cvimg.crop_image(self.puck_center, 1.1*self.puck_radius)
+        cvimg.crop_image(self._puck_center, 1.1 * self._puck_radius)
 
     def closest_slot(self, point):
-        slot_sq = self.slot_radius * self.slot_radius
-        for i, center in  enumerate(self.template_centers):
+        slot_sq = self._slot_radius * self._slot_radius
+        for i, center in  enumerate(self._template_centers):
             # slots are non-overlapping so if its in the slot radius, it must be the closest
             if distance_sq(center, point) < slot_sq:
                 return i+1
 
         return 0
+
+    def _perform_alignment(self):
+        try:
+            self._puck_center = Unipuck._find_puck_center(self._pin_centers)
+            self._puck_radius = Unipuck._calculate_puck_size(self._pin_centers, self._puck_center, self.template)
+
+            self._template_centers = []
+            self._rotation = 0
+
+            self._scale = self._puck_radius
+            self._center_radius = self._scale * self.template.center_radius
+            self._slot_radius = self._scale * self.template.slot_radius
+
+            self._determine_puck_orientation()
+        except Exception as ex:
+            self.error = ex.message
 
     @staticmethod
     def _find_puck_center(pin_centers):
@@ -134,7 +143,7 @@ class Unipuck:
             angle = a / (180 / math.pi)
             self._set_rotation(angle)
             sse = 0
-            for p in self.pin_centers:
+            for p in self._pin_centers:
                 sse += self._shortest_sq_distance(p)
             if sse < best_sse:
                 best_sse = sse
@@ -142,35 +151,35 @@ class Unipuck:
 
             errors.append([angle, sse])
 
-        average_error = best_sse / self.puck_radius**2 / len(self.pin_centers)
+        average_error = best_sse / self._puck_radius ** 2 / len(self._pin_centers)
         if average_error < 0.003:
             self.aligned = True
         else:
-            raise Exception("Failed to align puck")
             self.aligned = False
+            self.error = "Failed to align puck"
 
         self._set_rotation(best_angle)
 
 
     def _set_rotation(self, angle):
-        self.rotation = angle
+        self._rotation = angle
         # calculate pin slot locations
         n = self.template.n
         r = self.template.layer_radii
-        center = self.puck_center
-        self.template_centers = []
+        center = self._puck_center
+        self._template_centers = []
         for i, num in enumerate(n):
-            radius = r[i] * self.scale
+            radius = r[i] * self._scale
             for j in range(num):
-                angle = (2.0 * math.pi * -j / num) - (math.pi / 2.0) + self.rotation
+                angle = (2.0 * math.pi * -j / num) - (math.pi / 2.0) + self._rotation
                 point = tuple([int(center[0] + radius * math.cos(angle)),  int(center[1] + radius * math.sin(angle))])
-                self.template_centers.append(point)
+                self._template_centers.append(point)
 
     def _shortest_sq_distance(self, point):
         """returns the distance to the closest slot center point"""
         low_l_sq = 100000000
-        slot_sq = self.slot_radius * self.slot_radius
-        for c in self.template_centers:
+        slot_sq = self._slot_radius * self._slot_radius
+        for c in self._template_centers:
             length_sq = distance_sq(c, point)
             if length_sq < low_l_sq:
                 low_l_sq = length_sq

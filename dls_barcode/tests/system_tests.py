@@ -70,27 +70,23 @@ def run_tests():
         cv_image = CvImage(filename)
         gray_image = cv_image.to_grayscale().img
         plate = Scanner.ScanImage(gray_image)
-        barcodes = [slot.barcode for slot in plate.slots if slot.contains_pin()]
         #store_scan(plate, cv_image)
 
         pass_count = 0
+        num_found = len([s for s in plate.slots if s.contains_valid_barcode()])
         for expected_code in expected_codes:
             text = expected_code[0]
             slot = expected_code[1]
 
-            result = 0
-            for dm in barcodes:
-                if dm.data() == text and dm.pinSlot == slot:
-                    result = 1
-                    break
-
-            pass_count += result
+            data = plate.slots[slot-1].get_barcode()
+            if data == text:
+                pass_count += 1
 
         result = "pass" if pass_count == len(expected_codes) else "FAIL"
-        print("{0} - {1}  -  {2}/{3} matches ({4} found)".format(file, result, pass_count, len(expected_codes), len(barcodes)))
+        print("{0} - {1}  -  {2}/{3} matches ({4} found)".format(file, result, pass_count, len(expected_codes), num_found))
 
         correct += pass_count
-        found += len(barcodes)
+        found += num_found
 
     end = time.clock()
     print("Summary | {0} secs | {1} correct | {2} found | {3} total".format(end-start, correct,found,total))

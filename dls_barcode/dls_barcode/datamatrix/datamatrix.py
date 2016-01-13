@@ -19,7 +19,6 @@ class DataMatrix:
         """ Representation of a DataMatrix in an image.
         """
         self._finder_pattern = finder_pattern
-        self.pinSlot = None
         self._data = None
         self._error_message = ""
         self._read_ok = False

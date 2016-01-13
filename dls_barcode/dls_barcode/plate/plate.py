@@ -26,11 +26,9 @@ class Plate():
             for bc in barcodes:
                 center = bc.bounds()[0]
                 slot_num = geometry.closest_slot(center)
-                bc.pinSlot = slot_num
                 self.slots[slot_num-1] = Slot(number=slot_num, barcode=bc)
         else:
             for i, bc in enumerate(barcodes):
-                bc.pinSlot = "NA"
                 self.slots[i] = Slot(i, bc)
 
         self._sort_slots()
