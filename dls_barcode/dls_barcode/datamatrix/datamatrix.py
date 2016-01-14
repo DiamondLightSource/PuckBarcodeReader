@@ -7,7 +7,8 @@ from decode import Decoder
 # reading doesn't produce sensible results, we try to offset the estimated location of the squares
 # and try again.
 w = 0.25
-wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w]]
+#wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w]]
+wiggle_offsets = [[0,0]]
 
 BAD_DATA_SYMBOL = "XXXXXXXXXX"
 
