@@ -13,7 +13,7 @@ from plate import Scanner
 
 # TODO: Handle non-full pucks
 
-Q_LIMIT = 2
+Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
 
 MAX_SAMPLE_RATE = 10.0
@@ -94,7 +94,8 @@ def scanner_worker(task_queue, overlay_queue, store):
             last_plate = plate
             last_record = store.get_record(0)
             if last_record and last_record.any_barcode_matches(plate):
-                overlay_queue.put(Overlay(None, SCANNED_TAG))
+                if frame_contains_barcodes:
+                    overlay_queue.put(Overlay(None, SCANNED_TAG))
             else:
                 # If the plate has the required number of barcodes, store it
                 if plate.is_full_valid():

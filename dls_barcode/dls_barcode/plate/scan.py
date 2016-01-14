@@ -78,7 +78,13 @@ class Scanner:
             barcodes = [DataMatrix(fp, gray_img) for fp in remaining_fps]
             if trial_barcode:
                 barcodes.append(trial_barcode)
-            return Plate(barcodes, geometry, plate_type), True
+
+            any_valid_barcodes = any([dm.is_valid() for dm in barcodes])
+            if any_valid_barcodes:
+                new_plate = Plate(barcodes, geometry, plate_type)
+                return new_plate, any_valid_barcodes
+            else:
+                return previous_plate, any_valid_barcodes
 
         else:
             plate = Plate(barcodes=[], geometry=geometry, type=plate_type)
