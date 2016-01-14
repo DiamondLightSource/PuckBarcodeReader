@@ -53,6 +53,7 @@ class Scanner:
             slot_num = geometry.closest_slot(fp.center)
             new_finders[slot_num-1] = fp
 
+        # TODO: refactor this function - try to tidy it up a bit, reduce nesting
         # Determine if the previous plate scan has any barcodes in common with this one.
         has_common_barcode = False
         trial_barcode = None

@@ -43,7 +43,7 @@ def store_scan(plate, cvimg):
     filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
 
     plate.draw_plate(cvimg, CvImage.BLUE)
-    plate.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
+    plate.draw_pins(cvimg)
     plate.crop_image(cvimg)
     cvimg.save_as(filename)
 
@@ -70,7 +70,7 @@ def run_tests():
         cv_image = CvImage(filename)
         gray_image = cv_image.to_grayscale().img
         plate = Scanner.ScanImage(gray_image)
-        #store_scan(plate, cv_image)
+        store_scan(plate, cv_image)
 
         pass_count = 0
         num_found = len([s for s in plate.slots if s.contains_pin()])

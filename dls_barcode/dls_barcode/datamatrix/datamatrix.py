@@ -6,7 +6,7 @@ from decode import Decoder
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
 # reading doesn't produce sensible results, we try to offset the estimated location of the squares
 # and try again.
-w = 0.25
+#w = 0.25
 #wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w]]
 wiggle_offsets = [[0,0]]
 

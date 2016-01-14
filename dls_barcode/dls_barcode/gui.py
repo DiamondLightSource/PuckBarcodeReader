@@ -36,23 +36,11 @@ class BarcodeReader(QtGui.QMainWindow):
     def __init__(self):
         super(BarcodeReader, self).__init__()
 
-        # GUI Elements
-        self.tabs = None
-        self.originalImageFrame = None
-        self.originalImageTab = None
-        self.highlightImageFrame = None
-        self.highlightImageTab = None
-        self.barcodeTable = None
-        self.console = None
-
         # Variables
         self.inputFilePath = ''
 
         self.init_ui()
 
-        # ---  TESTING -------
-        filepath = TEST_IMAGE_PATH + "skew1.jpg"
-        #self.process_image(filepath)
 
     def init_ui(self):
         """ Create the basic elements of the user interface
@@ -63,49 +51,7 @@ class BarcodeReader(QtGui.QMainWindow):
 
         self.init_menu_bar()
 
-        # Create Tab control
-        self.tabs = QtGui.QTabWidget()
-        self.tabs.setFixedSize(700, 730)
-        self.originalImageTab = QtGui.QWidget()
-        self.highlightImageTab = QtGui.QWidget()
-        self.tabs.addTab(self.originalImageTab, "Original")
-        self.tabs.addTab(self.highlightImageTab, "Highlight")
-
-        # Create image frames
-        self.originalImageFrame = QtGui.QLabel(self.originalImageTab)
-        self.originalImageFrame.setStyleSheet("background-color: black")
-        self.originalImageFrame.setGeometry(0, 0, 700, 700)
-        self.highlightImageFrame = QtGui.QLabel(self.highlightImageTab)
-        self.highlightImageFrame.setStyleSheet("background-color: black")
-        self.highlightImageFrame.setGeometry(0, 0, 700, 700)
-
-        # Create barcode table
-        self.barcodeTable = QtGui.QTableWidget()
-        self.barcodeTable.setFixedWidth(110)
-        self.barcodeTable.setColumnCount(1)
-        self.barcodeTable.setRowCount(10)
-        self.barcodeTable.setHorizontalHeaderLabels(['Barcode'])
-        self.barcodeTable.setColumnWidth(0, 100)
-        self.barcodeTable.clearContents()
-
-        # Create status message console
-        self.console = QtGui.QLineEdit("hello")
-
-        # Set Window layout
-        hbox = QtGui.QHBoxLayout()
-        hbox.setSpacing(10)
-        hbox.addWidget(self.tabs)
-        hbox.addWidget(self.barcodeTable)
-        vbox = QtGui.QVBoxLayout()
-        vbox.addLayout(hbox)
-        vbox.addWidget(self.console)
-        vbox.addStretch(1)
-        hbox2 = QtGui.QHBoxLayout()
-        hbox2.addLayout(vbox)
-        hbox2.addStretch(1)
-
         main_widget = QtGui.QWidget()
-        main_widget.setLayout(hbox2)
         self.setCentralWidget(main_widget)
 
         self.show()
@@ -157,101 +103,40 @@ class BarcodeReader(QtGui.QMainWindow):
         """
         filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file', TEST_IMAGE_PATH))
         if filepath:
-            self.barcodeTable.clearContents()
-            self.tabs.setCurrentIndex(0)
-            self.originalImageFrame.clear()
-            self.highlightImageFrame.clear()
-            self.setWindowTitle('Diamond Puck Barcode Scanner - ' + filepath)
             self.process_image(filepath)
 
     def start_live_capture(self):
         store = Store.from_file(STORE_FILE)
         scanner = ContinuousScan()
-        #ContinuousScan.data_downloaded.connect(self.new_live_result)
         scanner.stream_webcam(store, camera_num=0)
-
-
-    '''
-    def new_live_result(self, plate, cv_image):
-        self.refill_barcode_table(plate)
-        self.display_image_in_frame(LAST_IMAGE, self.highlightImageFrame)
-        self.tabs.setCurrentIndex(1)
-    '''
-
 
     def process_image(self, filepath):
         self.inputFilePath = filepath
-        self.display_image_in_frame(self.inputFilePath, self.originalImageFrame)
-        self.console.setText("")
 
         cv_image = CvImage(self.inputFilePath)
         gray_image = cv_image.to_grayscale().img
-        try:
-            # Scan the image for barcodes
-            plate = Scanner.ScanImage(gray_image)
-            self.refill_barcode_table(plate)
 
-            # Highlight the image and display it
-            self.highlight_image_plate(cv_image, plate)
-            cv_image.save_as(LAST_IMAGE)
-            self.display_image_in_frame(LAST_IMAGE, self.highlightImageFrame)
-            self.tabs.setCurrentIndex(1)
+        # Scan the image for barcodes
+        plate = Scanner.ScanImage(gray_image)
 
-            # If the scan was successful, store the results
-            if plate.scan_ok:
-                id = str(uuid.uuid4())
-                filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
-                cv_image.save_as(filename)
-                self.store_new_scan(plate, filename, id)
+        # Highlight the image and display it
+        plate.draw_plate(cv_image, CvImage.BLUE)
+        plate.draw_pins(cv_image)
+        plate.crop_image(cv_image)
+        cv_image.save_as(LAST_IMAGE)
 
-            # If an error message was generated, display it
-            if plate.error:
-                self.console.setText(plate.error)
-        except Exception as ex:
-            self.console.setText(ex.message)
-
-    @staticmethod
-    def display_image_in_frame(filename, frame):
-        pixmap = QtGui.QPixmap(filename)
-        frame.setPixmap(pixmap.scaled(frame.size(),
-            QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
-        frame.setAlignment(QtCore.Qt.AlignCenter)
-
-    def highlight_image_plate(self, cvimg, plate):
-        # Draw features on image
-        plate.draw_plate(cvimg, CvImage.BLUE)
-        plate.draw_barcodes(cvimg, CvImage.GREEN, CvImage.RED)
-        #plate.draw_pins(cvimg, CvImage.GREEN)
-        plate.crop_image(cvimg)
-
+        # If the scan was successful, store the results
+        if plate.scan_ok:
+            id = str(uuid.uuid4())
+            filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+            cv_image.save_as(filename)
+            self.store_new_scan(plate, filename, id)
 
     def store_new_scan(self, plate, imagepath, id):
         barcodes = plate.barcodes()
         record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=imagepath, timestamp=0, id=id)
         store = Store.from_file(STORE_FILE)
         store.add_record(record)
-
-    def refill_barcode_table(self, plate):
-        num_slots = plate.num_slots
-        self.barcodeTable.clearContents()
-        self.barcodeTable.setRowCount(num_slots)
-
-        for index, slot in enumerate(plate.slots):
-            barcode = slot.get_barcode()
-
-            # Select appropriate background color
-            if barcode == BAD_DATA_SYMBOL:
-                color = StoreDialog.COLOR_RED
-            elif barcode == EMPTY_SLOT_SYMBOL:
-                color = StoreDialog.COLOR_GRAY
-            else:
-                color = StoreDialog.COLOR_GREEN
-
-            # Set table item
-            barcode = QtGui.QTableWidgetItem(barcode)
-            barcode.setBackgroundColor(color)
-            barcode.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.barcodeTable.setItem(index, 0, barcode)
 
 def main():
     app = QtGui.QApplication(sys.argv)

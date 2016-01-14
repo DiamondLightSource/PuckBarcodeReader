@@ -204,10 +204,11 @@ class StoreDialog(QtGui.QDialog):
     image of that scan (if available).
     """
 
-    COLOR_RED = QtGui.QColor(255, 0, 0, 100)
-    COLOR_GREEN = QtGui.QColor(0, 255, 0, 100)
-    COLOR_BLUE = QtGui.QColor(0, 0, 255, 100)
-    COLOR_GRAY = QtGui.QColor(128, 128, 128, 100)
+    COLOR_RED = QtGui.QColor(255, 0, 0, 128)
+    COLOR_GREEN = QtGui.QColor(0, 255, 0, 128)
+    COLOR_BLUE = QtGui.QColor(0, 0, 255, 128)
+    COLOR_GRAY = QtGui.QColor(128, 128, 128, 128)
+    COLOR_ORANGE = QtGui.QColor(255,128,0, 128)
 
     COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
@@ -302,10 +303,9 @@ class StoreDialog(QtGui.QDialog):
 
             if record.num_valid_barcodes == record.num_slots:
                 color = StoreDialog.COLOR_GREEN
-            elif record.num_invalid_barcodes > 0:
-                color = StoreDialog.COLOR_RED
             else:
-                color = StoreDialog.COLOR_BLUE
+                color = StoreDialog.COLOR_RED
+
 
             for m, item in enumerate(items):
                 newitem = QtGui.QTableWidgetItem(str(item))
@@ -339,9 +339,9 @@ class StoreDialog(QtGui.QDialog):
         for index, barcode in enumerate(barcodes):
             # Select appropriate background color
             if barcode == BAD_DATA_SYMBOL:
-                color = StoreDialog.COLOR_RED
+                color = StoreDialog.COLOR_ORANGE
             elif barcode == EMPTY_SLOT_SYMBOL:
-                color = StoreDialog.COLOR_GRAY
+                color = StoreDialog.COLOR_RED
             else:
                 color = StoreDialog.COLOR_GREEN
 
