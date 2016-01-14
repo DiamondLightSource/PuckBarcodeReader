@@ -85,9 +85,6 @@ class Locator():
                 if not in_radius:
                     finder_patterns.append(fp)
 
-        if not finder_patterns:
-            raise Exception("Could not locate any datamatrix finder patterns in image")
-
         # Filter out any which differ significantly in size
         if len(finder_patterns) > 3:
             self._median_radius = np.median([fp.radius for fp in finder_patterns])

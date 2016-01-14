@@ -1,7 +1,7 @@
 from __future__ import division
 from dls_barcode.datamatrix import DataMatrix
 from unipuck import Unipuck
-from plate import Plate
+from plate import Plate, Slot
 
 from pkg_resources import require;  require('numpy')
 
@@ -45,55 +45,52 @@ class Scanner:
 
         # If no alignment was possible, just return the previous plate
         if not geometry.aligned:
-            return previous_plate
+            return previous_plate, False
 
         # Make a list of the finder patterns with associated slot numbers
-        new_slots = [None] * geometry.num_slots
+        new_finders = [None] * geometry.num_slots
         for fp in finder_patterns:
             slot_num = geometry.closest_slot(fp.center)
-            new_slots[slot_num] = fp
-
-        # Create list to store new barcodes
-        new_barcodes = []
+            new_finders[slot_num-1] = fp
 
         # Determine if the previous plate scan has any barcodes in common with this one.
         has_common_barcode = False
-        for old_slot in previous_plate.slots:
+        trial_barcode = None
+        for i, old_slot in enumerate(previous_plate.slots):
             # Search through valid barcodes until we find a match
-            if old_slot.contains_valid_barcode():
-                num = old_slot.number
-
+            if (old_slot.contains_valid_barcode()) and (new_finders[i] is not None):
                 # If we have a finder pattern in the same slot, try to read it. If it matches the previous barcode,
                 # then we have one in common, if it doesn't then we have a completely new plate. If we cant read
                 # the barcode, carry on looking for a match
-                if new_slots[num] is not None:
-                    dm = DataMatrix(new_slots[num], gray_img)
-                    # Record the barcode and remove the used finder pattern so we don't read it again
-                    new_barcodes.append(dm)
-                    new_slots[num] = None
-                    if dm.is_valid():
-                        # If it matches we have a common barcode, if not we have a clash; break either way
-                        if dm.data() == old_slot.get_barcode():
-                            has_common_barcode = True
-                        break
+                trial_barcode = DataMatrix(new_finders[i], gray_img)
+                # Remove the used finder pattern so we don't read it again
+                new_finders[i] = None
+                if trial_barcode.is_valid():
+                    # If it matches we have a common barcode, if not we have a clash; break either way
+                    if trial_barcode.data() == old_slot.get_barcode():
+                        has_common_barcode = True
+                    break
 
         # If there are no barcodes in common with the previous plate scan, read any that
         # haven't already been read and return a new plate
         if not has_common_barcode:
-            remaining_fps = [s for s in new_slots if s is not None]
+            remaining_fps = [fp for fp in new_finders if fp is not None]
             barcodes = [DataMatrix(fp, gray_img) for fp in remaining_fps]
-            barcodes.extend(new_barcodes)
+            if trial_barcode:
+                barcodes.append(trial_barcode)
+            return Plate(barcodes, geometry, plate_type), True
 
         else:
-            # TODO: case where they have barcodes in common - could do this in the earlier for loop
+            plate = Plate(barcodes=[], geometry=geometry, type=plate_type)
             # Combine old barcodes with new and create a new plate
-            for old_slot in previous_plate.slots:
-                pass
-
-
-
-        return Plate(barcodes, geometry, plate_type)
-
+            for i, old_slot in enumerate(previous_plate.slots):
+                if (old_slot.contains_valid_barcode()) or (new_finders[i] is None):
+                    plate.slots[i] = old_slot
+                else:
+                    dm = DataMatrix(new_finders[i], gray_img)
+                    plate.slots[i] = Slot(i+1, dm)
+            plate._sort_slots()
+            return plate, True
 
 
     @staticmethod

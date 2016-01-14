@@ -42,6 +42,9 @@ class Plate():
         """
         return [slot.get_barcode() for slot in self.slots]
 
+    def is_full_valid(self):
+        return self.num_valid_barcodes == self.num_slots
+
     def draw_barcodes(self, cvimg, ok_color, bad_color):
         for slot in self.slots:
             if slot.contains_pin():
