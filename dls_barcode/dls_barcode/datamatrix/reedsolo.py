@@ -1,36 +1,34 @@
 """
 Reed Solomon
 ============
-
-A pure-python `Reed Solomon <http://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction>`_
-encoder/decoder, based on the wonderful tutorial at 
-`wikiversity <http://en.wikiversity.org/wiki/Reed%E2%80%93Solomon_codes_for_coders>`_,
-written by "Bobmath".
-
-I only consolidated the code a little and added exceptions and a simple API. 
-To my understanding, the algorithm can correct up to ``nsym/2`` of the errors in 
-the message, where ``nsym`` is the number of bytes in the error correction code (ECC).
-The code should work on pretty much any reasonable version of python (2.4-3.2), 
-but I'm only testing on 2.5-3.2.
-
-.. note::
-   I claim no authorship of the code, and take no responsibility for the correctness 
-   of the algorithm. It's way too much finite-field algebra for me :)
-   
-   I've released this package as I needed an ECC codec for another project I'm working on, 
-   and I couldn't find anything on the web (that still works).
-   
-   The algorithm itself can handle messages up to 255 bytes, including the ECC bytes. The
-   ``RSCodec`` class will split longer messages into chunks and encode/decode them separately;
-   it shouldn't make a difference from an API perspective.
-
-"""
-
-"""
 Reed-Solomon Error code correction library
 Original from: https://pypi.python.org/pypi/reedsolo
-
 Modifications for use with Datamatrix by Kris Ward (kris.ward@diamond.ac.uk)
+
+The following is the header from the original author:
+------------------------------------------------------------------------------------------------------
+| A pure-python `Reed Solomon <http://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction>`_
+| encoder/decoder, based on the wonderful tutorial at
+| `wikiversity <http://en.wikiversity.org/wiki/Reed%E2%80%93Solomon_codes_for_coders>`_,
+| written by "Bobmath".
+|
+| I only consolidated the code a little and added exceptions and a simple API.
+| To my understanding, the algorithm can correct up to ``nsym/2`` of the errors in
+| the message, where ``nsym`` is the number of bytes in the error correction code (ECC).
+| The code should work on pretty much any reasonable version of python (2.4-3.2),
+| but I'm only testing on 2.5-3.2.
+|
+| .. note::
+|    I claim no authorship of the code, and take no responsibility for the correctness
+|    of the algorithm. It's way too much finite-field algebra for me :)
+|
+|  I've released this package as I needed an ECC codec for another project I'm working on,
+|  and I couldn't find anything on the web (that still works).
+|
+|    The algorithm itself can handle messages up to 255 bytes, including the ECC bytes. The
+|    ``RSCodec`` class will split longer messages into chunks and encode/decode them separately;
+|    it shouldn't make a difference from an API perspective.
+--------------------------------------------------------------------------------------------------------
 
 """
 

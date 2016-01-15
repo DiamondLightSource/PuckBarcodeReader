@@ -38,7 +38,7 @@ class FinderPattern():
 
 
 class Locator():
-    """Utility for finding the positions of all of the datamatrix barcodes
+    """ Utility for finding the positions of all of the datamatrix barcodes
     in an image """
 
     def __init__(self):

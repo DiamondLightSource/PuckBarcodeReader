@@ -4,7 +4,7 @@ import itertools
 DEFAULT_MATRIX_SIZE = 14
 
 class Reader():
-    """Class for reading an array of bits at a specified location
+    """ Contains functionality to read the bit pattern that encodes a barcode from an image
     """
 
     def read_bitarray(self, finder_pattern, offset, cv_img, n=DEFAULT_MATRIX_SIZE):

@@ -1,27 +1,33 @@
-"""Decoding of datamatrix bit arrays.
 """
+Decode
+======
+This module is used to decode Data Matrix bit arrays, retrieving the data
+that is encoded by the barcode
 
-# This module is essentially a straight port of http://git.io/vlaFO from zxing.
-# Also very useful: https://en.wikipedia.org/wiki/Data_Matrix#Encoding
-
+It is based on a similar component in the Java zxing library (see http://git.io/vlaFO)
+"""
 from functools import partial
 import numpy as np
 
 from reedsolo import RSDecode
 
+# The number of bytes in the data matrix that encode data (the remaining bytes are for error correction)
 NUM_DATA_BYTES = 8
 
 
 class Decoder:
     """Class for decoding a datamatrix from an array of bits
     """
-    def read_datamatrix(self, bitArray):
-        encoded_bytes = self._extract_bytes(bitArray)
-        decoded_bytes = self._correct_bytes(encoded_bytes)
+    def read_datamatrix(self, bit_array, num_data_bytes=NUM_DATA_BYTES):
+        """ Returns the string encoded by a data matrix bit array
+        """
+        encoded_bytes = self._extract_bytes(bit_array)
+        decoded_bytes = self._correct_bytes(encoded_bytes, num_data_bytes)
         data = self._interpret_bytes(decoded_bytes)
         return data
 
-    def _extract_bytes(self, bits):
+    @staticmethod
+    def _extract_bytes(bits):
         """Convert the array of bits into a set of raw bytes according to
         the datamatrix standard. The bytes require further processing
         before the actual message is retrieved.
@@ -63,14 +69,16 @@ class Decoder:
                 break
         return data_bytes
 
-    def _correct_bytes(self, encoded_bytes):
+    @staticmethod
+    def _correct_bytes(encoded_bytes, num_data_bytes):
         """Apply Reed-Solomon error correction to the set of raw bytes
         """
         # Note - can throw an exception - should be caught further up
-        decoded = RSDecode(encoded_bytes, NUM_DATA_BYTES)
+        decoded = RSDecode(encoded_bytes, num_data_bytes)
         return decoded
 
-    def _interpret_bytes(self, data_bytes):
+    @staticmethod
+    def _interpret_bytes(data_bytes):
         """Converts the (corrected) raw set of bytes from the datamatrix into an
         ASCII message
         """

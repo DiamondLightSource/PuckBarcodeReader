@@ -10,10 +10,8 @@ from decode import Decoder
 #wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w]]
 wiggle_offsets = [[0,0]]
 
+# Data value that is returned if the barcode cannot be read for whatever reason
 BAD_DATA_SYMBOL = "XXXXXXXXXX"
-
-# TODO: validation of the barcode based on a format, e.g. NNxxxNxxxx
-
 
 class DataMatrix:
     def __init__(self, finder_pattern, gray_img):
@@ -37,12 +35,18 @@ class DataMatrix:
             return ''
 
     def bounds(self):
+        """ A circle which bounds the data matrix (center, radius)
+        """
         return self._finder_pattern.bounds()
 
     def is_valid(self):
+        """ True if the data matrix was read successfully
+        """
         return self._read_ok
 
     def is_unreadable(self):
+        """ True if the data matrix could not be decoded (because of damage to the symbol)
+        """
         return self._damaged_symbol
 
     def _read(self, gray_image):
@@ -67,13 +71,13 @@ class DataMatrix:
                     self._error_message = ""
                     break
                 except Exception as ex:
-                    self._data = BAD_DATA_SYMBOL
                     self._read_ok = False
                     self._damaged_symbol = True
                     self._error_message = ex.message
 
     def draw(self, cvimg, ok_color, bad_color):
-        # draw circle and line highlights
+        """ Draw the lines of the finder pattern on the specified image
+        """
         fp = self._finder_pattern
         color = bad_color if self.is_unreadable() else ok_color
         cvimg.draw_line(fp.c1, fp.c2, color)
