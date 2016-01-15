@@ -41,16 +41,19 @@ class Scanner:
         pin_centers = [fp.center for fp in finder_patterns]
 
         # Align plate (sample holder) model with the image
+        import time
+        timer = time.time()
         geometry = Scanner._get_geometry(gray_img, pin_centers, plate_type)
+        print "Alignment", time.time() - timer
 
         # If no alignment was possible, just return the previous plate
-        if not geometry.aligned:
+        if not geometry.is_aligned():
             return previous_plate, False
 
         # Make a list of the finder patterns with associated slot numbers
         new_finders = [None] * geometry.num_slots
         for fp in finder_patterns:
-            slot_num = geometry.closest_slot(fp.center)
+            slot_num = geometry.containing_slot(fp.center)
             new_finders[slot_num-1] = fp
 
         # TODO: refactor this function - try to tidy it up a bit, reduce nesting

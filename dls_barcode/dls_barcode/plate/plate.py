@@ -13,17 +13,17 @@ class Plate():
         self.type = type
         self._geometry = geometry
 
-        self.scan_ok = geometry.aligned
+        self.scan_ok = geometry.is_aligned()
 
         # Initialize slots as empty
         self.slots = [Slot(i, None) for i in range(self.num_slots)]
 
         # If sample holder is aligned, fill appropriate slots with the correct barcodes
         # If alignment failed, just fill slots from the start as no ordering possible.
-        if geometry.aligned:
+        if geometry.is_aligned():
             for bc in barcodes:
                 center = bc.bounds()[0]
-                slot_num = geometry.closest_slot(center)
+                slot_num = geometry.containing_slot(center)
                 self.slots[slot_num-1] = Slot(number=slot_num, barcode=bc)
         else:
             for i, bc in enumerate(barcodes):
