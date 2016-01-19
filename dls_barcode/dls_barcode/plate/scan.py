@@ -41,10 +41,7 @@ class Scanner:
         pin_centers = [fp.center for fp in finder_patterns]
 
         # Align plate (sample holder) model with the image
-        import time
-        timer = time.time()
         geometry = Scanner._get_geometry(gray_img, pin_centers, plate_type)
-        print "Alignment", time.time() - timer
 
         # If no alignment was possible, just return the previous plate
         if not geometry.is_aligned():

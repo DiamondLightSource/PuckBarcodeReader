@@ -165,7 +165,7 @@ class Unipuck:
         best_angle = 0
 
         # For each angular increment, calculate the sum of squared errors in slot center position
-        for a in range(360):
+        for a in range(0, 360, 2):
             angle = a / (180 / math.pi)
             self._set_rotation(angle)
             sse = 0
@@ -183,79 +183,7 @@ class Unipuck:
             self._aligned = False
             self.error = "Failed to align puck"
 
-
-
-
-
-
-        # ------- METHOD 3 ------------
-
-
-        # get points in outer layer
-        distances = [[p,distance_sq(p, self._puck_center)] for p in self._pin_centers]
-        distances = sorted(distances, key=lambda distance: distance[1])
-        layer_break = _partition([d for p, d in distances])
-        first_layer = [[x,y] for (x,y), d in distances[:layer_break]]
-        second_layer = [[x,y] for (x,y), d in distances[layer_break:]]
-
-        # calculate angles from north:
-        center = self._puck_center
-        layer_1_angles = []
-        layer_2_angles = []
-        for point in first_layer:
-            theta = math.atan2((point[0]-center[0]), (point[1]-center[1])) + math.pi
-            layer_1_angles.append(theta)
-        for point in second_layer:
-            theta = math.atan2((point[0]-center[0]), (point[1]-center[1])) + math.pi
-            layer_2_angles.append(theta)
-
-        layer_1_angles.sort()
-        layer_2_angles.sort()
-
-        del_5 = math.pi*2.0/5.0
-        del_11 = math.pi*2.0/11.0
-
-        layer_1_errors = [a % del_5 for a in layer_1_angles]
-        layer_2_errors = [a % del_11 for a in layer_2_angles]
-
-        l1_mean = np.mean(layer_1_errors)
-        l2_mean = np.mean(layer_2_errors)
-
-        a = [(2*math.pi)-(l1_mean+i*del_5) for i in range(5)]
-        b = [(2*math.pi)-(l2_mean+i*del_11) for i in range(11)]
-        newest_best_angle = self._average_of_closest_pair(a,b)
-
-
-        # THIS WORKS, REMOVE THE OLD METHOD
-
-
-        print "NEWEST", newest_best_angle, best_angle
-
-
-
         self._set_rotation(best_angle)
-
-    def _distance_to_closest_angle(self, number, angles):
-        best = 100
-        for a in angles:
-            dist = math.fabs(number-a) % (2.0* math.pi)
-            if dist < best:
-                best = dist
-        return best
-
-    def _average_of_closest_pair(self, a, b):
-        nums = a + b
-        nums.sort()
-        best_i = -1
-        best_diff = 100000
-        for i in range(len(nums)-1):
-            if nums[i+1] - nums[i] < best_diff:
-                best_diff = nums[i+1] - nums[i]
-                best_i = i
-
-        return (nums[best_i+1] + nums[best_i]) / 2
-
-
 
     def _set_rotation(self, angle):
         """ Set the orientation of the puck template to the specified angle. Recalculate the
