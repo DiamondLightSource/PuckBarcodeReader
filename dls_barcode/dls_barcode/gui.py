@@ -15,9 +15,8 @@ from continuous import ContinuousScan
 TEST_IMAGE_PATH = '../tests/test-images/'
 TEST_OUTPUT_PATH = '../../test-output/'
 STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
-
 STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
-LAST_IMAGE = TEST_OUTPUT_PATH + 'last_image.jpg'
+
 
 
 class BarcodeReader(QtGui.QMainWindow):
@@ -31,18 +30,17 @@ class BarcodeReader(QtGui.QMainWindow):
         super(BarcodeReader, self).__init__()
 
         self._store = Store.from_file(STORE_FILE)
-        self.inputFilePath = ''
 
         # UI elements
         self._recordTable = None
         self._barcodeTable = None
-        self.imageFrame = None
+        self._imageFrame = None
 
-        self.init_ui()
+        self._init_ui()
+        self._load_store_records(self._store)
 
-
-    def init_ui(self):
-        """ Create the basic elements of the user interface
+    def _init_ui(self):
+        """ Create the basic elements of the user interface.
         """
         self.setGeometry(100, 100, 1020, 650)
         self.setWindowTitle('Diamond Puck Barcode Scanner')
@@ -63,9 +61,7 @@ class BarcodeReader(QtGui.QMainWindow):
         self._recordTable.setColumnWidth(4, 60)
         self._recordTable.setColumnWidth(5, 60)
         self._recordTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self._recordTable.setRowCount(len(self._store.records))
-        self._fill_record_table(self._store)
-        self._recordTable.cellPressed.connect(self._new_row_selected)
+        self._recordTable.cellPressed.connect(self._record_selected)
 
         # Create barcode table - lists all the barcode sin a record
         self._barcodeTable = QtGui.QTableWidget()
@@ -75,13 +71,12 @@ class BarcodeReader(QtGui.QMainWindow):
         self._barcodeTable.setRowCount(10)
         self._barcodeTable.setHorizontalHeaderLabels(['Barcode'])
         self._barcodeTable.setColumnWidth(0, 100)
-        self._barcodeTable.clearContents()
 
         # Image frame - displays image of the currently selected scan record
-        self.imageFrame = QtGui.QLabel()
-        self.imageFrame.setStyleSheet("background-color: black; color: red; font-size: 30pt; text-align: center")
-        self.imageFrame.setFixedWidth(600)
-        self.imageFrame.setFixedHeight(600)
+        self._imageFrame = QtGui.QLabel()
+        self._imageFrame.setStyleSheet("background-color: black; color: red; font-size: 30pt; text-align: center")
+        self._imageFrame.setFixedWidth(600)
+        self._imageFrame.setFixedHeight(600)
 
         # Delete button - deletes selected records
         deleteBtn = QtGui.QPushButton('Delete')
@@ -93,14 +88,14 @@ class BarcodeReader(QtGui.QMainWindow):
         clipboardBtn = QtGui.QPushButton('Copy To Clipboard')
         clipboardBtn.setToolTip('Copy barcodes for the selected record to the clipboard')
         clipboardBtn.resize(clipboardBtn.sizeHint())
-        clipboardBtn.clicked.connect(self._copy_selected_record_to_clipboard)
+        clipboardBtn.clicked.connect(self._copy_selected_records_to_clipboard)
 
         # Create layout
         hbox = QtGui.QHBoxLayout()
         hbox.setSpacing(10)
         hbox.addWidget(self._recordTable)
         hbox.addWidget(self._barcodeTable)
-        hbox.addWidget(self.imageFrame)
+        hbox.addWidget(self._imageFrame)
         hbox.addStretch(1)
 
         hbox2 = QtGui.QHBoxLayout()
@@ -121,19 +116,19 @@ class BarcodeReader(QtGui.QMainWindow):
         self.show()
 
     def init_menu_bar(self):
-        """Create and populate the menu bar
+        """Create and populate the menu bar.
         """
         # load action
         load_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From File...', self)
         load_action.setShortcut('Ctrl+L')
         load_action.setStatusTip('Load image from file to scan')
-        load_action.triggered.connect(self.new_image_from_file)
+        load_action.triggered.connect(self._scan_file_image)
 
         # preview action
         live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
         live_action.setStatusTip('Capture continuously from camera')
-        live_action.triggered.connect(self.start_live_capture)
+        live_action.triggered.connect(self._start_live_capture)
 
         # exit action
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -142,57 +137,58 @@ class BarcodeReader(QtGui.QMainWindow):
         exit_action.triggered.connect(QtGui.qApp.quit)
 
         # create menu bar
-        menubar = self.menuBar()
-        file_menu = menubar.addMenu('&File')
+        menu_bar = self.menuBar()
+        file_menu = menu_bar.addMenu('&File')
         file_menu.addAction(exit_action)
 
-        scan_menu = menubar.addMenu('&Scan')
+        scan_menu = menu_bar.addMenu('&Scan')
         scan_menu.addAction(load_action)
         scan_menu.addAction(live_action)
 
-    def new_image_from_file(self):
-        """Load a process (scan for barcodes) an image from file
+    def _scan_file_image(self):
+        """Load and process (scan for barcodes) an image from file
         """
         filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file', TEST_IMAGE_PATH))
         if filepath:
-            self.process_image(filepath)
+            cv_image = CvImage(filepath)
+            gray_image = cv_image.to_grayscale().img
 
-    def start_live_capture(self):
+            # Scan the image for barcodes
+            plate = Scanner.ScanImage(gray_image)
+
+            # Highlight the image and display it
+            plate.draw_plate(cv_image, CvImage.BLUE)
+            plate.draw_pins(cv_image)
+            plate.crop_image(cv_image)
+
+            # If the scan was successful, store the results
+            if plate.scan_ok:
+                id = str(uuid.uuid4())
+                filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+                cv_image.save_as(filename)
+                self._store_scan_results(plate, filename, id)
+
+    def _start_live_capture(self):
+        """ Starts the process of continuous capture from an attached camera.
+        """
         store = Store.from_file(STORE_FILE)
         scanner = ContinuousScan()
         scanner.stream_webcam(store, camera_num=0)
 
-    def process_image(self, filepath):
-        self.inputFilePath = filepath
-
-        cv_image = CvImage(self.inputFilePath)
-        gray_image = cv_image.to_grayscale().img
-
-        # Scan the image for barcodes
-        plate = Scanner.ScanImage(gray_image)
-
-        # Highlight the image and display it
-        plate.draw_plate(cv_image, CvImage.BLUE)
-        plate.draw_pins(cv_image)
-        plate.crop_image(cv_image)
-        cv_image.save_as(LAST_IMAGE)
-
-        # If the scan was successful, store the results
-        if plate.scan_ok:
-            id = str(uuid.uuid4())
-            filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
-            cv_image.save_as(filename)
-            self.store_new_scan(plate, filename, id)
-
-    def store_new_scan(self, plate, imagepath, id):
+    def _store_scan_results(self, plate, imagepath, id):
+        """ Persist the results of a scan in the store.
+        """
         barcodes = plate.barcodes()
         record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=imagepath, timestamp=0, id=id)
         store = Store.from_file(STORE_FILE)
         store.add_record(record)
 
-    def _fill_record_table(self, store):
+    def _load_store_records(self, store):
         """ Populate the record table with all of the records in the store.
         """
+        self._recordTable.clearContents()
+        self._recordTable.setRowCount(self._store.size())
+
         for n, record in enumerate(store.records):
             items = [record.date, record.time, record.plate_type, record.num_valid_barcodes,
                      record.num_invalid_barcodes, record.num_empty_slots]
@@ -209,19 +205,22 @@ class BarcodeReader(QtGui.QMainWindow):
                 newitem.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
                 self._recordTable.setItem(n, m, newitem)
 
-    def _new_row_selected(self):
+        self._barcodeTable.clearContents()
+        self._display_record_image(None)
+
+    def _record_selected(self):
         """ Called when a row is selected, causes details of the selected record to be
-        displayed (list of barcodes oin the barcode table and image of the scan in the
+        displayed (list of barcodes in the barcode table and image of the scan in the
         image frame).
         """
         try:
             row = self._recordTable.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
             self._fill_barcode_table(record.barcodes)
-            self._display_image(record.imagepath)
+            self._display_record_image(record.imagepath)
         except IndexError:
             self._fill_barcode_table([])
-            self._display_image(None)
+            self._display_record_image(None)
 
     def _fill_barcode_table(self, barcodes):
         """ Called when a new row is selected on the record table. Displays all of the
@@ -247,21 +246,21 @@ class BarcodeReader(QtGui.QMainWindow):
             barcode.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self._barcodeTable.setItem(index, 0, barcode)
 
-    def _display_image(self, filename):
+    def _display_record_image(self, filename):
         """ Called when a new row is selected on the record table. Displays the specified
         image (image of the highlighted scan) in the image frame
         """
-        self.imageFrame.clear()
-        self.imageFrame.setAlignment(QtCore.Qt.AlignCenter)
+        self._imageFrame.clear()
+        self._imageFrame.setAlignment(QtCore.Qt.AlignCenter)
 
         if filename is None:
-            self.imageFrame.setText("No Scan Selected")
+            self._imageFrame.setText("No Scan Selected")
         elif os.path.isfile(filename):
             pixmap = QtGui.QPixmap(filename)
-            self.imageFrame.setPixmap(pixmap.scaled(self.imageFrame.size(),
-                QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+            self._imageFrame.setPixmap(pixmap.scaled(self._imageFrame.size(),
+                                                     QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         else:
-            self.imageFrame.setText("Image Not Found")
+            self._imageFrame.setText("Image Not Found")
 
 
     def _delete_selected_records(self):
@@ -283,8 +282,9 @@ class BarcodeReader(QtGui.QMainWindow):
                 records_to_delete.append(record)
 
             self._store.delete_records(records_to_delete)
+            self._load_store_records(self._store)
 
-    def _copy_selected_record_to_clipboard(self):
+    def _copy_selected_records_to_clipboard(self):
         """ Called when the copy to clipboard button is pressed. Copies the list/s of
         barcodes for the currently selected records to the clipboard so that the user
         can paste it elsewhere.
@@ -299,6 +299,7 @@ class BarcodeReader(QtGui.QMainWindow):
         if barcodes:
             pyperclip.copy('\n'.join(barcodes))
         #spam = pyperclip.paste()
+
 
 def main():
     app = QtGui.QApplication(sys.argv)

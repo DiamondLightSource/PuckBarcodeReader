@@ -134,6 +134,11 @@ class Store:
         self.records = records
         self._sort_records()
 
+    def size(self):
+        """ Returns the number of records in the store
+        """
+        return len(self.records)
+
     def get_record(self, index):
         """ Get record by index where the 0th record is the most recent
         """
