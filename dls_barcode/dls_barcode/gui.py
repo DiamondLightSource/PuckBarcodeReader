@@ -2,7 +2,8 @@
 
 import sys
 import os
-import uuid
+import winsound
+import multiprocessing
 import pyperclip
 from PyQt4 import QtGui, QtCore
 
@@ -35,6 +36,14 @@ class BarcodeReader(QtGui.QMainWindow):
 
         self._store = Store.from_file(STORE_FILE)
 
+        # Queue that holds new results generated in continuous scanning mode
+        self._new_scan_queue = multiprocessing.Queue()
+
+        # Timer that controls how often new scan results are looked for
+        self._result_timer = QtCore.QTimer()
+        self._result_timer.timeout.connect(self._read_new_scan_queue)
+        self._result_timer.start(1000)
+
         # UI elements
         self._recordTable = None
         self._barcodeTable = None
@@ -42,6 +51,22 @@ class BarcodeReader(QtGui.QMainWindow):
 
         self._init_ui()
         self._load_store_records(self._store)
+
+    def _read_new_scan_queue(self):
+        """ Called every second; read any new results from the scan results queue,
+        store them and display them.
+        """
+        if not self._new_scan_queue.empty():
+            # Get the result
+            plate, cv_image = self._new_scan_queue.get(False)
+
+            # Notify user of new scan
+            print "Scan Recorded"
+            winsound.Beep(4000, 500) # frequency, duration
+
+            # Store scan results and display in GUI
+            self._store.add_record(plate.type, plate.barcodes(), cv_image)
+            self._load_store_records(self._store)
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
@@ -173,9 +198,8 @@ class BarcodeReader(QtGui.QMainWindow):
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        store = Store.from_file(STORE_FILE)
-        scanner = ContinuousScan()
-        scanner.stream_webcam(store, camera_num=0)
+        scanner = ContinuousScan(self._new_scan_queue)
+        scanner.stream_webcam(camera_num=0)
 
     def _load_store_records(self, store):
         """ Populate the record table with all of the records in the store.

@@ -111,7 +111,7 @@ class Record:
         return datetime.datetime.fromtimestamp(self.timestamp).strftime(Record.DATE_FORMAT)
 
 
-class Store:
+class Store():
     """ Maintains a list of records of previous barcodes scans. Any changes (additions
     or deletions) are automatically written to the backing file.
     """

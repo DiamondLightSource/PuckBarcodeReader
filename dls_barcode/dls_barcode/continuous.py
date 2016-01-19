@@ -1,13 +1,8 @@
 from pkg_resources import require;  require('numpy')
 import cv2
 
-import os
-import uuid
 import time
-import winsound
 import multiprocessing
-
-from store import Record
 from image import CvImage
 from plate import Scanner
 
@@ -60,12 +55,13 @@ def capture_worker(camera_num, task_queue, overlay_queue):
     cv2.destroyAllWindows()
 
 
-def scanner_worker(task_queue, overlay_queue, store):
+def scanner_worker(task_queue, overlay_queue, result_queue):
     # Keep the record of the last scan which was at least partially successful (aligned geometry
     # and some barcodes scanned). For each new frame, we can attempt to merge the results with
     # this previous plates so that we don't have to re-read any of the previously captured barcodes
     # (because this is a relatively expensive operation).
     last_plate = None
+    last_full_plate = None
     frame_contains_barcodes = False
 
     while True:
@@ -92,14 +88,16 @@ def scanner_worker(task_queue, overlay_queue, store):
         if plate.scan_ok:
             # Plate mustn't have any barcodes that match the last successful scan
             last_plate = plate
-            last_record = store.get_record(0)
-            if last_record and last_record.any_barcode_matches(plate):
+            if last_full_plate and last_full_plate.has_slots_in_common(plate):
                 if frame_contains_barcodes:
                     overlay_queue.put(Overlay(None, SCANNED_TAG))
             else:
                 # If the plate has the required number of barcodes, store it
                 if plate.is_full_valid():
-                    store_record(plate, cv_image, store)
+                    Overlay(plate).draw_on_image(cv_image.img)
+                    plate.crop_image(cv_image)
+                    result_queue.put((plate, cv_image))
+                    last_full_plate = plate
 
                 if frame_contains_barcodes:
                     overlay_queue.put(Overlay(plate))
@@ -107,27 +105,16 @@ def scanner_worker(task_queue, overlay_queue, store):
         print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
 
 
-def store_record(plate, cv_image, store):
+class ContinuousScan():
 
-    # Save the scan results to the store
-    print "Scan Recorded"
-    winsound.Beep(4000, 500) # frequency, duration
-
-    Overlay(plate).draw_on_image(cv_image.img)
-    plate.crop_image(cv_image)
-
-    store.add_record(plate.type, plate.barcodes(), cv_image)
-
-
-class ContinuousScan:
-
-    def __init__(self):
+    def __init__(self, result_queue):
         self.task_queue = multiprocessing.Queue()
         self.overlay_queue = multiprocessing.Queue()
+        self.result_queue = result_queue
 
-    def stream_webcam(self, store, camera_num):
+    def stream_webcam(self, camera_num):
         capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue,))
-        scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue, store,))
+        scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue, self.result_queue,))
 
     def kill_workers(self):
         self.task_queue.put(None)
