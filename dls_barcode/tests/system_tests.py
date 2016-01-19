@@ -38,20 +38,10 @@ STORE = Store.from_file(STORE_FILE)
 
 
 def store_scan(plate, cvimg):
-
-    id = str(uuid.uuid4())
-    filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
-
     plate.draw_plate(cvimg, CvImage.BLUE)
     plate.draw_pins(cvimg)
     plate.crop_image(cvimg)
-    cvimg.save_as(filename)
-
-    barcodes = plate.barcodes()
-    record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
-    STORE.add_record(record)
-
-
+    STORE.add_record(plate.type, plate.barcodes(), cvimg)
 
 
 def run_tests():

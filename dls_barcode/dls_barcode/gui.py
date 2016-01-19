@@ -12,11 +12,15 @@ from store import Store, Record
 from datamatrix import BAD_DATA_SYMBOL
 from continuous import ContinuousScan
 
+# MINOR:
+# todo: allow delete key to be used for deletion
+# todo: allow record selection with arrow keys
+# todo: Allow option to disable image saving
+
 TEST_IMAGE_PATH = '../tests/test-images/'
 TEST_OUTPUT_PATH = '../../test-output/'
 STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
 STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
-
 
 
 class BarcodeReader(QtGui.QMainWindow):
@@ -163,10 +167,8 @@ class BarcodeReader(QtGui.QMainWindow):
 
             # If the scan was successful, store the results
             if plate.scan_ok:
-                id = str(uuid.uuid4())
-                filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
-                cv_image.save_as(filename)
-                self._store_scan_results(plate, filename, id)
+                self._store.add_record(plate.type, plate.barcodes(), cv_image)
+                self._load_store_records(self._store)
 
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
@@ -174,14 +176,6 @@ class BarcodeReader(QtGui.QMainWindow):
         store = Store.from_file(STORE_FILE)
         scanner = ContinuousScan()
         scanner.stream_webcam(store, camera_num=0)
-
-    def _store_scan_results(self, plate, imagepath, id):
-        """ Persist the results of a scan in the store.
-        """
-        barcodes = plate.barcodes()
-        record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=imagepath, timestamp=0, id=id)
-        store = Store.from_file(STORE_FILE)
-        store.add_record(record)
 
     def _load_store_records(self, store):
         """ Populate the record table with all of the records in the store.

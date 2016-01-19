@@ -10,15 +10,7 @@ from plate import EMPTY_SLOT_SYMBOL
 from datamatrix import BAD_DATA_SYMBOL
 
 
-# MAJOR:
-# TODO: Refresh page on delete or new barcode
-# TODO: Auto-select the first record on opening the window
-
-# MINOR:
-# todo: allow delete key to be used for deletion
-# todo: allow record selection with arrow keys
-# todo: Allow option to disable image saving
-
+STORE_IMAGE_PATH = '../../test-output/img_store/'
 
 
 class Record:
@@ -144,9 +136,15 @@ class Store:
         """
         return self.records[index] if self.records else None
 
-    def add_record(self, record):
+    def add_record(self, plate_type, barcodes, cv_img):
         """ Add a new record to the store and save to the backing file.
         """
+        id = str(uuid.uuid4())
+        filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+        cv_img.save_as(filename)
+
+        record = Record(plate_type=plate_type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
+
         self.records.append(record)
         self._process_change()
 

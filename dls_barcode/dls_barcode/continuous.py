@@ -116,13 +116,7 @@ def store_record(plate, cv_image, store):
     Overlay(plate).draw_on_image(cv_image.img)
     plate.crop_image(cv_image)
 
-    id = str(uuid.uuid4())
-    STORE_IMAGE_PATH = '../../test-output/img_store/'
-    filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
-    cv_image.save_as(filename)
-    barcodes = plate.barcodes()
-    record = Record(plate_type=plate.type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
-    store.add_record(record)
+    store.add_record(plate.type, plate.barcodes(), cv_image)
 
 
 class ContinuousScan:
