@@ -7,7 +7,7 @@ import os
 # SHOULD BE OPEN CV 2.4.10
 
 # Directory storing all of the test images
-TEST_IMG_DIR = './test-images/'
+TEST_IMG_DIR = './test-resources/'
 
 # Barcode data that is expected to appear in each image of the pucks
 PUCK1_CODES = [['DF150E0101', 1], ['DF150E0144', 3], ['DF150E0016', 4], ['DF150E0156', 7], ['DF150E0129', 8],
@@ -31,7 +31,7 @@ TEST_CASES = []
 TEST_CASES.extend(puck1_testcases)
 #TEST_CASES.extend(puck2_testcases)
 
-TEST_OUTPUT_PATH = '../../test-output/'
+TEST_OUTPUT_PATH = '../test-output/'
 STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
 STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
 STORE = Store.from_file(STORE_FILE)
