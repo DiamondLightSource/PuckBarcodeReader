@@ -10,6 +10,7 @@ from plate import Scanner
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
+EXIT_KEY = 'q'
 
 MAX_SAMPLE_RATE = 10.0
 INTERVAL = 1.0 / MAX_SAMPLE_RATE
@@ -46,7 +47,7 @@ def capture_worker(camera_num, task_queue, overlay_queue):
         # Display the frame on the screen
         small = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)
         cv2.imshow('Barcode Scanner', small)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
             task_queue.put(None)
             break
 
@@ -106,13 +107,12 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
 
 
 class ContinuousScan():
-
     def __init__(self, result_queue):
         self.task_queue = multiprocessing.Queue()
         self.overlay_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
-    def stream_webcam(self, camera_num):
+    def stream_camera(self, camera_num):
         capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue,))
         scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue, self.result_queue,))
 
@@ -139,3 +139,7 @@ class Overlay:
 
             if self._text is not None:
                 cv_image.draw_text(SCANNED_TAG, cv_image.center(), CvImage.GREEN, centered=True, scale=4, thickness=3)
+
+        # Displays a message on the screen telling the user how to exit
+        exit_msg = "Press '{}' to exit scanning mode".format(EXIT_KEY)
+        cv_image.draw_text(exit_msg, (20, 50), CvImage.BLACK, centered=False, scale=1, thickness=2)

@@ -199,7 +199,7 @@ class BarcodeReader(QtGui.QMainWindow):
         """ Starts the process of continuous capture from an attached camera.
         """
         scanner = ContinuousScan(self._new_scan_queue)
-        scanner.stream_webcam(camera_num=0)
+        scanner.stream_camera(camera_num=0)
 
     def _load_store_records(self, store):
         """ Populate the record table with all of the records in the store.

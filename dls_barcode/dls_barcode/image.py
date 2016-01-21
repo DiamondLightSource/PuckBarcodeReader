@@ -6,6 +6,8 @@ class CvImage:
     """Class that wraps an OpenCV image and can perform various
     operations on it that are useful in this program.
     """
+    WHITE = (255,255,255)
+    BLACK = (0,0,0)
 
     BLUE = (255,0,0)
     RED = (0,0,255)
