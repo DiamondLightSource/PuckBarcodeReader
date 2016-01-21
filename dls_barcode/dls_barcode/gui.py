@@ -48,6 +48,7 @@ class BarcodeReader(QtGui.QMainWindow):
         self._recordTable = None
         self._barcodeTable = None
         self._imageFrame = None
+        self.paste_action = None
 
         self._init_ui()
         self._load_store_records(self._store)
@@ -67,6 +68,13 @@ class BarcodeReader(QtGui.QMainWindow):
             # Store scan results and display in GUI
             self._store.add_record(plate.type, plate.barcodes(), cv_image)
             self._load_store_records(self._store)
+
+            # Paste the scan results to the cursor
+            paste_results = self.paste_action.isChecked()
+            if paste_results:
+                pyperclip.copy('\n'.join(plate.barcodes()))
+                spam = pyperclip.paste()
+
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
@@ -147,25 +155,31 @@ class BarcodeReader(QtGui.QMainWindow):
     def init_menu_bar(self):
         """Create and populate the menu bar.
         """
-        # load action
+        # Load from file action
         load_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From File...', self)
         load_action.setShortcut('Ctrl+L')
         load_action.setStatusTip('Load image from file to scan')
         load_action.triggered.connect(self._scan_file_image)
 
-        # preview action
+        # Continuous scanner mode
         live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
         live_action.setStatusTip('Capture continuously from camera')
         live_action.triggered.connect(self._start_live_capture)
 
-        # exit action
+        # Exit Application
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(QtGui.qApp.quit)
 
-        # create menu bar
+        # Paste to cursor
+        self.paste_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Paste Results To Cursor', self, checkable=True)
+        self.paste_action.setShortcut('Ctrl+Q')
+        self.paste_action.setStatusTip('Immediately paste new scan results to the cursor')
+        self.paste_action.isCheckable()
+
+        # Create menu bar
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('&File')
         file_menu.addAction(exit_action)
@@ -173,6 +187,9 @@ class BarcodeReader(QtGui.QMainWindow):
         scan_menu = menu_bar.addMenu('&Scan')
         scan_menu.addAction(load_action)
         scan_menu.addAction(live_action)
+
+        option_menu = menu_bar.addMenu('&Option')
+        option_menu.addAction(self.paste_action)
 
     def _scan_file_image(self):
         """Load and process (scan for barcodes) an image from file
@@ -194,6 +211,7 @@ class BarcodeReader(QtGui.QMainWindow):
             if plate.scan_ok:
                 self._store.add_record(plate.type, plate.barcodes(), cv_image)
                 self._load_store_records(self._store)
+
 
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.

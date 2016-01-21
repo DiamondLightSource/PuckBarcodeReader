@@ -3,12 +3,8 @@ import datetime
 import uuid
 import os
 
-import pyperclip
-from PyQt4 import QtGui, QtCore
-
 from plate import EMPTY_SLOT_SYMBOL
 from datamatrix import BAD_DATA_SYMBOL
-
 
 STORE_IMAGE_PATH = '../../test-output/img_store/'
 
