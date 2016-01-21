@@ -18,8 +18,8 @@ from continuous import ContinuousScan
 # todo: allow record selection with arrow keys
 # todo: Allow option to disable image saving
 
-TEST_IMAGE_PATH = '../tests/test-images/'
-TEST_OUTPUT_PATH = '../../test-output/'
+TEST_IMAGE_PATH = '../tests/test-resources/'
+TEST_OUTPUT_PATH = '../test-output/'
 STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
 STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
 
@@ -202,15 +202,19 @@ class BarcodeReader(QtGui.QMainWindow):
             # Scan the image for barcodes
             plate = Scanner.ScanImage(gray_image)
 
-            # Highlight the image and display it
-            plate.draw_plate(cv_image, CvImage.BLUE)
-            plate.draw_pins(cv_image)
-            plate.crop_image(cv_image)
+            print plate.barcodes()
 
             # If the scan was successful, store the results
             if plate.scan_ok:
+                # Highlight the image and display it
+                plate.draw_plate(cv_image, CvImage.BLUE)
+                plate.draw_pins(cv_image)
+                plate.crop_image(cv_image)
+
                 self._store.add_record(plate.type, plate.barcodes(), cv_image)
                 self._load_store_records(self._store)
+            else:
+                QtGui.QMessageBox.warning(self, "Scanning Error", "No barcodes could be found in the specified image")
 
 
     def _start_live_capture(self):
