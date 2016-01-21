@@ -202,8 +202,6 @@ class BarcodeReader(QtGui.QMainWindow):
             # Scan the image for barcodes
             plate = Scanner.ScanImage(gray_image)
 
-            print plate.barcodes()
-
             # If the scan was successful, store the results
             if plate.scan_ok:
                 # Highlight the image and display it
@@ -214,7 +212,8 @@ class BarcodeReader(QtGui.QMainWindow):
                 self._store.add_record(plate.type, plate.barcodes(), cv_image)
                 self._load_store_records(self._store)
             else:
-                QtGui.QMessageBox.warning(self, "Scanning Error", "No barcodes could be found in the specified image")
+                QtGui.QMessageBox.warning(self, "Scanning Error",
+                    "There was a problem scanning the image.\n" + plate.error)
 
 
     def _start_live_capture(self):
