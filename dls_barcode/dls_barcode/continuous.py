@@ -12,24 +12,29 @@ Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
 EXIT_KEY = 'q'
 
+# Maximum frame rate to sample at (rate will be further limited by speed at which frames can be processed)
 MAX_SAMPLE_RATE = 10.0
 INTERVAL = 1.0 / MAX_SAMPLE_RATE
 
 
 def capture_worker(camera_num, task_queue, overlay_queue):
-    # Initialize camera
+    """ Function used as the main loop of a worker process. Continuously captures images from
+    the camera and puts them on a queue to be processed. The images are displayed (as video)
+    to the user with appropriate highlights (taken from the overlay queue) which indicate the
+    position of scanned and unscanned barcodes.
+    """
+    # Initialize the camera
     cap = cv2.VideoCapture(camera_num)
     cap.set(3,1920)
     cap.set(4,1080)
 
     # Store the latest image overlay which highlights the puck
-    lastest_overlay = Overlay(None)
+    latest_overlay = Overlay(None)
     last_time = time.time()
 
     while(True):
         # Capture the next frame from the camera
         _, frame = cap.read()
-        CvImage.CurrentWebcamFrame = frame
 
         # Add the frame to the task queue to be processed
         if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
@@ -39,14 +44,16 @@ def capture_worker(camera_num, task_queue, overlay_queue):
 
         # Get the latest overlay
         while not overlay_queue.empty():
-            lastest_overlay = overlay_queue.get(False)
+            latest_overlay = overlay_queue.get(False)
 
         # Draw the overlay on the frame
-        lastest_overlay.draw_on_image(frame)
+        latest_overlay.draw_on_image(frame)
 
         # Display the frame on the screen
         small = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)
         cv2.imshow('Barcode Scanner', small)
+
+        # Exit scanning mode if the exit key is pressed
         if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
             task_queue.put(None)
             break
@@ -57,10 +64,14 @@ def capture_worker(camera_num, task_queue, overlay_queue):
 
 
 def scanner_worker(task_queue, overlay_queue, result_queue):
-    # Keep the record of the last scan which was at least partially successful (aligned geometry
-    # and some barcodes scanned). For each new frame, we can attempt to merge the results with
-    # this previous plates so that we don't have to re-read any of the previously captured barcodes
-    # (because this is a relatively expensive operation).
+    """ Function used as the main loop of a worker process. Scan images for barcodes,
+    combining partial scans until a full puck is reached.
+
+    Keep the record of the last scan which was at least partially successful (aligned geometry
+    and some barcodes scanned). For each new frame, we can attempt to merge the results with
+    this previous plates so that we don't have to re-read any of the previously captured barcodes
+    (because this is a relatively expensive operation).
+    """
     last_plate = None
     last_full_plate = None
     frame_contains_barcodes = False
@@ -103,35 +114,53 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
                 if frame_contains_barcodes:
                     overlay_queue.put(Overlay(plate))
 
-        print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
+        #print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
 
 
-class ContinuousScan():
+class ContinuousScan:
+    """ Manages the continuous scanning mode which takes a live feed from an attached camera and
+    periodically scans the images for plates and barcodes. Multiple partial images are combined
+    together until enough barcodes are scanned to make a full plate.
+
+    Two separate processes are spawned, one to handle capturing and displaying images from the camera,
+    and the other to handle processing (scanning) of those images.
+    """
     def __init__(self, result_queue):
+        """ The task queue is used to store a queue of captured frames to be processed; the overlay
+        queue stores Overlay objects which are drawn on to the image displayed to the user to highlight
+        certain features; and the result queue is used to pass on the results of successful scans to
+        the object that created the ContinuousScan.
+        """
         self.task_queue = multiprocessing.Queue()
         self.overlay_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
     def stream_camera(self, camera_num):
+        """ Spawn the processes that will continuously capture and process images from the camera.
+        """
         capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue,))
         scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue, self.result_queue,))
 
-    def kill_workers(self):
-        self.task_queue.put(None)
-        self.task_queue.put(None)
-
 
 class Overlay:
+    """ Represents an overlay that can be drawn on top of an image. Used to draw the outline of a plate
+    on the continuous scanner camera image to highlight to the user which barcodes on th plate have
+    already been scanned. Also writes status text messages. Has an specified lifetime so that the overlay
+    will only be displayed for a short time.
+    """
     def __init__(self, plate, text=None, lifetime=1):
         self._plate = plate
         self._text = text
         self._lifetime = lifetime
-
         self._start_time = time.time()
 
     def draw_on_image(self, image):
+        """ Draw the plate highlight and status message to the image as well as a message that tells the
+        user how to close the continuous scanning window.
+        """
         cv_image = CvImage(filename=None, img=image)
 
+        # If the overlay has not expired, draw on the plate highlight and/or the status message
         if (time.time() - self._start_time) < self._lifetime:
             if self._plate is not None:
                 self._plate.draw_plate(cv_image, CvImage.BLUE)
