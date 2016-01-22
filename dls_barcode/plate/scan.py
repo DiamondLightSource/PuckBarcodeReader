@@ -1,4 +1,5 @@
 from __future__ import division
+
 from dls_barcode.datamatrix import DataMatrix
 from .unipuck import Unipuck
 from .plate import Plate, Slot

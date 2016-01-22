@@ -3,8 +3,9 @@ import cv2
 
 import time
 import multiprocessing
-from image import CvImage
-from plate import Scanner
+
+from .image import CvImage
+from dls_barcode.plate import Scanner
 
 # TODO: Handle non-full pucks
 

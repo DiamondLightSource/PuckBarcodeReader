@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys
 import os
 import winsound
@@ -7,11 +5,11 @@ import multiprocessing
 import pyperclip
 from PyQt4 import QtGui, QtCore
 
-from image import CvImage
-from plate import Scanner, EMPTY_SLOT_SYMBOL
-from store import Store, Record
-from datamatrix import BAD_DATA_SYMBOL
-from continuous import ContinuousScan
+from dls_barcode.plate import Scanner, EMPTY_SLOT_SYMBOL
+from dls_barcode.datamatrix import BAD_DATA_SYMBOL
+from dls_barcode.image import CvImage
+from dls_barcode.store import Store
+from dls_barcode.continuous import ContinuousScan
 
 # MINOR:
 # todo: allow delete key to be used for deletion
