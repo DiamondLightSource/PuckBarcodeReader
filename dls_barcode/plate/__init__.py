@@ -1,2 +1,2 @@
-from scan import Scanner
-from plate import EMPTY_SLOT_SYMBOL
+from .scan import Scanner
+from .plate import EMPTY_SLOT_SYMBOL

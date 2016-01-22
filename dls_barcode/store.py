@@ -3,8 +3,8 @@ import datetime
 import uuid
 import os
 
-from plate import EMPTY_SLOT_SYMBOL
-from datamatrix import BAD_DATA_SYMBOL
+from dls_barcode.plate import EMPTY_SLOT_SYMBOL
+from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 
 STORE_IMAGE_PATH = '../test-output/img_store/'
 

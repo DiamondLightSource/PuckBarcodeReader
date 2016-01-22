@@ -83,7 +83,7 @@ class Reader():
         first order).
         """
         return (((x, y),
-                 map(int, corner + ((2*x+1+offset[0])*(base_vec) + (2*y+1+offset[1])*side_vec)/(2*n)))
+                 list(map(int, corner + ((2*x+1+offset[0])*(base_vec) + (2*y+1+offset[1])*side_vec)/(2*n))))
                     for x, y in itertools.product(range(n), range(n)))
 
     def _window_average(self, arr, point, side_length=3):

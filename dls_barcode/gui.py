@@ -62,7 +62,7 @@ class BarcodeReader(QtGui.QMainWindow):
             plate, cv_image = self._new_scan_queue.get(False)
 
             # Notify user of new scan
-            print "Scan Recorded"
+            print("Scan Recorded")
             winsound.Beep(4000, 500) # frequency, duration
 
             # Store scan results and display in GUI

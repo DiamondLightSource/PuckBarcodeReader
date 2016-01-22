@@ -1,6 +1,6 @@
 import math
 from operator import add
-from functools import partial
+from functools import partial, reduce
 import numpy as np
 import cv2
 
@@ -108,6 +108,7 @@ class Locator():
             _, raw_contours, _ = cv2.findContours(arr.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         else:
             raw_contours, _ = cv2.findContours(arr.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
         return [cv2.approxPolyDP(rc, 6.0, True).reshape(-1, 2) for rc in raw_contours]
 
     def _convert_to_edge_set(self, vertex_list):
@@ -170,7 +171,8 @@ class Locator():
     def _longest_pair_indices(self, edges):
         """Return the indices of the two longest edges in a list of edges.
         """
-        return np.asarray(map(_length, edges)).argsort()[-2:][::-1]
+        lengths = list(map(_length, edges))
+        return np.asarray(lengths).argsort()[-2:][::-1]
 
     def _get_finder_pattern(self, edges):
         """Return information about the "main" corner from a set of edges.

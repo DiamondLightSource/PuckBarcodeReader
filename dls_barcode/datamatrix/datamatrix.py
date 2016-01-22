@@ -1,6 +1,7 @@
-from locate import Locator
-from read import Reader
-from decode import Decoder
+from .locate import Locator
+from .read import Reader
+from .decode import Decoder
+from .reedsolo import ReedSolomonError
 
 # We predict the location of the center of each square (pixel/bit) in the datamatrix based on the
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
@@ -70,7 +71,7 @@ class DataMatrix:
                     self._damaged_symbol = False
                     self._error_message = ""
                     break
-                except Exception as ex:
+                except (ReedSolomonError, Exception) as ex:
                     self._read_ok = False
                     self._damaged_symbol = True
                     self._error_message = ex.message
@@ -89,4 +90,4 @@ class DataMatrix:
         """
         locator = Locator()
         finder_patterns = locator.locate_datamatrices(grayscale_img)
-        return finder_patterns
+        return list(finder_patterns)

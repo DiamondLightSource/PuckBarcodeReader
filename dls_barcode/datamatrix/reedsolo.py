@@ -37,7 +37,8 @@ DATAMATRIX_PRIMITIVE = 0x12d
 DATAMATRIX_GEN_BASE = 1
 
 class ReedSolomonError(Exception):
-    pass
+    def __init__(self, message):
+        self.message = message
 
 def RSDecode(encoded_msg, num_data_bytes):
     return rs_correct_msg(encoded_msg, num_data_bytes)

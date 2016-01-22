@@ -9,7 +9,7 @@ It is based on a similar component in the Java zxing library (see http://git.io/
 from functools import partial
 import numpy as np
 
-from reedsolo import RSDecode
+from .reedsolo import RSDecode
 
 # The number of bytes in the data matrix that encode data (the remaining bytes are for error correction)
 NUM_DATA_BYTES = 8

@@ -56,7 +56,7 @@ class CvImage:
     def draw_text(self, text, position, color, centered=False, scale=1.5, thickness=3):
         if centered:
             textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
-            position = (position[0]-textsize[0]/2, position[1]+textsize[1]/2)
+            position = (int(position[0]-textsize[0]/2), int(position[1]+textsize[1]/2))
         cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, color=color, thickness=thickness)
 
     def to_grayscale(self):
@@ -104,18 +104,5 @@ class CvImage:
             return [center, radius]
         else:
             return None
-
-
-    @staticmethod
-    def capture_image_from_camera():
-        camera_port = 0
-        camera = cv2.VideoCapture(camera_port)
-
-        ramp_frames = 60
-        for i in range(ramp_frames):
-            ret, frame = camera.read()
-        print "Taking image"
-        ret, frame = camera.read()
-        return CvImage(None, frame)
 
 
