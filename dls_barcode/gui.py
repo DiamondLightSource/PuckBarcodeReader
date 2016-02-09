@@ -9,6 +9,7 @@ from dls_barcode.plate import Scanner, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 from dls_barcode.image import CvImage
 from dls_barcode.store import Store
+from dls_barcode.options import Options, OptionsDialog
 from dls_barcode.continuous import ContinuousScan
 
 # MINOR:
@@ -25,14 +26,12 @@ STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
 class BarcodeReader(QtGui.QMainWindow):
 
     COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
-    COLOR_RED = QtGui.QColor(255, 0, 0, 128)
-    COLOR_GREEN = QtGui.QColor(0, 255, 0, 128)
-    COLOR_ORANGE = QtGui.QColor(255,128,0, 128)
 
     def __init__(self):
         super(BarcodeReader, self).__init__()
 
         self._store = Store.from_file(STORE_FILE)
+        self._options = Options()
 
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
@@ -177,6 +176,12 @@ class BarcodeReader(QtGui.QMainWindow):
         self.paste_action.setStatusTip('Immediately paste new scan results to the cursor')
         self.paste_action.isCheckable()
 
+        # Open options dialog
+        options_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Options', self)
+        options_action.setShortcut('Ctrl+O')
+        options_action.setStatusTip('Open Options Dialog')
+        options_action.triggered.connect(self._open_options_dialog)
+
         # Create menu bar
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('&File')
@@ -188,6 +193,11 @@ class BarcodeReader(QtGui.QMainWindow):
 
         option_menu = menu_bar.addMenu('&Option')
         option_menu.addAction(self.paste_action)
+        option_menu.addAction(options_action)
+
+    def _open_options_dialog(self):
+        dialog = OptionsDialog(self._options)
+        dialog.exec_()
 
     def _scan_file_image(self):
         """Load and process (scan for barcodes) an image from file
@@ -231,9 +241,9 @@ class BarcodeReader(QtGui.QMainWindow):
                      record.num_invalid_barcodes, record.num_empty_slots]
 
             if record.num_valid_barcodes == record.num_slots:
-                color = self.COLOR_GREEN
+                color = self._qt_color(CvImage.GREEN)
             else:
-                color = self.COLOR_RED
+                color = self._qt_color(CvImage.RED)
 
 
             for m, item in enumerate(items):
@@ -271,11 +281,11 @@ class BarcodeReader(QtGui.QMainWindow):
         for index, barcode in enumerate(barcodes):
             # Select appropriate background color
             if barcode == BAD_DATA_SYMBOL:
-                color = self.COLOR_ORANGE
+                color = self._qt_color(CvImage.ORANGE)
             elif barcode == EMPTY_SLOT_SYMBOL:
-                color = self.COLOR_RED
+                color = self._qt_color(CvImage.RED)
             else:
-                color = self.COLOR_GREEN
+                color = self._qt_color(CvImage.GREEN)
 
             # Set table item
             barcode = QtGui.QTableWidgetItem(barcode)
@@ -336,6 +346,9 @@ class BarcodeReader(QtGui.QMainWindow):
         if barcodes:
             pyperclip.copy('\n'.join(barcodes))
         #spam = pyperclip.paste()
+
+    def _qt_color(self, cv_color):
+        return QtGui.QColor(cv_color[2], cv_color[1], cv_color[0], 128)
 
 
 def main():

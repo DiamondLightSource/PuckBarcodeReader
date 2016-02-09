@@ -49,7 +49,7 @@ class Reader():
         except IndexError:
             bitArray = None
 
-        return bitArray if self._sanity_check(bitArray) else None
+        return bitArray if bitArray != None and self._sanity_check(bitArray) else None
 
     def _smart_minimum(self, data):
         """Return the index half-way between the outermost minimising indices.
