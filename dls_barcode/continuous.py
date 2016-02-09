@@ -18,6 +18,31 @@ MAX_SAMPLE_RATE = 10.0
 INTERVAL = 1.0 / MAX_SAMPLE_RATE
 
 
+class ContinuousScan:
+    """ Manages the continuous scanning mode which takes a live feed from an attached camera and
+    periodically scans the images for plates and barcodes. Multiple partial images are combined
+    together until enough barcodes are scanned to make a full plate.
+
+    Two separate processes are spawned, one to handle capturing and displaying images from the camera,
+    and the other to handle processing (scanning) of those images.
+    """
+    def __init__(self, result_queue):
+        """ The task queue is used to store a queue of captured frames to be processed; the overlay
+        queue stores Overlay objects which are drawn on to the image displayed to the user to highlight
+        certain features; and the result queue is used to pass on the results of successful scans to
+        the object that created the ContinuousScan.
+        """
+        self.task_queue = multiprocessing.Queue()
+        self.overlay_queue = multiprocessing.Queue()
+        self.result_queue = result_queue
+
+    def stream_camera(self, camera_num):
+        """ Spawn the processes that will continuously capture and process images from the camera.
+        """
+        capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue,))
+        scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue, self.result_queue,))
+
+
 def capture_worker(camera_num, task_queue, overlay_queue):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
@@ -116,31 +141,6 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
                     overlay_queue.put(Overlay(plate))
 
         #print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
-
-
-class ContinuousScan:
-    """ Manages the continuous scanning mode which takes a live feed from an attached camera and
-    periodically scans the images for plates and barcodes. Multiple partial images are combined
-    together until enough barcodes are scanned to make a full plate.
-
-    Two separate processes are spawned, one to handle capturing and displaying images from the camera,
-    and the other to handle processing (scanning) of those images.
-    """
-    def __init__(self, result_queue):
-        """ The task queue is used to store a queue of captured frames to be processed; the overlay
-        queue stores Overlay objects which are drawn on to the image displayed to the user to highlight
-        certain features; and the result queue is used to pass on the results of successful scans to
-        the object that created the ContinuousScan.
-        """
-        self.task_queue = multiprocessing.Queue()
-        self.overlay_queue = multiprocessing.Queue()
-        self.result_queue = result_queue
-
-    def stream_camera(self, camera_num):
-        """ Spawn the processes that will continuously capture and process images from the camera.
-        """
-        capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue,))
-        scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue, self.result_queue,))
 
 
 class Overlay:
