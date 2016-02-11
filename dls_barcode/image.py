@@ -1,29 +1,39 @@
 import cv2
+import math
 import numpy as np
 
 class CvImage:
     """Class that wraps an OpenCV image and can perform various
     operations on it that are useful in this program.
     """
-    WHITE = (255,255,255)
-    BLACK = (0,0,0)
+    WHITE = (255,255,255,255)
+    BLACK = (0,0,0,255)
 
-    BLUE = (255,0,0)
-    RED = (0,0,255)
-    GREEN = (0,255,0)
+    BLUE = (255,0,0,255)
+    RED = (0,0,255,255)
+    GREEN = (0,255,0,255)
 
-    YELLOW = (0,255,255)
-    CYAN = (255,255,0)
-    MAGENTA = (255,0,255)
+    YELLOW = (0,255,255,255)
+    CYAN = (255,255,0,255)
+    MAGENTA = (255,0,255,255)
 
-    ORANGE = (0,128,255)
-    PURPLE = (255,0,128)
+    ORANGE = (0,128,255,255)
+    PURPLE = (255,0,128,255)
 
     def __init__(self, filename, img=None):
         if filename is not None:
-            self.img = cv2.imread(filename)
+            self.img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
         else:
             self.img = img
+
+        size = self.img.shape
+        self.width = size[1]
+        self.height = size[0]
+
+        if len(size) > 2:
+            self.channels = size[2]
+        else:
+            self.channels = 1
 
     def save_as(self, filename):
         """ Write an OpenCV image to file """
@@ -35,28 +45,39 @@ class CvImage:
         cv2.waitKey(0)
 
     def center(self):
-        height, width = self.img.shape[:2]
-        return (width/2, height/2)
+        """ Return the center point of the image. """
+        return (self.width/2, self.height/2)
 
-    def draw_rectangle(self, roi, color, thickness=2):
-        top_left = tuple([roi[0], roi[1]])
-        bottom_right = tuple([roi[2], roi[3]])
-        cv2.rectangle(self.img, top_left, bottom_right, color, thickness=thickness)
+    def rescale(self, factor):
+        """ Return a new Image that is a version of this image, resized to the specified scale
+        """
+        scaled_size = (int(self.width * factor), int(self.height * factor))
+        return self.resize(scaled_size)
 
-    def draw_circle(self, center, radius, color, thickness=2):
-        cv2.circle(self.img, tuple(center), int(radius), color, thickness=thickness)
+    def resize(self, new_size):
+        """ Return a new Image that is a resized version of this one
+        """
+        resized_img = cv2.resize(self.img, new_size)
+        return CvImage(None, resized_img)
 
-    def draw_dot(self, center, color, thickness=5):
-        cv2.circle(self.img, tuple(center), radius=0, color=color, thickness=thickness)
+    def rotate(self, angle, center):
+        """ Rotate the image around the specified center. Note that this will
+        cut off any areas that are rotated out of the frame.
+        """
+        degrees = angle * 180 / math.pi
+        matrix = cv2.getRotationMatrix2D(center, degrees, 1.0)
 
-    def draw_line(self, p1, p2, color, thickness=2):
-        cv2.line(self.img, p1, p2, color, thickness=thickness)
+        rotated = cv2.warpAffine(self.img, matrix, (self.width, self.height))
+        return CvImage(None, rotated)
 
-    def draw_text(self, text, position, color, centered=False, scale=1.5, thickness=3):
-        if centered:
-            textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
-            position = (int(position[0]-textsize[0]/2), int(position[1]+textsize[1]/2))
-        cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, color=color, thickness=thickness)
+    def to_alpha(self):
+        """Convert the image into a 4 channel BGRA image
+        """
+        if self.channels != 4:
+            alpha = cv2.cvtColor(self.img, cv2.COLOR_BGR2BGRA)
+            return CvImage(filename=None, img=alpha)
+        else:
+            return CvImage(filename=None, img=self.img)
 
     def to_grayscale(self):
         """Convert the image to a grey image.
@@ -70,6 +91,30 @@ class CvImage:
 
     def crop_image(self, center, radius):
         self.img, _ = CvImage.sub_image(self.img, center, radius)
+
+
+    def draw_rectangle(self, roi, color, thickness=2):
+        top_left = tuple([roi[0], roi[1]])
+        bottom_right = tuple([roi[2], roi[3]])
+        cv2.rectangle(self.img, top_left, bottom_right, color, thickness=thickness)
+
+    def draw_circle(self, center, radius, color, thickness=2):
+        center = (int(center[0]), int(center[1]))
+        cv2.circle(self.img, tuple(center), int(radius), color, thickness=thickness)
+
+    def draw_dot(self, center, color, thickness=5):
+        center = (int(center[0]), int(center[1]))
+        cv2.circle(self.img, tuple(center), radius=0, color=color, thickness=thickness)
+
+    def draw_line(self, p1, p2, color, thickness=2):
+        cv2.line(self.img, p1, p2, color, thickness=thickness)
+
+    def draw_text(self, text, position, color, centered=False, scale=1.5, thickness=3):
+        if centered:
+            textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
+            position = (int(position[0]-textsize[0]/2), int(position[1]+textsize[1]/2))
+        cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, color=color, thickness=thickness)
+
 
     @staticmethod
     def blank(width, height):
