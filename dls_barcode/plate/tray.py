@@ -3,6 +3,8 @@ import math
 from dls_barcode.datamatrix import DataMatrix
 from dls_barcode.plate.transform import Transform
 
+# TODO: Write appropriate functions in the Scanner and ContinuousScan classes that uses Tray
+
 # TODO: (possible) Allow for multiple unconnected networks of nodes that can be joined up later
 # TODO:     when some common nodes are found in a subsequent image
 

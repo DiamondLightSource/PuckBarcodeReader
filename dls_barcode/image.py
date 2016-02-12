@@ -95,6 +95,49 @@ class CvImage:
     def crop_image(self, center, radius):
         self.img, _ = CvImage.sub_image(self.img, center, radius)
 
+    def paste(self, src, xOff, yOff):
+        """ Paste the source image onto the target one at the specified position.
+        If any of the source is outside the bounds of this image, it will be
+        lost.
+        """
+        xOff, yOff = int(xOff), int(yOff)
+
+        # Overlap rectangle in target image coordinates
+        width, height = src.width, src.height
+        x1 = max(xOff, 0)
+        y1 = max(yOff, 0)
+        x2 = min(xOff+width, self.width)
+        y2 = min(yOff+height, self.height)
+
+        # Paste location is totally outside image
+        if x1 > x2 or y1 > y2:
+            return
+
+        # Overlap rectangle in source image coordinates
+        sx1 = x1 - xOff
+        sy1 = y1 - yOff
+        sx2 = x2 - xOff
+        sy2 = y2 - yOff
+
+        # Perform paste
+        target = self.img
+        source = src.img
+        ALPHA = 3
+
+        if self.channels == 4 and src.channels == 4:
+            # Use alpha blending
+            for c in range(0,3):
+                target[y1:y2, x1:x2, c] = source[sy1:sy2, sx1:sx2, c] * (source[sy1:sy2, sx1:sx2, ALPHA] / 255.0) \
+                                          + target[y1:y2, x1:x2, c] * (1.0 - source[sy1:sy2, sx1:sx2, ALPHA] / 255.0)
+
+            target[y1:y2, x1:x2, ALPHA] = np.full((y2-y1, x2-x1), 255, np.uint8)
+
+        else:
+            # No alpha blending
+            target[y1:y2, x1:x2] = src.img[sy1:sy2, sx1:sx2]
+
+
+
     def draw_rectangle(self, roi, color, thickness=2):
         """ Draw the specified rectangle on the image (in place) """
         top_left = self._format_point((roi[0], roi[1]))
