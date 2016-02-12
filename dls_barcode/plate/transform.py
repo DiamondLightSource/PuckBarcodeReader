@@ -1,6 +1,9 @@
 import math
 
 class Transform:
+    """ Represents a transformation on a 2D plane consisting of a translation,
+    rotation and scaling.
+    """
     def __init__(self, x, y, rot, zoom):
         self.x = x
         self.y = y
@@ -12,8 +15,8 @@ class Transform:
             .format(self.x, self.y, self.rot, self.zoom)
 
     def transform(self, point):
-        """ Transform the point by first rotating about the origin then
-        performing a translation
+        """ Transform the point by first rotating about the origin, zooming, then
+        performing a translation.
         """
         point_ = self._rotate(point, self.rot)
         point_ = self._zoom(point_, self.zoom)
@@ -30,6 +33,7 @@ class Transform:
 
     @staticmethod
     def _rotate(point, a):
+        """ Rotate the point about the origin (0,0) """
         x = point[0]
         y = point[1]
         cos = math.cos(a)
@@ -40,10 +44,12 @@ class Transform:
 
     @staticmethod
     def _zoom(point, scale):
+        """ Transform the point by zooming in on the origin (0,0) """
         return (point[0]*scale, point[1]*scale)
 
     @staticmethod
     def _translate(point, offset):
+        """ Translate the point by the specified amount """
         return (point[0] + offset[0], point[1] + offset[1])
 
     @staticmethod
@@ -51,9 +57,10 @@ class Transform:
         """ Calculate the transform (rotate then zoom then translate) that
         maps the line AB to the line A'B'.
         """
-        # determine zoom
+        # Calculate zoom as the ratio of the lengths of the lines
         scale = distance(A_, B_) / distance(A, B)
 
+        # Calculate rotation as the difference in the angle from the x axis of the two lines
         old_v_ab = vec_minus(B, A)
         old_angle_AB = angle_from_xaxis(old_v_ab)
 
@@ -63,6 +70,7 @@ class Transform:
         rotation_angle = new_angle_AB-old_angle_AB
         if rotation_angle < 0: rotation_angle = 2 * math.pi + rotation_angle
 
+        # Rotate and zoom point A, then calculate the transwlation that maps it to A_
         rotated = Transform._rotate(A, rotation_angle)
         zoomed = Transform._zoom(rotated, scale)
         offset = vec_minus(A_, zoomed)
@@ -71,17 +79,18 @@ class Transform:
         return transform
 
 
-
-
 def distance(a, b):
+    """ Calculate the Euclidean distance between the two points """
     return math.hypot(a[0] - b[0], a[1] - b[1])
 
 
 def vec_minus(b, a):
+    """ Subtract vector a from vector b"""
     return (b[0]-a[0], b[1]-a[1])
 
 
 def angle_from_xaxis(v):
+    """ Calculate the angle between the x axis and the vector """
     angle = math.atan2(v[1], v[0])
     return angle if angle >= 0 else (2*math.pi + angle)
 
