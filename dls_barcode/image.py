@@ -73,6 +73,22 @@ class CvImage:
         rotated = cv2.warpAffine(self.img, matrix, (self.width, self.height))
         return CvImage(None, rotated)
 
+    def rotate_no_clip(self, angle):
+        """Rotate the image about its center point, but expand the frame of the image
+        so that the whole rotated shape will be visible without any being cropped.
+        """
+        # Calculate the size the expanded image needs to be to contain rotated image
+        x, y = self.width, self.height
+        w = abs(x*math.cos(angle)) + abs(y*math.sin(angle))
+        h = abs(x*math.sin(angle)) + abs(y*math.cos(angle))
+
+        # Paste the image into a larger frame and rotate
+        img = CvImage.blank(w, h, 4, 0)
+        img.paste(self, w/2-x/2, h/2-y/2)
+        rotated = img.rotate(angle, (w/2,h/2))
+
+        return rotated
+
     def to_alpha(self):
         """Convert the image into a 4 channel BGRA image
         """
@@ -135,8 +151,6 @@ class CvImage:
         else:
             # No alpha blending
             target[y1:y2, x1:x2] = src.img[sy1:sy2, sx1:sx2]
-
-
 
     def draw_rectangle(self, roi, color, thickness=2):
         """ Draw the specified rectangle on the image (in place) """
