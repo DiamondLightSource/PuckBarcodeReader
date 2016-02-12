@@ -35,6 +35,9 @@ class CvImage:
         else:
             self.channels = 1
 
+        # All draw requests will be offset by this amount
+        self.draw_offset = (0,0)
+
     def save_as(self, filename):
         """ Write an OpenCV image to file """
         cv2.imwrite(filename, self.img)
@@ -92,33 +95,47 @@ class CvImage:
     def crop_image(self, center, radius):
         self.img, _ = CvImage.sub_image(self.img, center, radius)
 
-
     def draw_rectangle(self, roi, color, thickness=2):
-        top_left = tuple([roi[0], roi[1]])
-        bottom_right = tuple([roi[2], roi[3]])
+        """ Draw the specified rectangle on the image (in place) """
+        top_left = self._format_point((roi[0], roi[1]))
+        bottom_right = self._format_point((roi[2], roi[3]))
         cv2.rectangle(self.img, top_left, bottom_right, color, thickness=thickness)
 
     def draw_circle(self, center, radius, color, thickness=2):
-        center = (int(center[0]), int(center[1]))
-        cv2.circle(self.img, tuple(center), int(radius), color, thickness=thickness)
+        """ Draw the specified circle on the image (in place) """
+        center = self._format_point(center)
+        cv2.circle(self.img, center, int(radius), color, thickness=thickness)
 
     def draw_dot(self, center, color, thickness=5):
-        center = (int(center[0]), int(center[1]))
+        """ Draw the specified dot on the image (in place) """
+        center = self._format_point(center)
         cv2.circle(self.img, tuple(center), radius=0, color=color, thickness=thickness)
 
     def draw_line(self, p1, p2, color, thickness=2):
+        """ Draw the specified line on the image (in place) """
+        p1 = self._format_point(p1)
+        p2 = self._format_point(p2)
         cv2.line(self.img, p1, p2, color, thickness=thickness)
 
     def draw_text(self, text, position, color, centered=False, scale=1.5, thickness=3):
+        """ Draw the specified text on the image (in place) """
         if centered:
             textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
             position = (int(position[0]-textsize[0]/2), int(position[1]+textsize[1]/2))
+        position = self._format_point(position)
         cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, color=color, thickness=thickness)
+
+    def _format_point(self, point):
+        """ Offset the point and ensure the coordinates are integers
+        """
+        return (int(point[0]+self.draw_offset[0]), int(point[1]+self.draw_offset[1]))
 
 
     @staticmethod
-    def blank(width, height):
-        blank_image = np.zeros((height,width,3), np.uint8)
+    def blank(width, height, channels=3, value=0):
+        """ Return a new empty image of the specified size.
+        """
+        blank_image = np.full((height, width, channels), value, np.uint8)
         return CvImage(filename=None, img=blank_image)
 
     @staticmethod
