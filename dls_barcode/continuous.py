@@ -1,6 +1,7 @@
 from pkg_resources import require;  require('numpy')
 import cv2
 
+import winsound
 import time
 import multiprocessing
 
@@ -138,6 +139,8 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
                     last_full_plate = plate
 
                 if frame_contains_barcodes:
+                    frequency = int(10000 * ((plate.num_slots -plate.num_valid_barcodes) / plate.num_slots)) + 37
+                    winsound.Beep(frequency, 200) # frequency, duration
                     overlay_queue.put(Overlay(plate))
 
         #print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
