@@ -191,9 +191,9 @@ class BarcodeReader(QtGui.QMainWindow):
         scan_menu.addAction(load_action)
         scan_menu.addAction(live_action)
 
-        option_menu = menu_bar.addMenu('&Option')
-        option_menu.addAction(self.paste_action)
-        option_menu.addAction(options_action)
+        #option_menu = menu_bar.addMenu('&Option')
+        #option_menu.addAction(self.paste_action)
+        #option_menu.addAction(options_action)
 
     def _open_options_dialog(self):
         dialog = OptionsDialog(self._options)

@@ -1,6 +1,10 @@
-Python 3.4 Instructions
-=======================
-* Install the appropriate version of python by downloading the windows binary installer from:
+Using the Source Code - Windows
+===============================
+This application is written in Python (v3.4) and was developed under Windows but should be portable to other platforms.
+
+The following steps will help you prepare an appropriate python environment to run this program. Run the file 'gui.py' to launch the prgoram.
+
+* Install the appropriate version of Python by downloading the windows binary installer from:
     <https://www.python.org/downloads/release/python-344/>
 
 * Install numpy:

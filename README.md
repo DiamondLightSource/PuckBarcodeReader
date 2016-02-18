@@ -5,10 +5,16 @@ This document is intended as an introduction for developers who are interested i
 
 Contents
 --------
-* Background and Description of Problem
 * Using the Source Code
+* Background and Description of Problem
 * [Data Matrix](docs/datamatrix.md)
 * [Implementation Details](docs/implementation.md)
+
+Using the Source Code
+---------------------
+This application is written in Python (v3) and was developed under Windows but should be portable to other platforms.
+ 
+Please see the [Setup Instructions](docs/SETUP.md) for details of how to prepare your environment to run this source code.
 
 Background and Description of Problem
 -------------------------------------
@@ -32,9 +38,3 @@ The proposed solution to this problem is to create an application that can take 
 
 This repository contains an implementation of this solution.
 
-
-Using the Source Code
----------------------
-This application is written in Python (v3) and was developed under Windows but should be portable to other platforms.
- 
-Please see the [Setup Instructions](docs/SETUP.md) for details of how to prepare your environment to run this source code.
