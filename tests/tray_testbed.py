@@ -23,20 +23,44 @@ def stitch(tray_img, fragment_img, tray):
     trans = tray.frame_transform
     print(trans)
 
-    # Get raw image
-    image = fragment_img.img
-
     # Resize image
     scaled = fragment_img.rescale(1/trans.zoom)
 
     # Rotate Image
     angle = trans.rot
-    center = ((trans.x/trans.zoom),(trans.y/trans.zoom))
-    rotated = scaled.rotate(angle, center)
+
+    if FREE_ROTATION:
+        rotated = scaled.rotate_no_clip(angle)
+
+        '''
+        image_center = (trans.x/trans.zoom+scaled.width/2, trans.y/trans.zoom+scaled.height/2)
+        trans_image_center = Transform._rotate(image_center, trans.rot)
+        rot_offset = (trans_image_center[0]-rotated.width/2, trans_image_center[1]-rotated.height/2)
+        x = IMG_OFFSET - rot_offset[0]
+        y = IMG_OFFSET - rot_offset[1]
+        '''
+
+        # I think these two lines are correct
+        off = (scaled.width/2-(trans.x/trans.zoom), scaled.height/2-(trans.y/trans.zoom))
+        rot = Transform._rotate(off, trans.rot)
+
+        # Still very slightly off compared to the other image
+        offX = -(trans.x/trans.zoom) - (rot[0]-off[0]) - (rotated.width-scaled.width) / 2
+        offY = -(trans.y/trans.zoom) - (rot[1]-off[1]) - (rotated.height-scaled.height) / 2
+
+
+        x = IMG_OFFSET + offX
+        y = IMG_OFFSET + offY
+        print("off: {}, rot: {}, offX: {}, offY: {}".format(off,rot,offX,offY))
+
+    else:
+        center = ((trans.x/trans.zoom),(trans.y/trans.zoom))
+        rotated = scaled.rotate(angle, center)
+        x = IMG_OFFSET - (trans.x / trans.zoom)
+        y = IMG_OFFSET - (trans.y / trans.zoom)
+
 
     # Paste the transformed image in the correct location on the tray image
-    x = IMG_OFFSET - ((trans.x) / trans.zoom)
-    y = IMG_OFFSET - ((trans.y) / trans.zoom)
     tray_img.paste(rotated, x, y)
 
     return rotated
@@ -46,12 +70,12 @@ def stitch(tray_img, fragment_img, tray):
 files_in = ['../test-images/tray_synth2_' + str(i) +'.png' for i in range(1,5)]
 files_out = ['../test-output/tray-stitch_' + str(i) +'.png' for i in range(1,5)]
 file_stitch = '../test-output/tray-stitch_aggregate.png'
-file_rot_test = '../test-output/rot_test.png'
 
 
 tray = Tray()
-total_img = CvImage.blank(3000, 3000, 4, 255)
-IMG_OFFSET = 500
+total_img = CvImage.blank(1500, 1500, 4, 255)
+IMG_OFFSET = 100
+FREE_ROTATION = True
 
 for i in range(4):
     # Read image
@@ -75,4 +99,5 @@ for i in range(4):
 # Draw the barcode locations on the image and save to file
 tray.frame_transform = Transform(IMG_OFFSET, IMG_OFFSET, 0, 1)
 tray.draw_highlights(total_img, CvImage.RED)
+total_img.draw_dot((IMG_OFFSET,IMG_OFFSET), CvImage.RED, thickness=10)
 total_img.save_as(file_stitch)
