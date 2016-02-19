@@ -22,7 +22,7 @@ from dls_barcode.continuous import ContinuousScan
 TEST_IMAGE_PATH = '../tests/test-resources/'
 TEST_OUTPUT_PATH = '../test-output/'
 STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
-STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
+STORE_FILE = TEST_OUTPUT_PATH + 'store.txt'
 
 
 class BarcodeReader(QtGui.QMainWindow):
@@ -32,6 +32,13 @@ class BarcodeReader(QtGui.QMainWindow):
     def __init__(self):
         super(BarcodeReader, self).__init__()
 
+        # Create directories if missing
+        if not os.path.exists(TEST_OUTPUT_PATH):
+            os.makedirs(TEST_OUTPUT_PATH)
+        if not os.path.exists(STORE_IMAGE_PATH):
+            os.makedirs(STORE_IMAGE_PATH)
+
+        # Read the store from file
         self._store = Store.from_file(STORE_FILE)
         self._options = Options()
 
