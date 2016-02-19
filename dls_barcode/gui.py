@@ -7,7 +7,7 @@ from PyQt4 import QtGui, QtCore
 
 sys.path.append("..")
 
-from dls_barcode.plate import Scanner, EMPTY_SLOT_SYMBOL
+from dls_barcode.plate import Scanner, NOT_FOUND_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 from dls_barcode.image import CvImage
 from dls_barcode.store import Store
@@ -291,7 +291,7 @@ class BarcodeReader(QtGui.QMainWindow):
             # Select appropriate background color
             if barcode == BAD_DATA_SYMBOL:
                 color = self._qt_color(CvImage.ORANGE)
-            elif barcode == EMPTY_SLOT_SYMBOL:
+            elif barcode == NOT_FOUND_SLOT_SYMBOL:
                 color = self._qt_color(CvImage.RED)
             else:
                 color = self._qt_color(CvImage.GREEN)
