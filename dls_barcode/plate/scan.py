@@ -1,8 +1,10 @@
 from __future__ import division
+import numpy as np
 
 from dls_barcode.datamatrix import DataMatrix
 from .unipuck import Unipuck
 from .plate import Plate, Slot
+from dls_barcode.image import CvImage
 
 from pkg_resources import require;  require('numpy')
 
@@ -30,7 +32,9 @@ class Scanner:
         else:
             barcodes = []
 
-        return Plate(barcodes, geometry, plate_type)
+        plate = Plate(barcodes, geometry, plate_type)
+        Scanner._label_empty_slots(gray_img, plate, finder_patterns)
+        return plate
 
     @staticmethod
     def ScanImageContinuous(gray_img, previous_plate):
@@ -119,6 +123,35 @@ class Scanner:
             raise Exception("Unrecognised Sample Plate Type")
 
         return geometry
+
+    @staticmethod
+    def _label_empty_slots(image, plate, finder_patterns, brightness_ratio=5):
+        """ Determine if any of the slots in the plate which dont contain barcodes are actually empty
+        (i.e. dont contain a pin). If this is the case then mark them as such. If this is not the case
+        then it probably means that the slot contains a pin but the locator algorithm was not able to
+        locate the finder pattern.
+
+        This is achieved by examining the average brightness of the slots that we know contain finder
+        patterns, and comparing this with the slots that we think are empty. If the slots without an
+        identified pin are much less bright than the average then we can infer that they are indeed
+        empty (do not contain a pin).
+        """
+        # Calculate the average brightness of the barcodes
+        pin_brights = []
+        for fp in finder_patterns:
+            brightness = CvImage.calculate_brightness(image, fp.center, fp.radius/2)
+            pin_brights.append(brightness)
+        avg_brightness = np.mean(pin_brights)
+
+        fp_radius = np.mean([fp.radius for fp in finder_patterns])
+
+        for i, p in enumerate(plate._geometry._template_centers):
+            slot = plate.slots[i]
+            if not slot.contains_barcode():
+                brightness = CvImage.calculate_brightness(image, p, fp_radius/2)
+                if brightness < avg_brightness / brightness_ratio:
+                    slot._empty = True
+                    print("Empty - {}".format(i+1))
 
 
 

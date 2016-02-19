@@ -34,7 +34,7 @@ class Plate():
 
     def _sort_slots(self):
         self.slots.sort(key=lambda slot: slot.number)
-        self.num_empty_slots = len([slot for slot in self.slots if not slot.contains_pin()])
+        self.num_empty_slots = len([slot for slot in self.slots if not slot.contains_barcode()])
         self.num_valid_barcodes = len([slot for slot in self.slots if slot.contains_valid_barcode()])
 
     def barcodes(self):
@@ -47,7 +47,7 @@ class Plate():
 
     def draw_barcodes(self, cvimg, ok_color, bad_color):
         for slot in self.slots:
-            if slot.contains_pin():
+            if slot.contains_barcode():
                 slot.barcode.draw(cvimg, ok_color, bad_color)
 
     def draw_plate(self, cvimg, color):
@@ -61,6 +61,8 @@ class Plate():
                 color = CvImage.ORANGE
             elif slot.contains_valid_barcode():
                 color = CvImage.GREEN
+            elif slot.is_empty():
+                color = CvImage.GREY
             else:
                 color = CvImage.RED
             self._geometry.draw_pin_highlight(cvimg, color, i+1)
@@ -116,31 +118,38 @@ class Plate():
 class Slot:
     """ Represents a single pin slot in a sample holder.
     """
-    def __init__(self, number, barcode):
+    def __init__(self, number, barcode, is_empty=False):
         self.number = number
         self.barcode = barcode
+        self._empty = is_empty
 
-    def contains_pin(self):
+    def is_empty(self):
+        """ Returns true if it has been detected that the slot is empty (does
+        not contain a pin).
+        """
+        return self._empty
+
+    def contains_barcode(self):
         """ Returns True if the slot contains a pin (regardless of whether
         the barcode is valid)
         """
-        return self.barcode is not None
+        return not self.is_empty() and self.barcode is not None
 
     def contains_valid_barcode(self):
         """ Returns true if the slot contains a pin with a valid barcode
         """
-        return self.contains_pin() and self.barcode.is_valid()
+        return self.contains_barcode() and self.barcode.is_valid()
 
     def contains_unreadable_barcode(self):
         """ Returns true if the slot contains a pin with an unreadable barcode
         """
-        return self.contains_pin() and self.barcode.is_unreadable()
+        return self.contains_barcode() and self.barcode.is_unreadable()
 
     def get_barcode(self):
         """ Gets a string representation of the barcode dat; returns an empty
         string if slot is empty
         """
-        if self.contains_pin():
+        if self.contains_barcode():
             return self.barcode.data()
         else:
             return EMPTY_SLOT_SYMBOL

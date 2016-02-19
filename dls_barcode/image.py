@@ -1,5 +1,6 @@
 import cv2
 import math
+import itertools
 import numpy as np
 
 class CvImage:
@@ -8,6 +9,7 @@ class CvImage:
     """
     WHITE = (255,255,255,255)
     BLACK = (0,0,0,255)
+    GREY = (128,128,128,255)
 
     BLUE = (255,0,0,255)
     RED = (0,0,255,255)
@@ -222,5 +224,18 @@ class CvImage:
             return [center, radius]
         else:
             return None
+
+    @staticmethod
+    def calculate_brightness(img, point, side_length):
+        """Return the average brightness over a small region surrounding a point.
+        """
+        sum = 0
+        side = int(side_length)
+        for i, j in itertools.product(
+                range(-(side//2), (side//2)+1),
+                range(-(side//2), (side//2)+1)):
+            sum += img[point[1] + i, point[0] + j]
+        return int(sum/(side*side))
+
 
 
