@@ -3,7 +3,7 @@ import datetime
 import uuid
 import os
 
-from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL
+from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 
 STORE_IMAGE_PATH = '../test-output/img_store/'
@@ -58,9 +58,11 @@ class Record:
 
         # Counts of numbers slots and barcodes
         self.num_slots = len(barcodes)
-        self.num_empty_slots = len([b for b in barcodes if b == NOT_FOUND_SLOT_SYMBOL])
+        self.num_empty_slots = len([b for b in barcodes if b == EMPTY_SLOT_SYMBOL])
+        self.num_unread_slots = len([b for b in barcodes if b == NOT_FOUND_SLOT_SYMBOL])
         self.num_invalid_barcodes = len([b for b in barcodes if b==BAD_DATA_SYMBOL])
-        self.num_valid_barcodes = self.num_slots - self.num_empty_slots - self.num_invalid_barcodes
+        self.num_valid_barcodes = self.num_slots - self.num_unread_slots \
+                                  - self.num_invalid_barcodes - self.num_empty_slots
 
 
     @staticmethod

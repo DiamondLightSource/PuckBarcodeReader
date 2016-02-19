@@ -12,7 +12,7 @@ from .reedsolo import ReedSolomonError
 wiggle_offsets = [[0,0]]
 
 # Data value that is returned if the barcode cannot be read for whatever reason
-BAD_DATA_SYMBOL = "XXXXXXXXXX"
+BAD_DATA_SYMBOL = "-CANT-READ-"
 
 class DataMatrix:
     def __init__(self, finder_pattern, gray_img):

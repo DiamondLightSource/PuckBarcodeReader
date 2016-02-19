@@ -151,7 +151,6 @@ class Scanner:
                 brightness = CvImage.calculate_brightness(image, p, fp_radius/2)
                 if brightness < avg_brightness / brightness_ratio:
                     slot._empty = True
-                    print("Empty - {}".format(i+1))
 
 
 

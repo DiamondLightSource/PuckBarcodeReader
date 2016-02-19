@@ -1,7 +1,8 @@
 
 # TODO: check if two barcodes have the same pin slot number
 
-NOT_FOUND_SLOT_SYMBOL = ''
+EMPTY_SLOT_SYMBOL = "----EMPTY----"
+NOT_FOUND_SLOT_SYMBOL = '-CANT-FIND-'
 
 class Plate():
     """ Represents a sample holder plate.
@@ -113,7 +114,6 @@ class Plate():
         self._sort_slots()
 
 
-
 class Slot:
     """ Represents a single pin slot in a sample holder.
     """
@@ -150,5 +150,7 @@ class Slot:
         """
         if self.contains_barcode():
             return self.barcode.data()
+        elif self.is_empty():
+            return EMPTY_SLOT_SYMBOL
         else:
             return NOT_FOUND_SLOT_SYMBOL

@@ -7,7 +7,7 @@ from PyQt4 import QtGui, QtCore
 
 sys.path.append("..")
 
-from dls_barcode.plate import Scanner, NOT_FOUND_SLOT_SYMBOL
+from dls_barcode.plate import Scanner, NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 from dls_barcode.image import CvImage
 from dls_barcode.store import Store
@@ -247,9 +247,9 @@ class BarcodeReader(QtGui.QMainWindow):
 
         for n, record in enumerate(store.records):
             items = [record.date, record.time, record.plate_type, record.num_valid_barcodes,
-                     record.num_invalid_barcodes, record.num_empty_slots]
+                     record.num_invalid_barcodes+record.num_unread_slots, record.num_empty_slots]
 
-            if record.num_valid_barcodes == record.num_slots:
+            if (record.num_valid_barcodes + record.num_empty_slots) == record.num_slots:
                 color = self._qt_color(CvImage.GREEN)
             else:
                 color = self._qt_color(CvImage.RED)
@@ -293,6 +293,8 @@ class BarcodeReader(QtGui.QMainWindow):
                 color = self._qt_color(CvImage.ORANGE)
             elif barcode == NOT_FOUND_SLOT_SYMBOL:
                 color = self._qt_color(CvImage.RED)
+            elif barcode == EMPTY_SLOT_SYMBOL:
+                color = self._qt_color(CvImage.GREY)
             else:
                 color = self._qt_color(CvImage.GREEN)
 

@@ -32,7 +32,7 @@ TEST_CASES.extend(puck1_testcases)
 #TEST_CASES.extend(puck2_testcases)
 
 TEST_OUTPUT_PATH = '../test-output/'
-STORE_FILE = TEST_OUTPUT_PATH + 'demo_store.txt'
+STORE_FILE = TEST_OUTPUT_PATH + 'store.txt'
 STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
 STORE = Store.from_file(STORE_FILE)
 
