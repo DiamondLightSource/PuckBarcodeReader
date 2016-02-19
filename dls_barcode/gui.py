@@ -5,6 +5,8 @@ import multiprocessing
 import pyperclip
 from PyQt4 import QtGui, QtCore
 
+sys.path.append("..")
+
 from dls_barcode.plate import Scanner, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 from dls_barcode.image import CvImage
