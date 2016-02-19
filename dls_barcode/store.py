@@ -45,6 +45,9 @@ class Record:
         self.barcodes = barcodes
         self.id = str(id)
 
+        self.filtered_barcodes = [bc if (bc != EMPTY_SLOT_SYMBOL and bc != NOT_FOUND_SLOT_SYMBOL
+            and bc != BAD_DATA_SYMBOL) else '' for bc in barcodes]
+
         # Generate timestamp and uid if none are supplied
         if timestamp==0:
             self.timestamp = time.time()

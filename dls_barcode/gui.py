@@ -352,7 +352,7 @@ class BarcodeReader(QtGui.QMainWindow):
         barcodes = []
         for row in rows:
             record = self._store.get_record(row)
-            barcodes.extend(record.barcodes)
+            barcodes.extend(record.filtered_barcodes)
 
         if barcodes:
             pyperclip.copy('\n'.join(barcodes))

@@ -34,7 +34,7 @@ class Plate():
 
     def _sort_slots(self):
         self.slots.sort(key=lambda slot: slot.number)
-        self.num_empty_slots = len([slot for slot in self.slots if not slot.contains_barcode()])
+        self.num_empty_slots =  len([slot for slot in self.slots if slot.is_empty()])
         self.num_valid_barcodes = len([slot for slot in self.slots if slot.contains_valid_barcode()])
 
     def barcodes(self):
@@ -43,7 +43,7 @@ class Plate():
         return [slot.get_barcode() for slot in self.slots]
 
     def is_full_valid(self):
-        return self.num_valid_barcodes == self.num_slots
+        return (self.num_valid_barcodes + self.num_empty_slots) == self.num_slots
 
     def draw_barcodes(self, cvimg, ok_color, bad_color):
         for slot in self.slots:

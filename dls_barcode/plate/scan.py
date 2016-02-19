@@ -29,11 +29,11 @@ class Scanner:
         # Read all the barcodes (data matricies) in the image
         if geometry.is_aligned():
             barcodes = [DataMatrix(fp, gray_img) for fp in finder_patterns]
+            plate = Plate(barcodes, geometry, plate_type)
+            Scanner._label_empty_slots(gray_img, plate, finder_patterns)
         else:
-            barcodes = []
+            plate = Plate([], geometry, plate_type)
 
-        plate = Plate(barcodes, geometry, plate_type)
-        Scanner._label_empty_slots(gray_img, plate, finder_patterns)
         return plate
 
     @staticmethod
@@ -88,6 +88,7 @@ class Scanner:
             any_valid_barcodes = any([dm.is_valid() for dm in barcodes])
             if any_valid_barcodes:
                 new_plate = Plate(barcodes, geometry, plate_type)
+                Scanner._label_empty_slots(gray_img, new_plate, finder_patterns)
                 return new_plate, any_valid_barcodes
             else:
                 return previous_plate, any_valid_barcodes
@@ -102,6 +103,7 @@ class Scanner:
                     dm = DataMatrix(new_finders[i], gray_img)
                     plate.slots[i] = Slot(i+1, dm)
             plate._sort_slots()
+            Scanner._label_empty_slots(gray_img, plate, finder_patterns)
             return plate, True
 
 
@@ -141,7 +143,11 @@ class Scanner:
         for fp in finder_patterns:
             brightness = CvImage.calculate_brightness(image, fp.center, fp.radius/2)
             pin_brights.append(brightness)
-        avg_brightness = np.mean(pin_brights)
+
+        if any(pin_brights):
+            avg_brightness = np.mean(pin_brights)
+        else:
+            return
 
         fp_radius = np.mean([fp.radius for fp in finder_patterns])
 
@@ -151,11 +157,5 @@ class Scanner:
                 brightness = CvImage.calculate_brightness(image, p, fp_radius/2)
                 if brightness < avg_brightness / brightness_ratio:
                     slot._empty = True
-
-
-
-
-
-
-
-
+                else:
+                    slot._empty = False
