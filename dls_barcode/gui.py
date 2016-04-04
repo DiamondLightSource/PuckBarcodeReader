@@ -81,7 +81,6 @@ class BarcodeReader(QtGui.QMainWindow):
                 pyperclip.copy('\n'.join(plate.barcodes()))
                 spam = pyperclip.paste()
 
-
     def _init_ui(self):
         """ Create the basic elements of the user interface.
         """
@@ -232,7 +231,6 @@ class BarcodeReader(QtGui.QMainWindow):
                 QtGui.QMessageBox.warning(self, "Scanning Error",
                     "There was a problem scanning the image.\n" + plate.error)
 
-
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
@@ -263,6 +261,10 @@ class BarcodeReader(QtGui.QMainWindow):
 
         self._barcodeTable.clearContents()
         self._display_record_image(None)
+
+        # Display the first (most recent) record
+        self._recordTable.setCurrentCell(0,0)
+        self._record_selected()
 
     def _record_selected(self):
         """ Called when a row is selected, causes details of the selected record to be
@@ -319,7 +321,6 @@ class BarcodeReader(QtGui.QMainWindow):
                                                      QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         else:
             self._imageFrame.setText("Image Not Found")
-
 
     def _delete_selected_records(self):
         """ Called when the 'Delete' button is pressed. Deletes all of the selected records
