@@ -7,15 +7,13 @@ from .reedsolo import ReedSolomonError
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
 # reading doesn't produce sensible results, we try to offset the estimated location of the squares
 # and try again.
-#w = 0.25
-#wiggle_offsets = [[0,0],[w, w],[-w,-w],[w,-w],[-w,w]]
 wiggle_offsets = [[0,0]]
 
 # Data value that is returned if the barcode cannot be read for whatever reason
 BAD_DATA_SYMBOL = "-CANT-READ-"
 
 class DataMatrix:
-    def __init__(self, finder_pattern, gray_img):
+    def __init__(self, finder_pattern, gray_img, offsets=wiggle_offsets):
         """ Representation of a DataMatrix in an image.
         """
         self._finder_pattern = finder_pattern
@@ -23,6 +21,7 @@ class DataMatrix:
         self._error_message = ""
         self._read_ok = False
         self._damaged_symbol = False
+        self._offsets = offsets
 
         # Read the data contained in the barcode from the image
         self._read(gray_img)
@@ -58,7 +57,7 @@ class DataMatrix:
         decoder = Decoder()
 
         # Try a few different small offsets for the sample positions until we find one that works
-        for offset in wiggle_offsets:
+        for offset in self._offsets:
             # Read the bit array at the target location (with offset)
             bit_array = reader.read_bitarray(self._finder_pattern, offset, gray_image)
 
