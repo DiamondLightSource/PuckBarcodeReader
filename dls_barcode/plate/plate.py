@@ -27,7 +27,7 @@ class Plate():
                 self.slots[slot_num-1] = Slot(number=slot_num, barcode=bc)
         else:
             for i, bc in enumerate(barcodes):
-                self.slots[i] = Slot(i, bc)
+                self.slots[i] = Slot(i+1, bc)
 
         self._sort_slots()
 
@@ -120,13 +120,19 @@ class Slot:
     def __init__(self, number, barcode, is_empty=False):
         self.number = number
         self.barcode = barcode
-        self._empty = is_empty
+        self.empty = is_empty
 
     def is_empty(self):
         """ Returns true if it has been detected that the slot is empty (does
         not contain a pin).
         """
-        return self._empty
+        return self.empty
+
+    def result_not_found(self):
+        """ Returns true if we have not yet got a reading from the slot, i.e. we
+        haven't seen a barcode, nor confirmed that the slot is empty.
+        """
+        return not self.is_empty() and not self.contains_barcode()
 
     def contains_barcode(self):
         """ Returns True if the slot contains a pin (regardless of whether
