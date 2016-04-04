@@ -94,8 +94,11 @@ class CvImage:
     def to_alpha(self):
         """Convert the image into a 4 channel BGRA image
         """
-        if self.channels != 4:
+        if self.channels == 3:
             alpha = cv2.cvtColor(self.img, cv2.COLOR_BGR2BGRA)
+            return CvImage(filename=None, img=alpha)
+        elif self.channels == 1:
+            alpha = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGRA)
             return CvImage(filename=None, img=alpha)
         else:
             return CvImage(filename=None, img=self.img)
