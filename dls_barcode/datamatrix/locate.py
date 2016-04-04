@@ -36,6 +36,11 @@ class FinderPattern():
     def bounds(self):
         return (self.center, self.radius)
 
+    def draw_to_image(self, image):
+        from dls_barcode.image import CvImage
+        image.draw_line(self.c1, self.c2, CvImage.GREEN, 1)
+        image.draw_line(self.c3, self.c1, CvImage.GREEN, 1)
+
 
 class Locator():
     """ Utility for finding the positions of all of the datamatrix barcodes
@@ -47,20 +52,24 @@ class Locator():
         self._median_radius_tolerance = 0.3
         self._median_radius = 0
 
-    def locate_datamatrices(self, grayscale_image):
+    def locate_datamatrices(self, grayscale_image, single_search=False, median_radius=0):
         """Get the positions of (hopefully all) datamatrices within an image.
         """
 
         finder_patterns = []
 
+        if single_search:
+            C_values = [16,8,5,10,13,20]
+            C_values = [16,8,4]
+            self._median_radius = median_radius
+        else:
+            C_values = [16,8]
+
         # Use a couple of different values of C as much more likely to locate the finder patterns
-        for C in [16,8]:
+        for C in C_values:
             # Perform a fairly generic morphological operation to make it easier to
             # find contours in general and datamatricies in particular.
             morphed_image = self._do_morph(grayscale_image, blocksize=35, C=C)
-
-            # TESTING
-            #cv2.imwrite("C:/PROJECTS_WORKSPACE/8815 Diamond/datamatrix/test-output/morph_test.jpg", morphed_image)
 
             # Find a bunch of contours in the image.
             contour_vertex_sets = self._get_contours(morphed_image)
@@ -76,6 +85,10 @@ class Locator():
 
             # Convert edge sets to FinderPattern objects
             fps = [self._get_finder_pattern(es) for es in edge_sets]
+
+            # If searching for barcodes on a single slot image, filter based on the supplied mean radius
+            if single_search:
+                fps = filter(self._filter_median_radius, fps)
 
             # check that this doesnt overlap with any previous finder patterns
             for fp in fps:
