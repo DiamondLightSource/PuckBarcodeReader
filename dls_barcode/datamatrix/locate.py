@@ -60,7 +60,7 @@ class Locator():
 
         if single_search:
             C_values = [16,8,5,10,13,20]
-            C_values = [16,8,4]
+            #C_values = [16,8,4]
             self._median_radius = median_radius
         else:
             C_values = [16,8]
@@ -89,6 +89,7 @@ class Locator():
             # If searching for barcodes on a single slot image, filter based on the supplied mean radius
             if single_search:
                 fps = filter(self._filter_median_radius, fps)
+                fps = filter(partial(self._filter_image_edges, shape=grayscale_image.shape), fps)
 
             # check that this doesnt overlap with any previous finder patterns
             for fp in fps:
@@ -180,6 +181,13 @@ class Locator():
         median = self._median_radius
         tolerance = self._median_radius_tolerance * median
         return (median - tolerance) < fp.radius < (median + tolerance)
+
+    def _filter_image_edges(self, fp, shape):
+        """Return true if the finder pattern isnt right along on of the edges of the image"""
+        #TODO: implement this
+        #print(shape[0], shape[1])
+        #print(fp.pack())
+        return True
 
     def _longest_pair_indices(self, edges):
         """Return the indices of the two longest edges in a list of edges.
