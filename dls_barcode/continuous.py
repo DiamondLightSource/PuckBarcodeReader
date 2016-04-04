@@ -174,5 +174,5 @@ class Overlay:
                 cv_image.draw_text(SCANNED_TAG, cv_image.center(), CvImage.GREEN, centered=True, scale=4, thickness=3)
 
         # Displays a message on the screen telling the user how to exit
-        exit_msg = "Press '{}' to exit scanning mode".format(EXIT_KEY)
+        exit_msg = "Press '{}' to exit".format(EXIT_KEY)
         cv_image.draw_text(exit_msg, (20, 50), CvImage.BLACK, centered=False, scale=1, thickness=2)

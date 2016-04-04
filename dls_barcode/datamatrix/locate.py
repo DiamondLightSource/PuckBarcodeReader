@@ -58,46 +58,50 @@ class Locator():
 
         finder_patterns = []
 
+        blocksize = 35
+
         if single_search:
-            C_values = [16,8,5,10,13,20]
-            #C_values = [16,8,4]
+            C_values = [16,8,4,20]
+            morphsizes = [3,2]
             self._median_radius = median_radius
         else:
             C_values = [16,8]
+            morphsizes = [3]
 
         # Use a couple of different values of C as much more likely to locate the finder patterns
-        for C in C_values:
-            # Perform a fairly generic morphological operation to make it easier to
-            # find contours in general and datamatricies in particular.
-            morphed_image = self._do_morph(grayscale_image, blocksize=35, C=C)
+        for ms in morphsizes:
+            for C in C_values:
+                # Perform a fairly generic morphological operation to make it easier to
+                # find contours in general and datamatricies in particular.
+                morphed_image = self._do_morph(grayscale_image, blocksize=blocksize, C=C, morphsize=ms)
 
-            # Find a bunch of contours in the image.
-            contour_vertex_sets = self._get_contours(morphed_image)
+                # Find a bunch of contours in the image.
+                contour_vertex_sets = self._get_contours(morphed_image)
 
-            # Convert lists of vertices to lists of edges (easier to work with).
-            edge_sets = map(self._convert_to_edge_set, contour_vertex_sets)
+                # Convert lists of vertices to lists of edges (easier to work with).
+                edge_sets = map(self._convert_to_edge_set, contour_vertex_sets)
 
-            # Discard all edge sets which probably aren't datamatrix perimeters.
-            edge_sets = filter(self._filter_non_trivial, edge_sets)
-            edge_sets = filter(self._filter_longest_adjacent, edge_sets)
-            edge_sets = filter(self._filter_longest_approx_orthogonal, edge_sets)
-            edge_sets = filter(self._filter_longest_similar_in_length, edge_sets)
+                # Discard all edge sets which probably aren't datamatrix perimeters.
+                edge_sets = filter(self._filter_non_trivial, edge_sets)
+                edge_sets = filter(self._filter_longest_adjacent, edge_sets)
+                edge_sets = filter(self._filter_longest_approx_orthogonal, edge_sets)
+                edge_sets = filter(self._filter_longest_similar_in_length, edge_sets)
 
-            # Convert edge sets to FinderPattern objects
-            fps = [self._get_finder_pattern(es) for es in edge_sets]
+                # Convert edge sets to FinderPattern objects
+                fps = [self._get_finder_pattern(es) for es in edge_sets]
 
-            # If searching for barcodes on a single slot image, filter based on the supplied mean radius
-            if single_search:
-                fps = filter(self._filter_median_radius, fps)
-                fps = filter(partial(self._filter_image_edges, shape=grayscale_image.shape), fps)
+                # If searching for barcodes on a single slot image, filter based on the supplied mean radius
+                if single_search:
+                    fps = filter(self._filter_median_radius, fps)
+                    fps = filter(partial(self._filter_image_edges, shape=grayscale_image.shape), fps)
 
-            # check that this doesnt overlap with any previous finder patterns
-            for fp in fps:
-                in_radius = False
-                for ex in finder_patterns:
-                    in_radius = in_radius | ex.point_in_radius(fp.center)
-                if not in_radius:
-                    finder_patterns.append(fp)
+                # check that this doesnt overlap with any previous finder patterns
+                for fp in fps:
+                    in_radius = False
+                    for ex in finder_patterns:
+                        in_radius = in_radius | ex.point_in_radius(fp.center)
+                    if not in_radius:
+                        finder_patterns.append(fp)
 
         # Filter out any which differ significantly in size
         if len(finder_patterns) > 3:
@@ -106,11 +110,11 @@ class Locator():
 
         return finder_patterns
 
-    def _do_morph(self, gray, blocksize, C):
+    def _do_morph(self, gray, blocksize, C, morphsize):
         """Perform a generic morphological operation on an image.
         """
         thresh = cv2.adaptiveThreshold(gray, 255.0, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, blocksize, C)
-        element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        element = cv2.getStructuringElement(cv2.MORPH_RECT, (morphsize, morphsize))
         return cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, element, iterations=1)
 
 
