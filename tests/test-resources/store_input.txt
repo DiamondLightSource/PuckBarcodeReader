@@ -1,2 +1,0 @@
-7a2ef97c-c605-4c39-a74e-969ab65f9a11;1452090715.06;C:\temp\image1.jpg;CPS_Puck;barcode1,,barcode2,,,,barcode3,
-999cd0e7-5205-44bd-8f46-cf3d272631f1;1452090715.06;C:\temp\image2.jpg;CPS_Puck;dsdfh,,,,hdghdgh,aqeth,jrysjsfj,
