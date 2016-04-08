@@ -1,11 +1,10 @@
 from __future__ import division
 
 import os
-from PyQt4 import QtGui
-from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout, QHBoxLayout, QWidget, QTableWidget
-from PyQt4.QtCore import Qt, QEvent
 
-from dls_barcode.image import CvImage
+from PyQt4 import QtGui
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout
 
 
 class ImageFrame(QGroupBox):

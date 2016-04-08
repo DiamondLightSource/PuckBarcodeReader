@@ -1,8 +1,9 @@
 import math
-from operator import add
 from functools import partial, reduce
-import numpy as np
+from operator import add
+
 import cv2
+import numpy as np
 
 OPENCV_MAJOR = cv2.__version__[0]
 
@@ -37,9 +38,9 @@ class FinderPattern():
         return (self.center, self.radius)
 
     def draw_to_image(self, image):
-        from dls_barcode.image import CvImage
-        image.draw_line(self.c1, self.c2, CvImage.GREEN, 1)
-        image.draw_line(self.c3, self.c1, CvImage.GREEN, 1)
+        from dls_barcode.util.image import Image
+        image.draw_line(self.c1, self.c2, Image.GREEN, 1)
+        image.draw_line(self.c3, self.c1, Image.GREEN, 1)
 
 
 class Locator():

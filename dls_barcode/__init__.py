@@ -1,7 +1,7 @@
 """Location, retrieval and reading of Data Matrix-style barcodes.
 """
-from dls_barcode.image import CvImage
 from dls_barcode.plate import Scanner
+from dls_barcode.util.image import Image
 
 # testing
 from dls_barcode.datamatrix.reedsolo import RSDecode, ReedSolomonError

@@ -3,7 +3,7 @@ import math
 import itertools
 import numpy as np
 
-class CvImage:
+class Image:
     """Class that wraps an OpenCV image and can perform various
     operations on it that are useful in this program.
     """
@@ -63,7 +63,7 @@ class CvImage:
         """ Return a new Image that is a resized version of this one
         """
         resized_img = cv2.resize(self.img, new_size)
-        return CvImage(None, resized_img)
+        return Image(None, resized_img)
 
     def rotate(self, angle, center):
         """ Rotate the image around the specified center. Note that this will
@@ -73,7 +73,7 @@ class CvImage:
         matrix = cv2.getRotationMatrix2D(center, degrees, 1.0)
 
         rotated = cv2.warpAffine(self.img, matrix, (self.width, self.height))
-        return CvImage(None, rotated)
+        return Image(None, rotated)
 
     def rotate_no_clip(self, angle):
         """Rotate the image about its center point, but expand the frame of the image
@@ -85,7 +85,7 @@ class CvImage:
         h = abs(x*math.sin(angle)) + abs(y*math.cos(angle))
 
         # Paste the image into a larger frame and rotate
-        img = CvImage.blank(w, h, 4, 0)
+        img = Image.blank(w, h, 4, 0)
         img.paste(self, w/2-x/2, h/2-y/2)
         rotated = img.rotate(angle, (w/2,h/2))
 
@@ -96,25 +96,25 @@ class CvImage:
         """
         if self.channels == 3:
             alpha = cv2.cvtColor(self.img, cv2.COLOR_BGR2BGRA)
-            return CvImage(filename=None, img=alpha)
+            return Image(filename=None, img=alpha)
         elif self.channels == 1:
             alpha = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGRA)
-            return CvImage(filename=None, img=alpha)
+            return Image(filename=None, img=alpha)
         else:
-            return CvImage(filename=None, img=self.img)
+            return Image(filename=None, img=self.img)
 
     def to_grayscale(self):
         """Convert the image to a grey image.
         """
         if len(self.img.shape) in (3, 4):
             gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
-            return CvImage(filename=None, img=gray)
+            return Image(filename=None, img=gray)
         else:
             assert len(self.img.shape) == 2
-            return CvImage(filename=None, img=self.img)
+            return Image(filename=None, img=self.img)
 
     def crop_image(self, center, radius):
-        self.img, _ = CvImage.sub_image(self.img, center, radius)
+        self.img, _ = Image.sub_image(self.img, center, radius)
 
     def paste(self, src, xOff, yOff):
         """ Paste the source image onto the target one at the specified position.
@@ -198,7 +198,7 @@ class CvImage:
         """ Return a new empty image of the specified size.
         """
         blank_image = np.full((height, width, channels), value, np.uint8)
-        return CvImage(filename=None, img=blank_image)
+        return Image(filename=None, img=blank_image)
 
     @staticmethod
     def sub_image(img, center, radius):

@@ -55,16 +55,16 @@ class Plate():
 
     def draw_pins(self, cvimg):
         #self._geometry.draw_pins(cvimg, color)
-        from dls_barcode import CvImage
+        from dls_barcode import Image
         for i, slot in enumerate(self.slots):
             if slot.contains_unreadable_barcode():
-                color = CvImage.ORANGE
+                color = Image.ORANGE
             elif slot.contains_valid_barcode():
-                color = CvImage.GREEN
+                color = Image.GREEN
             elif slot.is_empty():
-                color = CvImage.GREY
+                color = Image.GREY
             else:
-                color = CvImage.RED
+                color = Image.RED
             self._geometry.draw_pin_highlight(cvimg, color, i+1)
 
     def crop_image(self, cvimg):

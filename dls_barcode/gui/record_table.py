@@ -1,15 +1,15 @@
 from __future__ import division
 
 import os
+
 import pyperclip
-
 from PyQt4 import QtGui
-from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 
-from dls_barcode.image import CvImage
-from dls_barcode.gui.store import Store
 from dls_barcode.gui import STORE_FILE, STORE_IMAGE_PATH
+from dls_barcode.gui.store import Store
+from dls_barcode.util.image import Image
 
 # todo: allow delete key to be used for deletion
 # todo: allow record selection with arrow keys
@@ -92,9 +92,9 @@ class ScanRecordTable(QGroupBox):
                      record.num_invalid_barcodes+record.num_unread_slots, record.num_empty_slots]
 
             if (record.num_valid_barcodes + record.num_empty_slots) == record.num_slots:
-                color = self._qt_color(CvImage.GREEN)
+                color = self._qt_color(Image.GREEN)
             else:
-                color = self._qt_color(CvImage.RED)
+                color = self._qt_color(Image.RED)
 
 
             for m, item in enumerate(items):

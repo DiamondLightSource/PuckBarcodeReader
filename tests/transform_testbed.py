@@ -5,8 +5,8 @@ Code to test/demo the Transform class
 import math
 import random
 
-from dls_barcode.image import CvImage
-from dls_barcode.plate.transform import Transform
+from dls_barcode.util.image import Image
+from dls_barcode.util.transform import Transform
 
 IMG_CENTER = (500, 400)
 
@@ -23,8 +23,8 @@ def draw_axes(img, length):
     y_neg = (0, -length)
     y_pos = (0, length)
 
-    img.draw_line(y_neg, y_pos, CvImage.WHITE, 5)
-    img.draw_line(x_neg, x_pos, CvImage.WHITE, 5)
+    img.draw_line(y_neg, y_pos, Image.WHITE, 5)
+    img.draw_line(x_neg, x_pos, Image.WHITE, 5)
 
 
 def TRIANGLE_DEMO():
@@ -56,19 +56,19 @@ def TRIANGLE_DEMO():
         print("Zoom: {0:.2f}; {1:.2f}".format(scale, trans_calc.zoom))
 
         # Display on image
-        image = CvImage.blank(1000,800)
+        image = Image.blank(1000, 800)
         image.draw_offset = IMG_CENTER
         draw_axes(image, 300)
 
         # Draw original triangle
-        image.draw_line(A, B, CvImage.RED, 5)
-        image.draw_line(C, B, CvImage.RED, 5)
-        image.draw_line(A, C, CvImage.RED, 5)
+        image.draw_line(A, B, Image.RED, 5)
+        image.draw_line(C, B, Image.RED, 5)
+        image.draw_line(A, C, Image.RED, 5)
 
         #Draw transformed triangle
-        image.draw_line(A_, B_, CvImage.GREEN)
-        image.draw_line(A_, C_, CvImage.GREEN)
-        image.draw_line(C_, B_, CvImage.GREEN)
+        image.draw_line(A_, B_, Image.GREEN)
+        image.draw_line(A_, C_, Image.GREEN)
+        image.draw_line(C_, B_, Image.GREEN)
 
         # Check that the reverse transformation works properly
         A__ = transform.reverse(A_)
@@ -76,12 +76,12 @@ def TRIANGLE_DEMO():
         C__ = transform.reverse(C_)
 
         # Draw the reverse transformation - this should overlap the origianl triangle
-        image.draw_line(A__, B__, CvImage.GREEN, 1)
-        image.draw_line(A__, C__, CvImage.GREEN, 1)
-        image.draw_line(C__, B__, CvImage.GREEN, 1)
+        image.draw_line(A__, B__, Image.GREEN, 1)
+        image.draw_line(A__, C__, Image.GREEN, 1)
+        image.draw_line(C__, B__, Image.GREEN, 1)
 
         # Write the transformation on the image
-        image.draw_text(transform.__str__(), (-450, 350), CvImage.WHITE, centered=False, scale=0.5, thickness=1)
+        image.draw_text(transform.__str__(), (-450, 350), Image.WHITE, centered=False, scale=0.5, thickness=1)
 
         # Show the image
         image.popup()
@@ -107,18 +107,18 @@ def CIRCLES_DEMO():
         trs = Transform(delX, delY, angle, scale)
 
         # Display on image
-        image = CvImage.blank(1000,800)
+        image = Image.blank(1000, 800)
         image.draw_offset = IMG_CENTER
         draw_axes(image, 300)
 
         # Draw the circles and transformed circles on the image
         radius = 10
         for p in points:
-            image.draw_circle(p, radius, CvImage.RED)
-            image.draw_circle(trs.transform(p), radius*trs.zoom, CvImage.BLUE)
+            image.draw_circle(p, radius, Image.RED)
+            image.draw_circle(trs.transform(p), radius * trs.zoom, Image.BLUE)
 
         # Write the transformation on the image
-        image.draw_text(trs.__str__(), (-450, 350), CvImage.WHITE, centered=False, scale=0.5, thickness=1)
+        image.draw_text(trs.__str__(), (-450, 350), Image.WHITE, centered=False, scale=0.5, thickness=1)
 
         # Show the image
         image.popup()

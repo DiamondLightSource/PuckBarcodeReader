@@ -5,10 +5,8 @@ import winsound
 import time
 import multiprocessing
 
-from .image import CvImage
+from dls_barcode.util.image import Image
 from dls_barcode.plate import Scanner
-
-# TODO: Handle non-full pucks
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
@@ -19,7 +17,7 @@ MAX_SAMPLE_RATE = 10.0
 INTERVAL = 1.0 / MAX_SAMPLE_RATE
 
 
-class ContinuousScan:
+class CameraScanner:
     """ Manages the continuous scanning mode which takes a live feed from an attached camera and
     periodically scans the images for plates and barcodes. Multiple partial images are combined
     together until enough barcodes are scanned to make a full plate.
@@ -112,7 +110,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
         timer = time.time()
 
         # Make grayscale version of image
-        cv_image = CvImage(None, frame)
+        cv_image = Image(None, frame)
         gray_image = cv_image.to_grayscale().img
 
         # If we have an existing partial plate, merge the new plate with it and only try to read the
@@ -162,17 +160,17 @@ class Overlay:
         """ Draw the plate highlight and status message to the image as well as a message that tells the
         user how to close the continuous scanning window.
         """
-        cv_image = CvImage(filename=None, img=image)
+        cv_image = Image(filename=None, img=image)
 
         # If the overlay has not expired, draw on the plate highlight and/or the status message
         if (time.time() - self._start_time) < self._lifetime:
             if self._plate is not None:
-                self._plate.draw_plate(cv_image, CvImage.BLUE)
+                self._plate.draw_plate(cv_image, Image.BLUE)
                 self._plate.draw_pins(cv_image)
 
             if self._text is not None:
-                cv_image.draw_text(SCANNED_TAG, cv_image.center(), CvImage.GREEN, centered=True, scale=4, thickness=3)
+                cv_image.draw_text(SCANNED_TAG, cv_image.center(), Image.GREEN, centered=True, scale=4, thickness=3)
 
         # Displays a message on the screen telling the user how to exit
         exit_msg = "Press '{}' to exit".format(EXIT_KEY)
-        cv_image.draw_text(exit_msg, (20, 50), CvImage.BLACK, centered=False, scale=1, thickness=2)
+        cv_image.draw_text(exit_msg, (20, 50), Image.BLACK, centered=False, scale=1, thickness=2)

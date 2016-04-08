@@ -9,9 +9,9 @@ from PyQt4 import QtGui, QtCore
 sys.path.append("..")
 
 from dls_barcode.plate import Scanner
-from dls_barcode.image import CvImage
+from dls_barcode.util.image import Image
 from dls_barcode.gui.options import Options, OptionsDialog
-from dls_barcode.continuous import ContinuousScan
+from dls_barcode.camera_scanner import CameraScanner
 
 from dls_barcode.gui import ScanRecordTable, BarcodeTable, ImageFrame
 from dls_barcode.gui import TEST_IMAGE_PATH, TEST_OUTPUT_PATH
@@ -157,7 +157,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         """
         filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file', TEST_IMAGE_PATH))
         if filepath:
-            cv_image = CvImage(filepath)
+            cv_image = Image(filepath)
             gray_image = cv_image.to_grayscale().img
 
             # Scan the image for barcodes
@@ -166,7 +166,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             # If the scan was successful, store the results
             if plate.scan_ok:
                 # Highlight the image and display it
-                plate.draw_plate(cv_image, CvImage.BLUE)
+                plate.draw_plate(cv_image, Image.BLUE)
                 plate.draw_pins(cv_image)
                 plate.crop_image(cv_image)
 
@@ -178,7 +178,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        scanner = ContinuousScan(self._new_scan_queue)
+        scanner = CameraScanner(self._new_scan_queue)
         scanner.stream_camera(camera_num=0)
 
 

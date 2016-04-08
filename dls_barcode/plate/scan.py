@@ -1,12 +1,14 @@
 from __future__ import division
+
 import numpy as np
+from pkg_resources import require;
 
 from dls_barcode.datamatrix import DataMatrix, Locator
-from .unipuck import Unipuck
+from dls_barcode.util.image import Image
+from .geometry_unipuck import Unipuck
 from .plate import Plate, Slot
-from dls_barcode.image import CvImage
 
-from pkg_resources import require;  require('numpy')
+require('numpy')
 
 
 class Scanner:
@@ -144,7 +146,7 @@ class Scanner:
         for fp in finder_patterns:
             point_in_view = Scanner._image_contains_point(image, fp.center, radius=fp.radius/2)
             if point_in_view:
-                brightness = CvImage.calculate_brightness(image, fp.center, fp.radius/2)
+                brightness = Image.calculate_brightness(image, fp.center, fp.radius / 2)
                 pin_brights.append(brightness)
 
         if any(pin_brights):
@@ -163,7 +165,7 @@ class Scanner:
             if not slot.contains_barcode():
                 point_in_view = Scanner._image_contains_point(image, p, radius=fp_radius/2)
                 if point_in_view:
-                    brightness = CvImage.calculate_brightness(image, p, fp_radius/2)
+                    brightness = Image.calculate_brightness(image, p, fp_radius / 2)
                     if brightness < avg_brightness / brightness_ratio:
                         slot.empty = True
                     else:
@@ -171,8 +173,8 @@ class Scanner:
 
             # If still no result, do a more careful scan for finder patterns and a more careful read
             if slot.result_not_found() or slot.contains_unreadable_barcode():
-                slot_img, _ = CvImage.sub_image(image, p, fp_radius*2)
-                img = CvImage(filename=None, img=slot_img)
+                slot_img, _ = Image.sub_image(image, p, fp_radius * 2)
+                img = Image(filename=None, img=slot_img)
 
                 import time
                 filename = "../test-output/"

@@ -1,5 +1,5 @@
 #!/usr/bin/env dls-python
-from dls_barcode import CvImage, Scanner, Store, Record
+from dls_barcode import Image, Scanner, Store, Record
 import time
 import uuid
 import os
@@ -38,7 +38,7 @@ STORE = Store.from_file(STORE_FILE)
 
 
 def store_scan(plate, cvimg):
-    plate.draw_plate(cvimg, CvImage.BLUE)
+    plate.draw_plate(cvimg, Image.BLUE)
     plate.draw_pins(cvimg)
     plate.crop_image(cvimg)
     STORE.add_record(plate.type, plate.barcodes(), cvimg)
@@ -57,7 +57,7 @@ def run_tests():
         total += len(expected_codes)
 
         filename = TEST_IMG_DIR + file
-        cv_image = CvImage(filename)
+        cv_image = Image(filename)
         gray_image = cv_image.to_grayscale().img
         plate = Scanner.ScanImage(gray_image)
         store_scan(plate, cv_image)

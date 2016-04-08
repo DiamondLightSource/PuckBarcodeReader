@@ -1,12 +1,12 @@
 from __future__ import division
 
 from PyQt4 import QtGui
-from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout, QHBoxLayout, QWidget, QTableWidget
-from PyQt4.QtCore import Qt, QEvent
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QGroupBox, QVBoxLayout, QTableWidget
 
-from dls_barcode.image import CvImage
-from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
+from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
+from dls_barcode.util.image import Image
 
 
 class BarcodeTable(QGroupBox):
@@ -47,13 +47,13 @@ class BarcodeTable(QGroupBox):
         for index, barcode in enumerate(barcodes):
             # Select appropriate background color
             if barcode == BAD_DATA_SYMBOL:
-                color = self._qt_color(CvImage.ORANGE)
+                color = self._qt_color(Image.ORANGE)
             elif barcode == NOT_FOUND_SLOT_SYMBOL:
-                color = self._qt_color(CvImage.RED)
+                color = self._qt_color(Image.RED)
             elif barcode == EMPTY_SLOT_SYMBOL:
-                color = self._qt_color(CvImage.GREY)
+                color = self._qt_color(Image.GREY)
             else:
-                color = self._qt_color(CvImage.GREEN)
+                color = self._qt_color(Image.GREEN)
 
             # Set table item
             barcode = QtGui.QTableWidgetItem(barcode)

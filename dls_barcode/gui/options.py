@@ -1,13 +1,13 @@
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 
-from dls_barcode.image import CvImage
+from dls_barcode.util.image import Image
 
 
 class Options:
     def __init__(self):
-        self.colour_ok = CvImage.GREEN
-        self.color_not_found = CvImage.RED
-        self.color_unreadable = CvImage.ORANGE
+        self.colour_ok = Image.GREEN
+        self.color_not_found = Image.RED
+        self.color_unreadable = Image.ORANGE
 
         self.store_file = ""
 

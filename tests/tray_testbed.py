@@ -3,12 +3,11 @@ Code to test the use of the tray class for continuous scanning of a
 large set of barcodes.
 """
 import math
-import numpy as np
 
+from dls_barcode import Image
 from dls_barcode.datamatrix import DataMatrix
-from dls_barcode import CvImage
-from dls_barcode.plate.tray import Tray
-from dls_barcode.plate.transform import Transform, distance
+from dls_barcode.plate.geometry_tray import Tray
+from dls_barcode.util.transform import Transform
 
 
 def rad_to_deg(angle):
@@ -73,13 +72,13 @@ file_stitch = '../test-output/tray-stitch_aggregate.png'
 
 
 tray = Tray()
-total_img = CvImage.blank(1500, 1500, 4, 255)
+total_img = Image.blank(1500, 1500, 4, 255)
 IMG_OFFSET = 100
 FREE_ROTATION = True
 
 for i in range(4):
     # Read image
-    img = CvImage(files_in[i]).to_alpha()
+    img = Image(files_in[i]).to_alpha()
     gray_image = img.to_grayscale().img
 
     # Locate barcodes
@@ -98,6 +97,6 @@ for i in range(4):
 
 # Draw the barcode locations on the image and save to file
 tray.frame_transform = Transform(IMG_OFFSET, IMG_OFFSET, 0, 1)
-tray.draw_highlights(total_img, CvImage.RED)
-total_img.draw_dot((IMG_OFFSET,IMG_OFFSET), CvImage.RED, thickness=10)
+tray.draw_highlights(total_img, Image.RED)
+total_img.draw_dot((IMG_OFFSET,IMG_OFFSET), Image.RED, thickness=10)
 total_img.save_as(file_stitch)
