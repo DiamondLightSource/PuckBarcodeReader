@@ -1,7 +1,7 @@
 import math
 
 from dls_barcode.datamatrix import DataMatrix
-from dls_barcode.plate.transform import Transform
+from dls_barcode.util import Transform
 
 # TODO: Write appropriate functions in the Scanner and ContinuousScan classes that uses Tray
 

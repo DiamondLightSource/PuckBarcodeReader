@@ -3,6 +3,7 @@ import math
 import itertools
 import numpy as np
 
+
 class Image:
     """Class that wraps an OpenCV image and can perform various
     operations on it that are useful in this program.

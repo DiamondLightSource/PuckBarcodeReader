@@ -1,5 +1,6 @@
 import math
 
+
 class Transform:
     """ Represents a transformation on a 2D plane consisting of a translation,
     rotation and scaling.

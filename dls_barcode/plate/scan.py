@@ -4,7 +4,7 @@ import numpy as np
 from pkg_resources import require;
 
 from dls_barcode.datamatrix import DataMatrix, Locator
-from dls_barcode.util.image import Image
+from dls_barcode.util import Image
 from .geometry_unipuck import Unipuck
 from .plate import Plate, Slot
 
@@ -13,7 +13,7 @@ require('numpy')
 
 class Scanner:
     @staticmethod
-    def ScanImage(gray_img):
+    def ScanSingleImage(gray_img):
         """Searches the image for all Data Matrix, reads and decodes them
         and returns them as a list of DataMatrix objects
         """
@@ -39,7 +39,7 @@ class Scanner:
         return plate
 
     @staticmethod
-    def ScanImageContinuous(gray_img, previous_plate):
+    def ScanVideoFrame(gray_img, previous_plate):
         # Determine the plate type from markers in the image
         plate_type = Scanner._determine_plate_type(gray_img)
 

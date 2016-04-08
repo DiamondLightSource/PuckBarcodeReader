@@ -59,7 +59,7 @@ def run_tests():
         filename = TEST_IMG_DIR + file
         cv_image = Image(filename)
         gray_image = cv_image.to_grayscale().img
-        plate = Scanner.ScanImage(gray_image)
+        plate = Scanner.ScanSingleImage(gray_image)
         store_scan(plate, cv_image)
 
         pass_count = 0

@@ -117,9 +117,9 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
         # barcodes which haven't already been read. This significantly increases efficiency because
         # barcode read is expensive.
         if last_plate is None:
-            plate = Scanner.ScanImage(gray_image)
+            plate = Scanner.ScanSingleImage(gray_image)
         else:
-            plate, frame_contains_barcodes = Scanner.ScanImageContinuous(gray_image, last_plate)
+            plate, frame_contains_barcodes = Scanner.ScanVideoFrame(gray_image, last_plate)
 
         # Scan must be correctly aligned to be useful
         if plate.scan_ok:

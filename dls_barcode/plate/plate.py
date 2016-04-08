@@ -1,8 +1,6 @@
-
-# TODO: check if two barcodes have the same pin slot number
-
 EMPTY_SLOT_SYMBOL = "----EMPTY----"
 NOT_FOUND_SLOT_SYMBOL = '-CANT-FIND-'
+
 
 class Plate():
     """ Represents a sample holder plate.
