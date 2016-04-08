@@ -12,8 +12,6 @@ class Options:
         self.store_file = ""
 
 
-
-
 class OptionsDialog(QtGui.QDialog):
 
     def __init__(self, options):

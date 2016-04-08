@@ -30,7 +30,7 @@ The following steps will help you prepare an appropriate Python environment to r
     
 * Download the source code for the Barcode scanner program from <https://github.com/krisward/dls_barcode> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
 
-* Open cmd.exe and navigate to the above folder. `cd` into the dls_barcode folder. Then type `python gui.py` to run the program.
+* Open cmd.exe and navigate to the above folder. `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
 
 

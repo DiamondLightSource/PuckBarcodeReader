@@ -10,7 +10,7 @@ sys.path.append("..")
 
 from dls_barcode.plate import Scanner
 from dls_barcode.image import CvImage
-from dls_barcode.options import Options, OptionsDialog
+from dls_barcode.gui.options import Options, OptionsDialog
 from dls_barcode.continuous import ContinuousScan
 
 from dls_barcode.gui import ScanRecordTable, BarcodeTable, ImageFrame
@@ -43,27 +43,6 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         self.paste_action = None
 
         self._init_ui()
-
-    def _read_new_scan_queue(self):
-        """ Called every second; read any new results from the scan results queue,
-        store them and display them.
-        """
-        if not self._new_scan_queue.empty():
-            # Get the result
-            plate, cv_image = self._new_scan_queue.get(False)
-
-            # Notify user of new scan
-            print("Scan Recorded")
-            winsound.Beep(4000, 500) # frequency, duration
-
-            # Store scan results and display in GUI
-            self.recordTable.add_record(plate.type, plate.barcodes(), cv_image)
-
-            # Paste the scan results to the cursor
-            paste_results = self.paste_action.isChecked()
-            if paste_results:
-                pyperclip.copy('\n'.join(plate.barcodes()))
-                #spam = pyperclip.paste()
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
@@ -151,6 +130,27 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
     def _open_options_dialog(self):
         dialog = OptionsDialog(self._options)
         dialog.exec_()
+
+    def _read_new_scan_queue(self):
+        """ Called every second; read any new results from the scan results queue,
+        store them and display them.
+        """
+        if not self._new_scan_queue.empty():
+            # Get the result
+            plate, cv_image = self._new_scan_queue.get(False)
+
+            # Notify user of new scan
+            print("Scan Recorded")
+            winsound.Beep(4000, 500) # frequency, duration
+
+            # Store scan results and display in GUI
+            self.recordTable.add_record(plate.type, plate.barcodes(), cv_image)
+
+            # Paste the scan results to the cursor
+            paste_results = self.paste_action.isChecked()
+            if paste_results:
+                pyperclip.copy('\n'.join(plate.barcodes()))
+                #spam = pyperclip.paste()
 
     def _scan_file_image(self):
         """Load and process (scan for barcodes) an image from file
