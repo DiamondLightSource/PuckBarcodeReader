@@ -50,6 +50,10 @@ class Image:
         cv2.imshow('dbg', self.img)
         cv2.waitKey(0)
 
+    def copy(self):
+        """ Return an Image object which is a deep copy of this one. """
+        return Image(None, self.img.copy())
+
     def center(self):
         """ Return the center point of the image. """
         return (self.width/2, self.height/2)
