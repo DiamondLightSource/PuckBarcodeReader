@@ -68,6 +68,18 @@ class Plate():
     def crop_image(self, cvimg):
         self._geometry.crop_image(cvimg)
 
+    def contains_barcode(self, barcode):
+        """ Returns true if the plate contains a slot with the specified barcode value
+        """
+        if barcode == EMPTY_SLOT_SYMBOL or barcode == NOT_FOUND_SLOT_SYMBOL:
+            return False
+
+        for b in self.barcodes:
+            if b == barcode:
+                return True
+
+        return False
+
     def has_slots_in_common(self, plateB):
         """ Returns true if the specified plate has any slots with valid barcodes in
         common with this plate.
