@@ -21,6 +21,7 @@ class ImageFrame(QGroupBox):
         self._frame.setStyleSheet("background-color: black; color: red; font-size: 30pt; text-align: center")
         self._frame.setFixedWidth(600)
         self._frame.setFixedHeight(600)
+        self._frame.setAlignment(Qt.AlignCenter)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self._frame)
