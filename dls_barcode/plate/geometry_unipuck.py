@@ -263,7 +263,11 @@ def _center_minimiser(center, layers):
 
 def _partition(numbers):
     """Splits a list of numbers into two groups. Assumes the numbers are samples randomly
-    around one of two median values. Used to split the
+    around one of two median values.
+
+    Works by stepping through the sorted list until we find the cutoff point between the two
+    groups. This is established by the point being closer to the average of the second group
+    than the average of the first.
     """
     if len(numbers) < 3:
         return numbers, None
@@ -271,14 +275,20 @@ def _partition(numbers):
     numbers.sort()
     s = 0
     break_point = 0
+
     while s < len(numbers):
         if not numbers[:s+1] or not numbers[-s-1:]:
             raise Exception("Empty slice")
 
-        av1 = np.mean(numbers[:s+1])
-        av2 = np.mean(numbers[-s-1:])
+        gp1_average = np.mean(numbers[:s+1])
+        gp2_average = np.mean(numbers[-s-1:])
+
         s += 1
-        if (numbers[s] - av1) > (av2 - numbers[s]):
+
+        distance_from_av1 =  numbers[s] - gp1_average
+        distance_from_av2 = gp2_average - numbers[s]
+
+        if distance_from_av1 > distance_from_av2:
             break_point = s
             break
 
