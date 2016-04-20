@@ -15,6 +15,12 @@ class Transform:
         return "Horizontal: {:.4f}; Vertical: {:.4f}; Rotation: {:.4f}; Zoom: {:.4f}"\
             .format(self.x, self.y, self.rot, self.zoom)
 
+    def by_offset(self, x, y):
+        return Transform(self.x+x, self.y+y, self.rot, self.zoom)
+
+    def by_rotation(self, angle):
+        return Transform(self.x, self.y, self.rot+angle, self.zoom)
+
     def transform(self, point):
         """ Transform the point by first rotating about the origin, zooming, then
         performing a translation.
@@ -31,6 +37,8 @@ class Transform:
         point_ = self._zoom(point_, 1.0/self.zoom)
         point_ = self._rotate(point_, -self.rot)
         return point_
+
+
 
     @staticmethod
     def _rotate(point, a):

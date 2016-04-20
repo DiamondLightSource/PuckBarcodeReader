@@ -70,11 +70,11 @@ class Image:
         resized_img = cv2.resize(self.img, new_size)
         return Image(None, resized_img)
 
-    def rotate(self, angle, center):
+    def rotate(self, radians, center):
         """ Rotate the image around the specified center. Note that this will
         cut off any areas that are rotated out of the frame.
         """
-        degrees = angle * 180 / math.pi
+        degrees = radians * 180 / math.pi
         matrix = cv2.getRotationMatrix2D(center, degrees, 1.0)
 
         rotated = cv2.warpAffine(self.img, matrix, (self.width, self.height))

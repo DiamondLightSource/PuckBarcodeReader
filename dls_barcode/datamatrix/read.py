@@ -82,6 +82,8 @@ class Reader():
         datamatrix (because of lens distortion, say) is already accounted for (to
         first order).
         """
+        base_vec = np.asarray(base_vec)
+        side_vec = np.asarray(side_vec)
         return (((x, y),
                  list(map(int, corner + ((2*x+1+offset[0])*(base_vec) + (2*y+1+offset[1])*side_vec)/(2*n))))
                     for x, y in itertools.product(range(n), range(n)))

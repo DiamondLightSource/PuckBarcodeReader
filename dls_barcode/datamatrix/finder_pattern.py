@@ -5,18 +5,19 @@ class FinderPattern():
     """A representation of the location of a Datamatrix 'finder pattern'
     in an image. All points and lengths are in units of Pixels"""
 
-    def __init__(self, x_corner, vec_base, vec_side):
-        self.corner = x_corner
-        self.baseVector = vec_base
-        self.sideVector = vec_side
+    def __init__(self, corner, vec_base, vec_side):
+        self.corner = list(corner)
+        self.baseVector = list(vec_base)
+        self.sideVector = list(vec_side)
 
         # positions of the three corners
-        self.c1 = tuple(x_corner)
-        self.c2 = tuple(x_corner + vec_base)
-        self.c3 = tuple(x_corner + vec_side)
+        self.c1 = (corner[0], corner[1])
+        self.c2 = (corner[0]+vec_base[0], corner[1]+vec_base[1])
+        self.c3 = (corner[0]+vec_side[0], corner[1]+vec_side[1])
 
         # Position of center of the datamatrix in image pixels
-        self.center = tuple(map(int, x_corner + (vec_base + vec_side)/2))
+        self.center = (corner[0] + (vec_base[0] + vec_side[0]) / 2,
+                       corner[1] + (vec_base[1] + vec_side[1]) / 2)
 
         # Radius of datamatrix (distance from center to a corner) in pixels
         self.radius = int(math.sqrt((vec_base[0]*vec_base[0] + vec_base[1]*vec_base[1])/2))
