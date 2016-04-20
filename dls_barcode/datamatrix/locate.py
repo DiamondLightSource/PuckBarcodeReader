@@ -29,7 +29,7 @@ class Locator():
         blocksize = 35
 
         if single_search:
-            C_values = [16,8,4,20]
+            C_values = [0,4,20,16,8]
             morphsizes = [3,2]
             self._median_radius = median_radius
         else:
@@ -155,10 +155,18 @@ class Locator():
         return (median - tolerance) < fp.radius < (median + tolerance)
 
     def _filter_image_edges(self, fp, shape):
-        """Return true if the finder pattern isnt right along on of the edges of the image"""
-        #TODO: implement this
-        #print(shape[0], shape[1])
-        #print(fp.pack())
+        """Return true if the finder pattern isnt right along on of the edges of the image.
+        This is needed because the algorithm sometimes detects the edge of the image as being a finder pattern"""
+        h, w  = shape[0], shape[1]
+
+        if fp.c1[0] <= 1 or fp.c1[1] <= 1:
+            print(fp.c1, w, h)
+            return False
+
+        if fp.c1[0] >= w-2 or fp.c1[1] >= h-2:
+            print(fp.c1, w, h)
+            return False
+
         return True
 
     def _longest_pair_indices(self, edges):
