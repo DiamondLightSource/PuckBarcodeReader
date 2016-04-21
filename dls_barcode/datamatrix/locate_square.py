@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 from .finder_pattern import FinderPattern
-from dls_barcode import Transform, Image
+from dls_barcode.util import Transform, Image
 
 
 class SquareLocator:

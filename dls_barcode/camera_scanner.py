@@ -111,7 +111,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
 
         # Make grayscale version of image
         cv_image = Image(None, frame)
-        gray_image = cv_image.to_grayscale().img
+        gray_image = cv_image.to_grayscale()
 
         # If we have an existing partial plate, merge the new plate with it and only try to read the
         # barcodes which haven't already been read. This significantly increases efficiency because

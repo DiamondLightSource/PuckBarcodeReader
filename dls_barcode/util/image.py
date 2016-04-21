@@ -119,7 +119,8 @@ class Image:
             return Image(filename=None, img=self.img)
 
     def crop_image(self, center, radius):
-        self.img, _ = Image.sub_image(self.img, center, radius)
+        cropped, _ = self.sub_image(center, radius)
+        self.img = cropped.img
 
     def paste(self, src, xOff, yOff):
         """ Paste the source image onto the target one at the specified position.
@@ -197,6 +198,16 @@ class Image:
         """
         return (int(point[0]+self.draw_offset[0]), int(point[1]+self.draw_offset[1]))
 
+    def calculate_brightness(self, point, side_length):
+        """Return the average brightness over a small region surrounding a point.
+        """
+        sum = 0
+        side = int(side_length)
+        for i, j in itertools.product(
+                range(-(side//2), (side//2)+1),
+                range(-(side//2), (side//2)+1)):
+            sum += self.img[point[1] + i, point[0] + j]
+        return int(sum/(side*side))
 
     @staticmethod
     def blank(width, height, channels=3, value=0):
@@ -205,20 +216,21 @@ class Image:
         blank_image = np.full((height, width, channels), value, np.uint8)
         return Image(filename=None, img=blank_image)
 
-    @staticmethod
-    def sub_image(img, center, radius):
+    def sub_image(self, center, radius):
         """ Returns a new (raw) OpenCV image that is a section of the existing image.
         The section is square with side length = 2*radius, and centered around the
         enter point
         """
-        width = img.shape[1]
-        height = img.shape[0]
+        width = self.img.shape[1]
+        height = self.img.shape[0]
         xstart = int(max(center[0] - radius, 0))
         xend = int(min(center[0] + radius, width))
         ystart = int(max(center[1] - radius, 0))
         yend = int(min(center[1] + radius, height))
         roi_rect = [xstart, ystart, xend, yend]
-        return img[ystart:yend, xstart:xend], roi_rect
+
+        sub = self.img[ystart:yend, xstart:xend]
+        return Image(None, sub), roi_rect
 
     @staticmethod
     def find_circle(img, minradius, maxradius):
@@ -232,18 +244,6 @@ class Image:
             return [center, radius]
         else:
             return None
-
-    @staticmethod
-    def calculate_brightness(img, point, side_length):
-        """Return the average brightness over a small region surrounding a point.
-        """
-        sum = 0
-        side = int(side_length)
-        for i, j in itertools.product(
-                range(-(side//2), (side//2)+1),
-                range(-(side//2), (side//2)+1)):
-            sum += img[point[1] + i, point[0] + j]
-        return int(sum/(side*side))
 
 
 

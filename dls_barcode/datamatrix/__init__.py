@@ -1,3 +1,3 @@
 from .datamatrix import DataMatrix
-from .datamatrix import ContourLocator
+from .locate import Locator
 from .datamatrix import BAD_DATA_SYMBOL
