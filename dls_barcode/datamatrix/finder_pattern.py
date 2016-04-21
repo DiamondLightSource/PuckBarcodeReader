@@ -6,9 +6,9 @@ class FinderPattern():
     in an image. All points and lengths are in units of Pixels"""
 
     def __init__(self, corner, vec_base, vec_side):
-        self.corner = list(corner)
-        self.baseVector = list(vec_base)
-        self.sideVector = list(vec_side)
+        self.corner = [int(round(corner[0])), int(round(corner[1]))]
+        self.baseVector = [int(round(vec_base[0])), int(round(vec_base[1]))]
+        self.sideVector = [int(round(vec_side[0])), int(round(vec_side[1]))]
 
         # positions of the three corners
         self.c1 = (corner[0], corner[1])
@@ -16,8 +16,8 @@ class FinderPattern():
         self.c3 = (corner[0]+vec_side[0], corner[1]+vec_side[1])
 
         # Position of center of the datamatrix in image pixels
-        self.center = (corner[0] + (vec_base[0] + vec_side[0]) / 2,
-                       corner[1] + (vec_base[1] + vec_side[1]) / 2)
+        self.center = (int(round(corner[0] + (vec_base[0] + vec_side[0]) / 2)),
+                       int(round(corner[1] + (vec_base[1] + vec_side[1]) / 2)))
 
         # Radius of datamatrix (distance from center to a corner) in pixels
         self.radius = int(math.sqrt((vec_base[0]*vec_base[0] + vec_base[1]*vec_base[1])/2))

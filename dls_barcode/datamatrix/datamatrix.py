@@ -1,4 +1,4 @@
-from .locate import Locator
+from .locate_contour import ContourLocator
 from .read import Reader
 from .decode import Decoder
 from .reedsolo import ReedSolomonError
@@ -87,6 +87,6 @@ class DataMatrix:
     def LocateAllBarcodesInImage(grayscale_img):
         """ Searches the image for all datamatrix finder patterns
         """
-        locator = Locator()
+        locator = ContourLocator()
         finder_patterns = locator.locate_datamatrices(grayscale_img)
         return list(finder_patterns)

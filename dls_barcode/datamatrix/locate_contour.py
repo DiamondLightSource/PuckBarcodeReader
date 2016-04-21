@@ -10,7 +10,7 @@ from .finder_pattern import FinderPattern
 OPENCV_MAJOR = cv2.__version__[0]
 
 
-class Locator():
+class ContourLocator:
     """ Utility for finding the positions of all of the datamatrix barcodes
     in an image """
 
