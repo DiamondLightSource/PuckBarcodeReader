@@ -1,6 +1,6 @@
 import uuid
 
-from .slot import Slot
+from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
 
 
 class Plate:
@@ -37,8 +37,8 @@ class Plate:
 
     def _sort_slots(self):
         self.slots.sort(key=lambda slot: slot.number)
-        self.num_empty_slots =  len([slot for slot in self.slots if slot.is_empty()])
-        self.num_valid_barcodes = len([slot for slot in self.slots if slot.contains_valid_barcode()])
+        self.num_empty_slots = len([slot for slot in self.slots if slot.state() == Slot.EMPTY])
+        self.num_valid_barcodes = len([slot for slot in self.slots if slot.state() == Slot.VALID])
 
     def barcodes(self):
         """ Returns a list of barcode strings. Empty slots are represented by the empty string.
@@ -57,14 +57,14 @@ class Plate:
         self._geometry.draw_plate(cvimg, color)
 
     def draw_pins(self, cvimg):
-        #self._geometry.draw_pins(cvimg, color)
         from dls_barcode import Image
         for i, slot in enumerate(self.slots):
-            if slot.contains_unreadable_barcode():
+            state = slot.state()
+            if state == Slot.UNREADABLE:
                 color = Image.ORANGE
-            elif slot.contains_valid_barcode():
+            elif state == Slot.VALID:
                 color = Image.GREEN
-            elif slot.is_empty():
+            elif state == Slot.EMPTY:
                 color = Image.GREY
             else:
                 color = Image.RED
@@ -95,7 +95,7 @@ class Plate:
 
         for i, slotA in enumerate(plateA.slots):
             slotB = plateB.slots[i]
-            if slotA.contains_valid_barcode():
+            if slotA.state() == Slot.VALID:
                 if slotA.get_barcode() == slotB.get_barcode():
                     return True
 
@@ -122,8 +122,10 @@ class Plate:
         test_before = max(plateB.num_valid_barcodes, self.num_valid_barcodes)
         for i, slotA in enumerate(self.slots):
             slotB = plateB.slots[i]
-            if not slotA.contains_valid_barcode() and slotB.contains_valid_barcode():
+            if not slotA.state() == Slot.VALID and slotB.state() == Slot.VALID:
                 self.slots[i] = slotB
                 # TODO: transform location of B barcode - so that printing of barcodes on image is about right
 
         self._sort_slots()
+
+

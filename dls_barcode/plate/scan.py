@@ -76,7 +76,7 @@ class Scanner:
         trial_barcode = None
         for i, old_slot in enumerate(previous_plate.slots):
             # Search through valid barcodes until we find a match
-            if (old_slot.contains_valid_barcode()) and (new_finders[i] is not None):
+            if (old_slot.state() == Slot.VALID) and (new_finders[i] is not None):
                 # If we have a finder pattern in the same slot, try to read it. If it matches the previous barcode,
                 # then we have one in common, if it doesn't then we have a completely new plate. If we cant read
                 # the barcode, carry on looking for a match
@@ -102,7 +102,7 @@ class Scanner:
 
             # Combine old barcodes with new and create a new plate
             for i, old_slot in enumerate(previous_plate.slots):
-                if (old_slot.contains_valid_barcode()) or (new_finders[i] is None):
+                if (old_slot.state() == Slot.VALID) or (new_finders[i] is None):
                     plate.slots[i] = old_slot
                 else:
                     dm = DataMatrix(new_finders[i], gray_img)
@@ -188,7 +188,8 @@ class Scanner:
             slot = plate.slots[i]
 
             # If no barcode (and slot is in view), check if slot is empty
-            if not slot.contains_barcode():
+            state = slot.state()
+            if state == Slot.EMPTY or state == Slot.NO_RESULT:
                 point_in_view = Scanner._image_contains_point(image, p, radius=fp_radius/2)
                 if point_in_view:
                     brightness = image.calculate_brightness(p, fp_radius / 2)
@@ -198,7 +199,7 @@ class Scanner:
                         slot.empty = False
 
             # If still no result, do a more careful scan for finder patterns and a more careful read
-            if slot.result_not_found() or slot.contains_unreadable_barcode():
+            if slot.state() == Slot.NO_RESULT or slot.state() == Slot.UNREADABLE:
                 img, _ = image.sub_image(p, fp_radius * 2)
 
                 patterns_deep = list(Locator().locate_datamatrices(img, True, fp_radius))
