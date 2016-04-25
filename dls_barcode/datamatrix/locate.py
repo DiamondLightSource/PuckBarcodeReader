@@ -15,48 +15,71 @@ class Locator:
         self._median_radius_tolerance = 0.3
         self._median_radius = 0
         self._image = None
+        self._single = False
 
 
     def locate_datamatrices(self, gray_img, single=False, expected_radius=0):
-        self._image = gray_img
-        contour = ContourLocator()
 
-        blocksize = 35
+        self._image = gray_img
+        self._single = single
+        self._median_radius = expected_radius
 
         if single:
-            C_values = [0,4,20,16,8]
-            morphsizes = [3,2]
-            self._median_radius = expected_radius
-        else:
-            C_values = [16,8]
-            morphsizes = [3]
+            finder_patterns = self._contours_single()
+            finder_patterns = list(filter(self._filter_image_edges, finder_patterns))
+            finder_patterns = list(filter(self._filter_median_radius, finder_patterns))
+            if not finder_patterns:
+                finder_patterns = [self._square_single()]
 
-        finder_patterns = []
+        else:
+            finder_patterns = self._contours_global()
+
+            # Filter out any which differ significantly in size
+            if len(finder_patterns) > 3:
+                self._median_radius = np.median([fp.radius for fp in finder_patterns])
+                finder_patterns = list(filter(self._filter_median_radius, finder_patterns))
+
+        # check that finder patterns dont overlap
+        valid_patterns = []
+        for fp in finder_patterns:
+            in_radius = False
+            for ex in valid_patterns:
+                in_radius = in_radius | ex.point_in_radius(fp.center)
+            if not in_radius:
+                valid_patterns.append(fp)
+
+        return valid_patterns
+
+    def _contours_global(self):
+        C_values = [16,8]
+        morphsize = 3
+        blocksize = 35
 
         # Use a couple of different values of C as much more likely to locate the finder patterns
-        for ms in morphsizes:
-            for C in C_values:
-                fps = contour.locate_datamatrices(gray_img.img, blocksize, C, ms)
-
-                # If searching for barcodes on a single slot image, filter based on the supplied mean radius
-                if single:
-                    fps = filter(self._filter_image_edges, fps)
-                    fps = filter(self._filter_median_radius, fps)
-
-                # check that this doesnt overlap with any previous finder patterns
-                for fp in fps:
-                    in_radius = False
-                    for ex in finder_patterns:
-                        in_radius = in_radius | ex.point_in_radius(fp.center)
-                    if not in_radius:
-                        finder_patterns.append(fp)
-
-        # Filter out any which differ significantly in size
-        if len(finder_patterns) > 3:
-            self._median_radius = np.median([fp.radius for fp in finder_patterns])
-            finder_patterns = filter(self._filter_median_radius, finder_patterns)
+        finder_patterns = []
+        for C in C_values:
+            fps = ContourLocator().locate_datamatrices(self._image, blocksize, C, morphsize)
+            finder_patterns.extend(fps)
 
         return finder_patterns
+
+    def _contours_single(self):
+        C_values = [0,4,20,16,8]
+        morphsizes = [3,2]
+        blocksize = 35
+
+        # Use a couple of different values of C as much more likely to locate the finder patterns
+        finder_patterns = []
+        for ms in morphsizes:
+            for C in C_values:
+                fps = ContourLocator().locate_datamatrices(self._image, blocksize, C, ms)
+                finder_patterns.extend(fps)
+
+        return finder_patterns
+
+    def _square_single(self):
+        fp = SquareLocator().locate(self._image, self._median_radius)
+        return fp
 
     def _filter_median_radius(self, fp):
         """Return true iff finder pattern radius is close to the median"""

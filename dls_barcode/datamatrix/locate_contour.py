@@ -22,7 +22,7 @@ class ContourLocator:
         """
         # Perform a fairly generic morphological operation to make it easier to
         # find contours in general and datamatricies in particular.
-        morphed_image = self._do_morph(gray_img, blocksize=blocksize, C=C, morphsize=close_size)
+        morphed_image = self._do_morph(gray_img.img, blocksize=blocksize, C=C, morphsize=close_size)
 
         # Find a bunch of contours in the image.
         contour_vertex_sets = self._get_contours(morphed_image)
