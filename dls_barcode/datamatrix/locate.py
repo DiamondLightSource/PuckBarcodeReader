@@ -29,7 +29,7 @@ class Locator:
             finder_patterns = list(filter(self._filter_image_edges, finder_patterns))
             finder_patterns = list(filter(self._filter_median_radius, finder_patterns))
             if not finder_patterns:
-                finder_patterns = [self._square_single()]
+                pass#finder_patterns = [self._square_single()]
 
         else:
             finder_patterns = self._contours_global()

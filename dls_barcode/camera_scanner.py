@@ -100,8 +100,8 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
     last_plate = None
     last_full_plate = None
 
-    frame_contains_barcodes = False
     frame_number = 0
+    plate_frame_number = 0
 
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)
@@ -124,10 +124,13 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
         else:
             plate, diagnostic = Scanner.ScanVideoFrame(gray_image, last_plate)
 
+        if last_plate and plate.id == last_plate.id:
+            plate_frame_number += 1
+        else:
+            plate_frame_number = 1
+
         # If the plate is aligned, display overlay results ( + sound + save results)
         if diagnostic.is_aligned:
-            last_plate = plate
-
             # If the plate matches the last successfully scanned plate, ignore it
             if last_full_plate and last_full_plate.has_slots_in_common(plate):
                 overlay_queue.put(Overlay(None, SCANNED_TAG))
@@ -145,8 +148,11 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
                     winsound.Beep(frequency, 200)
                     overlay_queue.put(Overlay(plate))
 
+            last_plate = plate
+
         # Diagnostics
         frame_end_time = time.time()
+        print("Plate frame number: {}".format(plate_frame_number))
         print("Frame number: {}".format(frame_number))
         print("Scan Timestamp: {0:.3f} secs".format(frame_end_time))
         print("Scan Duration: {0:.3f} secs".format(frame_end_time - frame_start_time))
