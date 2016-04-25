@@ -99,7 +99,9 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
     """
     last_plate = None
     last_full_plate = None
+
     frame_contains_barcodes = False
+    frame_number = 0
 
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)
@@ -107,7 +109,8 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
         if frame is None:
             break
 
-        timer = time.time()
+        frame_number += 1
+        frame_start_time = time.time()
 
         # Make grayscale version of image
         cv_image = Image(None, frame)
@@ -117,31 +120,36 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
         # barcodes which haven't already been read. This significantly increases efficiency because
         # barcode read is expensive.
         if last_plate is None:
-            plate = Scanner.ScanSingleImage(gray_image)
+            plate, diagnostic = Scanner.ScanSingleImage(gray_image)
         else:
-            plate, frame_contains_barcodes = Scanner.ScanVideoFrame(gray_image, last_plate)
+            plate, diagnostic = Scanner.ScanVideoFrame(gray_image, last_plate)
 
-        # Scan must be correctly aligned to be useful
-        if plate.scan_ok:
-            # Plate mustn't have any barcodes that match the last successful scan
+        # If the plate is aligned, display overlay results ( + sound + save results)
+        if diagnostic.is_aligned:
             last_plate = plate
+
+            # If the plate matches the last successfully scanned plate, ignore it
             if last_full_plate and last_full_plate.has_slots_in_common(plate):
-                if frame_contains_barcodes:
-                    overlay_queue.put(Overlay(None, SCANNED_TAG))
-            else:
-                # If the plate has the required number of barcodes, store it
-                if plate.is_full_valid():
+                overlay_queue.put(Overlay(None, SCANNED_TAG))
+
+            # If the plate has the required number of barcodes, store it
+            elif plate.is_full_valid():
                     Overlay(plate).draw_on_image(cv_image.img)
                     plate.crop_image(cv_image)
                     result_queue.put((plate, cv_image))
                     last_full_plate = plate
 
-                if frame_contains_barcodes:
-                    frequency = int(10000 * ((plate.num_slots -plate.num_valid_barcodes) / plate.num_slots)) + 37
-                    winsound.Beep(frequency, 200) # frequency, duration
+            # If there were any barcodes in the frame, make a beep sound
+            elif diagnostic.has_barcodes:
+                    frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes) / plate.num_slots)) + 37
+                    winsound.Beep(frequency, 200)
                     overlay_queue.put(Overlay(plate))
 
-        #print("Scan Duration: {0:.3f} secs".format(time.time() - timer))
+        # Diagnostics
+        frame_end_time = time.time()
+        print("Frame number: {}".format(frame_number))
+        print("Scan Timestamp: {0:.3f} secs".format(frame_end_time))
+        print("Scan Duration: {0:.3f} secs".format(frame_end_time - frame_start_time))
 
 
 class Overlay:

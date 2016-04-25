@@ -161,10 +161,10 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             gray_image = cv_image.to_grayscale()
 
             # Scan the image for barcodes
-            plate = Scanner.ScanSingleImage(gray_image)
+            plate, _ = Scanner.ScanSingleImage(gray_image)
 
             # If the scan was successful, store the results
-            if plate.scan_ok:
+            if plate.geometry_aligned:
                 # Highlight the image and display it
                 plate.draw_plate(cv_image, Image.BLUE)
                 plate.draw_pins(cv_image)

@@ -1,32 +1,38 @@
 from __future__ import division
 
 import numpy as np
-from pkg_resources import require;
+from pkg_resources import require
 
 from dls_barcode.datamatrix import DataMatrix, Locator
-from dls_barcode.util import Image
 from .geometry_unipuck import Unipuck
 from .plate import Plate, Slot
 
 require('numpy')
 
 
+class FrameDiagnostic:
+    def __init__(self):
+        self.num_finder_patterns = 0
+        self.has_barcodes = False
+        self.is_aligned = False
+
 class Scanner:
     @staticmethod
-    def ScanSingleImage(gray_img):
+    def ScanSingleImage(gray_img, plate_type="Unipuck"):
         """Searches the image for all Data Matrix, reads and decodes them
         and returns them as a list of DataMatrix objects
         """
-
-        # Determine the plate type from markers in the image
-        plate_type = Scanner._determine_plate_type(gray_img)
+        # Diagnostic object that contains additional info about the scan
+        diagnostic = FrameDiagnostic()
 
         # Locate all the barcodes (data matricies) in the image
         finder_patterns = DataMatrix.LocateAllBarcodesInImage(gray_img)
         pin_centers = [fp.center for fp in finder_patterns]
+        diagnostic.num_finder_patterns = len(finder_patterns)
 
         # Align plate (sample holder) model with the image
         geometry = Scanner._get_geometry(gray_img, pin_centers, plate_type)
+        diagnostic.is_aligned = geometry.is_aligned()
 
         # Read all the barcodes (data matricies) in the image
         if geometry.is_aligned():
@@ -36,24 +42,26 @@ class Scanner:
         else:
             plate = Plate([], geometry, plate_type)
 
-        return plate
+        return plate, diagnostic
 
 
     @staticmethod
-    def ScanVideoFrame(gray_img, previous_plate):
-        # Determine the plate type from markers in the image
-        plate_type = Scanner._determine_plate_type(gray_img)
+    def ScanVideoFrame(gray_img, previous_plate, plate_type="Unipuck"):
+        # Diagnostic object that contains additional info about the scan
+        diagnostic = FrameDiagnostic()
 
         # Locate all the barcodes (data matricies) in the image
         finder_patterns = DataMatrix.LocateAllBarcodesInImage(gray_img)
         pin_centers = [fp.center for fp in finder_patterns]
+        diagnostic.num_finder_patterns = len(finder_patterns)
 
         # Align plate (sample holder) model with the image
         geometry = Scanner._get_geometry(gray_img, pin_centers, plate_type)
+        diagnostic.is_aligned = geometry.is_aligned()
 
         # If no alignment was possible, just return the previous plate
         if not geometry.is_aligned():
-            return previous_plate, False
+            return previous_plate, diagnostic
 
         # Make a list of the finder patterns with associated slot numbers
         new_finders = [None] * geometry.num_slots
@@ -89,7 +97,9 @@ class Scanner:
         # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
         # previous late over to their slot in the new plate. Then r toread any that we haven't already read.
         if has_common_barcode and has_common_alignment:
-            plate = Plate(barcodes=[], geometry=geometry, type=plate_type)
+            plate = Plate(barcodes=[], geometry=geometry, plate_type=plate_type,
+                          frame=previous_plate.frame+1, plate_id=previous_plate.id)
+
             # Combine old barcodes with new and create a new plate
             for i, old_slot in enumerate(previous_plate.slots):
                 if (old_slot.contains_valid_barcode()) or (new_finders[i] is None):
@@ -99,30 +109,31 @@ class Scanner:
                     plate.slots[i] = Slot(i+1, dm)
             plate._sort_slots()
             Scanner._slot_deep_scans(gray_img, plate, finder_patterns)
-            return plate, True
+            diagnostic.has_barcodes = True
+            return plate, diagnostic
 
         # If we have a barcode that matches with the previous frame but that isn't in the same slot, then
         # at least one of the frames wasn't properly aligned.
         elif has_common_barcode:
-            print("NO COMMON ALIGNMENT")
-            return previous_plate, False
+            diagnostic.is_aligned = False
+            return previous_plate, diagnostic
 
         # If there are no barcodes in common with the previous plate scan, read any that
-        # haven't already been read and return a new plate
+        # haven't already been read and return a new plate.
         else:
-            print("NO COMMON BARCODES") #DEBUG
             remaining_fps = [fp for fp in new_finders if fp is not None]
             barcodes = [DataMatrix(fp, gray_img) for fp in remaining_fps]
             if trial_barcode:
                 barcodes.append(trial_barcode)
 
             any_valid_barcodes = any([dm.is_valid() for dm in barcodes])
+            diagnostic.has_barcodes = any_valid_barcodes
             if any_valid_barcodes:
                 new_plate = Plate(barcodes, geometry, plate_type)
                 Scanner._slot_deep_scans(gray_img, new_plate, finder_patterns)
-                return new_plate, any_valid_barcodes
+                return new_plate, diagnostic
             else:
-                return previous_plate, any_valid_barcodes
+                return previous_plate, diagnostic
 
     @staticmethod
     def _determine_plate_type(image):

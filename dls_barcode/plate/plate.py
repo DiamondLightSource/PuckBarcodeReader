@@ -1,17 +1,24 @@
+import uuid
+
 EMPTY_SLOT_SYMBOL = "----EMPTY----"
 NOT_FOUND_SLOT_SYMBOL = '-CANT-FIND-'
 
 
-class Plate():
+class Plate:
     """ Represents a sample holder plate.
     """
-    def __init__(self, barcodes, geometry, type):
+    def __init__(self, barcodes, geometry, plate_type, frame=1, plate_id=0):
+        self.frame = frame
+        self.id = plate_id
         self.num_slots = geometry.num_slots
         self.error = geometry.error
-        self.type = type
+        self.type = plate_type
         self._geometry = geometry
 
-        self.scan_ok = geometry.is_aligned()
+        if plate_id == 0:
+            self.id = str(uuid.uuid1())
+
+        self.geometry_aligned = geometry.is_aligned()
 
         # Initialize slots as empty
         self.slots = [Slot(i, None) for i in range(self.num_slots)]
@@ -28,7 +35,6 @@ class Plate():
                 self.slots[i] = Slot(i+1, bc)
 
         self._sort_slots()
-
 
     def _sort_slots(self):
         self.slots.sort(key=lambda slot: slot.number)
@@ -74,7 +80,7 @@ class Plate():
         if barcode == EMPTY_SLOT_SYMBOL or barcode == NOT_FOUND_SLOT_SYMBOL:
             return False
 
-        for b in self.barcodes:
+        for b in self.barcodes():
             if b == barcode:
                 return True
 
