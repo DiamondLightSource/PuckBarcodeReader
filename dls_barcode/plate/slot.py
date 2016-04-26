@@ -25,6 +25,10 @@ class Slot:
         else:
             return Slot.NO_RESULT
 
+    def contains_barcode(self):
+        state = self.state()
+        return state == Slot.UNREADABLE or state == Slot.VALID
+
     def get_barcode(self):
         """ Gets a string representation of the barcode dat; returns an empty
         string if slot is empty

@@ -57,7 +57,7 @@ def capture_worker(camera_num, task_queue, overlay_queue):
     latest_overlay = Overlay(None)
     last_time = time.time()
 
-    while(True):
+    while True:
         # Capture the next frame from the camera
         _, frame = cap.read()
 
@@ -103,6 +103,8 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
     frame_number = 0
     plate_frame_number = 0
 
+    scanner = Scanner()
+
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)
         frame = task_queue.get(True)
@@ -119,10 +121,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
         # If we have an existing partial plate, merge the new plate with it and only try to read the
         # barcodes which haven't already been read. This significantly increases efficiency because
         # barcode read is expensive.
-        if last_plate is None:
-            plate, diagnostic = Scanner.ScanSingleImage(gray_image)
-        else:
-            plate, diagnostic = Scanner.ScanVideoFrame(gray_image, last_plate)
+        plate, diagnostic = scanner.scan_next_frame(gray_image)
 
         if last_plate and plate.id == last_plate.id:
             plate_frame_number += 1
