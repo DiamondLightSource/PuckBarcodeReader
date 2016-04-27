@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 import itertools
 
@@ -88,15 +90,13 @@ class Reader():
                  list(map(int, corner + ((2*x+1+offset[0])*(base_vec) + (2*y+1+offset[1])*side_vec)/(2*n))))
                     for x, y in itertools.product(range(n), range(n)))
 
-    def _window_average(self, arr, point, side_length=3):
+    def _window_average(self, arr, point, side=3):
         """Return the average brightness over a small region surrounding a point.
         """
-        sum = 0
-        for i, j in itertools.product(
-                range(-(side_length//2), (side_length//2)+1),
-                range(-(side_length//2), (side_length//2)+1)):
-            sum += arr[point[1] + i, point[0] + j]
-        return int(sum/(side_length*side_length))
+        x1, y1 = point[0] - (side // 2), point[1] - (side // 2)
+        x2, y2 = x1 + side, y1 + side
+        brightness = int(np.sum(arr[y1:y2, x1:x2]) / (side * side))
+        return brightness
 
     def _threshold(self, matrix, value):
         """Return a thresholded matrix, with low values corresponding to True.

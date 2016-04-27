@@ -198,16 +198,17 @@ class Image:
         """
         return (int(point[0]+self.draw_offset[0]), int(point[1]+self.draw_offset[1]))
 
-    def calculate_brightness(self, point, side_length):
+    def calculate_brightness(self, center, side_length):
         """Return the average brightness over a small region surrounding a point.
         """
-        sum = 0
         side = int(side_length)
-        for i, j in itertools.product(
-                range(-(side//2), (side//2)+1),
-                range(-(side//2), (side//2)+1)):
-            sum += self.img[point[1] + i, point[0] + j]
-        return int(sum/(side*side))
+
+        x1, y1 = int(round(center[0] - side / 2)), int(round(center[1] - side / 2))
+        x2, y2 = int(round(x1 + side)), int(round(y1 + side))
+
+        brightness = np.sum(self.img[y1:y2, x1:x2]) / (side * side)
+        return brightness
+
 
     @staticmethod
     def blank(width, height, channels=3, value=0):
