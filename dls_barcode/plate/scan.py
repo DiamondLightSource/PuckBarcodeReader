@@ -24,12 +24,12 @@ class FrameDiagnostic:
 class Scanner:
     def __init__(self):
         self.frame_img = None
-        self.last_valid_plate = None
         self.plate_type = "Unipuck"
+        self.num_slots = 16
+        self.plate = Plate(self.plate_type, self.num_slots)
 
     def scan_next_frame(self, frame_img):
         self.frame_img = frame_img
-        new_plate = self.last_valid_plate
 
         # Diagnostic object that contains additional info about the scan
         diagnostic = FrameDiagnostic()
@@ -41,50 +41,51 @@ class Scanner:
         # Align plate (sample holder) model with the image
         pin_centers = [fp.center for fp in finder_patterns]
         geometry = self._get_geometry(pin_centers)
-        diagnostic.is_aligned = geometry.is_aligned()
+        is_aligned = geometry.is_aligned()
 
-        # If no alignment was possible, just return the previous plate
-        if not geometry.is_aligned():
-            return new_plate, diagnostic
-
-        # Make a list of the finder patterns with associated slot numbers
-        new_finders = [None] * geometry.num_slots
-        for fp in finder_patterns:
-            slot_num = geometry.containing_slot(fp.center)
-            new_finders[slot_num-1] = fp
-
-        try:
-            # Determine if the previous plate scan has any barcodes in common with this one.
-            has_common_barcode, read_barcodes = self._has_common_barcode(new_finders)
-        except AlignmentException:
-            # If we have a barcode that matches with the previous frame but that isn't in the same slot, then
-            # at least one of the frames wasn't properly aligned.
-            diagnostic.is_aligned = False
-            return new_plate, diagnostic
+        if is_aligned:
+            try:
+                # Determine if the previous plate scan has any barcodes in common with this one.
+                is_same_plate, read_barcodes = self._has_common_barcode(geometry, finder_patterns)
+            except AlignmentException:
+                # If we have a barcode that matches with the previous frame but that isn't in the same slot, then
+                # at least one of the frames wasn't properly aligned.
+                is_same_plate = False
+                is_aligned = False
+                old_num_fps = len(self.plate._geometry._pin_centers)
+                new_num_fps = len(finder_patterns)
+                print(old_num_fps, new_num_fps)
+                # TODO: resolve conflict if alignments don't match - assume one with most points is best
 
         # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
         # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
         # previous late over to their slot in the new plate. Then r toread any that we haven't already read.
-        if has_common_barcode:
-            new_plate = self._merge_with_previous_plate(geometry, new_finders)
-            Scanner._slot_deep_scans(frame_img, new_plate, finder_patterns)
+        if is_aligned and is_same_plate:
+            print("MERGING!!!!!!!!")
+            self.plate.merge_fps(geometry, finder_patterns, self.frame_img)
+            Scanner._slot_deep_scans(frame_img, self.plate, finder_patterns)
             diagnostic.has_barcodes = True
 
         # If there are no barcodes in common with the previous plate scan, read any that
         # haven't already been read and return a new plate.
-        else:
-            remaining_fps = [fp for fp in new_finders if fp is not None]
+        if is_aligned and not is_same_plate:
+            print("NEW PLATE")
+            used_fps = [barcode._finder_pattern for barcode in read_barcodes]
+            remaining_fps = [fp for fp in finder_patterns if fp not in used_fps]
             barcodes = [DataMatrix(fp, frame_img) for fp in remaining_fps]
             barcodes.extend(read_barcodes)
 
             any_valid_barcodes = any([dm.is_valid() for dm in barcodes])
             diagnostic.has_barcodes = any_valid_barcodes
             if any_valid_barcodes:
-                new_plate = Plate(barcodes, geometry, self.plate_type)
-                Scanner._slot_deep_scans(frame_img, new_plate, finder_patterns)
+                self.plate = Plate(self.plate_type, self.num_slots)
+                self.plate.merge_barcodes(geometry, barcodes)
+                Scanner._slot_deep_scans(frame_img, self.plate, finder_patterns)
 
-        self.last_valid_plate = new_plate
-        return new_plate, diagnostic
+        print(self.plate.barcodes())
+
+        diagnostic.is_aligned = is_aligned
+        return self.plate, diagnostic
 
     def _get_geometry(self, pin_centers):
         """Align the puck to find the correct slot number for each datamatrix
@@ -99,50 +100,41 @@ class Scanner:
 
         return geometry
 
-    def _has_common_barcode(self, new_finders):
+    def _has_common_barcode(self, geometry, finder_patterns):
         read_barcodes = []
         has_common_barcodes = False
 
-        if self.last_valid_plate is None:
+        if self.plate is None:
             return has_common_barcodes, read_barcodes
 
+        # Make a list of the finder patterns with associated slot numbers
+        slotted_fps = [None] * geometry.num_slots
+        for fp in finder_patterns:
+            slot_num = geometry.containing_slot(fp.center)
+            slotted_fps[slot_num-1] = fp
+
         # Determine if the previous plate scan has any barcodes in common with this one.
-        for i, old_slot in enumerate(self.last_valid_plate.slots):
+        for i in range(self.plate.num_slots):
+            old_slot = self.plate.slot(i)
+            new_fp = slotted_fps[i-1]
             # Search through valid barcodes until we find a match
-            if (old_slot.state() == Slot.VALID) and (new_finders[i] is not None):
+            if (old_slot.state() == Slot.VALID) and (new_fp is not None):
                 # If we have a finder pattern in the same slot, try to read it. If it matches the previous barcode,
                 # then we have one in common, if it doesn't then we have a completely new plate. If we cant read
                 # the barcode, carry on looking for a match
-                barcode = DataMatrix(new_finders[i], self.frame_img)
+                barcode = DataMatrix(new_fp, self.frame_img)
                 read_barcodes.append(barcode)
-                # Remove the used finder pattern so we don't read it again
-                new_finders[i] = None
+
                 if barcode.is_valid():
                     # If it matches we have a common barcode, if not we have a clash; break either way
                     if barcode.data() == old_slot.get_barcode():
                         has_common_barcodes = True
-                        return has_common_barcodes, read_barcodes
-                    elif self.last_valid_plate.contains_barcode(barcode.data()):
+                    elif self.plate.contains_barcode(barcode.data()):
+                        print("ALIGNMENT ERROR - ", barcode.data(), old_slot.get_barcode(), i)
+
                         raise AlignmentException("Alignment Error")
 
         return has_common_barcodes, read_barcodes
-
-    def _merge_with_previous_plate(self, geometry, new_finders):
-        frame_num = self.last_valid_plate.frame + 1
-        plate_id = self.last_valid_plate.id
-        plate = Plate(barcodes=[], geometry=geometry, plate_type=self.plate_type,
-                      frame=frame_num, plate_id=plate_id)
-
-        # Combine old barcodes with new and create a new plate
-        for i, old_slot in enumerate(self.last_valid_plate.slots):
-            if (old_slot.state() == Slot.VALID) or (new_finders[i] is None):
-                plate.slots[i] = old_slot
-            else:
-                dm = DataMatrix(new_finders[i], self.frame_img)
-                plate.slots[i] = Slot(i+1, dm)
-
-        plate._sort_slots()
-        return plate
 
     @staticmethod
     def _slot_deep_scans(image, plate, finder_patterns, brightness_ratio=5):
@@ -173,20 +165,20 @@ class Scanner:
         # Calculate average finder pattern radius
         fp_radius = np.mean([fp.radius for fp in finder_patterns])
 
-        # Perform more detailed examination of slots for which we dont have results
+        # Perform more detailed examination of slots for which we don't have results
         for i, p in enumerate(plate._geometry._template_centers):
-            slot = plate.slots[i]
+            slot = plate.slot(i+1)
 
             # If no barcode (and slot is in view), check if slot is empty
             state = slot.state()
-            if state == Slot.EMPTY or state == Slot.NO_RESULT:
+            if state != Slot.VALID:
                 point_in_view = Scanner._image_contains_point(image, p, radius=fp_radius/2)
                 if point_in_view:
                     brightness = image.calculate_brightness(p, fp_radius / 2)
                     if brightness < avg_brightness / brightness_ratio:
-                        slot.empty = True
+                        slot.set_empty()
                     else:
-                        slot.empty = False
+                        slot.set_no_result()
 
             # If still no result, do a more careful scan for finder patterns and a more careful read
             if slot.state() == Slot.NO_RESULT or slot.state() == Slot.UNREADABLE:
@@ -200,14 +192,14 @@ class Scanner:
 
                 # If we have a valid looking finder pattern from shallow scan, try to use wiggles to read it
                 if(len(patterns) > 0):
-                    # probably dont need to bother with wiggles in continuous mode but perhaps we can keep a count
+                    # probably don't need to bother with wiggles in continuous mode but perhaps we can keep a count
                     # of the number of frames so far and then use wiggles if its taking a while.
                     w = 0.25
                     wiggle_offsets = [[0,0], [w, w],[-w,-w],[w,-w],[-w,w]]
 
                     barcode = DataMatrix(patterns[0], img, offsets=wiggle_offsets)
                     if barcode.is_valid():
-                        plate.slots[i] = Slot(i+1, barcode)
+                        slot.set_barcode(barcode)
                         #print("Good Wiggles - slot " + str(i+1))
                         Scanner.DEBUG_SAVE_IMAGE(img, "shallow_locate_wiggles_read", i)
                     else:
@@ -218,7 +210,7 @@ class Scanner:
                     barcode = DataMatrix(patterns_deep[0], img)
 
                     if barcode.is_valid():
-                        plate.slots[i] = Slot(i+1, barcode)
+                        slot.set_barcode(barcode)
                         #print("Good Deep scan - slot " + str(i+1))
                         Scanner.DEBUG_SAVE_IMAGE(img, "deep_locate_read", i)
                     else:

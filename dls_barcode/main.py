@@ -164,7 +164,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             plate, _ = Scanner().scan_next_frame(gray_image)
 
             # If the scan was successful, store the results
-            if plate.geometry_aligned:
+            if plate is not None:
                 # Highlight the image and display it
                 plate.draw_plate(cv_image, Image.BLUE)
                 plate.draw_pins(cv_image)

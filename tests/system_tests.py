@@ -63,12 +63,13 @@ def run_tests():
         store_scan(plate, cv_image)
 
         pass_count = 0
-        num_found = len([s for s in plate.slots if s.contains_barcode()])
+        slots = [plate.slot(i) for i in range(16)]
+        num_found = len([s for s in slots if s.contains_barcode()])
         for expected_code in expected_codes:
             text = expected_code[0]
             slot = expected_code[1]
 
-            data = plate.slots[slot-1].get_barcode()
+            data = plate.slot(slot).get_barcode()
             if data == text:
                 pass_count += 1
 

@@ -1,77 +1,84 @@
 import uuid
 
 from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
+from dls_barcode.datamatrix import DataMatrix
+
+
+class BadGeometryException(Exception):
+    pass
 
 
 class Plate:
     """ Represents a sample holder plate.
     """
-    def __init__(self, barcodes, geometry, plate_type, frame=1, plate_id=0):
-        self.frame = frame
-        self.id = plate_id
-        self.num_slots = geometry.num_slots
-        self.error = geometry.error
+    def __init__(self, plate_type="Unipuck", num_slots=16):
+        self.frame = 0
+        self.id = str(uuid.uuid1())
+
+        self.num_slots = num_slots
         self.type = plate_type
-        self._geometry = geometry
+        self.error = None
+        self._geometry = None
 
-        if plate_id == 0:
-            self.id = str(uuid.uuid1())
+        # Initialize slots
+        self._slots = [Slot(i) for i in range(self.num_slots)]
+        self._count_slots()
 
-        self.geometry_aligned = geometry.is_aligned()
+    def _count_slots(self):
+        self.num_empty_slots = len([slot for slot in self._slots if slot.state() == Slot.EMPTY])
+        self.num_valid_barcodes = len([slot for slot in self._slots if slot.state() == Slot.VALID])
 
-        # Initialize slots as empty
-        self.slots = [Slot(i, None) for i in range(self.num_slots)]
-
+    def merge_barcodes(self, geometry, barcodes):
+        """ Merge the set of barcodes from the scan of a new frame into this plate. """
         # If sample holder is aligned, fill appropriate slots with the correct barcodes
-        # If alignment failed, just fill slots from the start as no ordering possible.
-        if geometry.is_aligned():
-            for bc in barcodes:
-                center = bc.bounds()[0]
-                slot_num = geometry.containing_slot(center)
-                self.slots[slot_num-1] = Slot(number=slot_num, barcode=bc)
-        else:
-            for i, bc in enumerate(barcodes):
-                self.slots[i] = Slot(i+1, bc)
+        if not geometry.is_aligned:
+            raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
-        self._sort_slots()
+        for bc in barcodes:
+            center = bc.bounds()[0]
+            slot_num = geometry.containing_slot(center)
+            self.slot(slot_num).set_barcode(bc)
 
-    def _sort_slots(self):
-        self.slots.sort(key=lambda slot: slot.number)
-        self.num_empty_slots = len([slot for slot in self.slots if slot.state() == Slot.EMPTY])
-        self.num_valid_barcodes = len([slot for slot in self.slots if slot.state() == Slot.VALID])
+        self._count_slots()
+        self._geometry = geometry
+        self.error = geometry.error
+        self.frame += 1
+
+    def merge_fps(self, geometry, new_finder_patterns, frame_img):
+        """ Merge the set of finder patterns from a new scan into this plate. """
+        if not geometry.is_aligned:
+            raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
+
+        # Determine the slot numbers of the new finder patterns
+        slotted_fps = [None] * geometry.num_slots
+        for fp in new_finder_patterns:
+            slot_num = geometry.containing_slot(fp.center)
+            slotted_fps[slot_num-1] = fp
+
+        # Add in any new barcodes that we are missing
+        for i, existing_slot in enumerate(self._slots):
+            state = existing_slot.state()
+            fp = slotted_fps[i]
+            if state != Slot.VALID and fp:
+                barcode = DataMatrix(fp, frame_img)
+                self.slot(i).set_barcode(barcode)
+
+        self._count_slots()
+        self._geometry = geometry
+        self.error = geometry.error
+        self.frame += 1
+
+    def slot(self, i):
+        """ Get the numbered slot on this sample plate."""
+        return self._slots[i - 1]
 
     def barcodes(self):
         """ Returns a list of barcode strings. Empty slots are represented by the empty string.
         """
-        return [slot.get_barcode() for slot in self.slots]
+        return [slot.get_barcode() for slot in self._slots]
 
     def is_full_valid(self):
         return (self.num_valid_barcodes + self.num_empty_slots) == self.num_slots
-
-    def draw_barcodes(self, cvimg, ok_color, bad_color):
-        for slot in self.slots:
-            if slot.contains_barcode():
-                slot.barcode.draw(cvimg, ok_color, bad_color)
-
-    def draw_plate(self, cvimg, color):
-        self._geometry.draw_plate(cvimg, color)
-
-    def draw_pins(self, cvimg):
-        from dls_barcode import Image
-        for i, slot in enumerate(self.slots):
-            state = slot.state()
-            if state == Slot.UNREADABLE:
-                color = Image.ORANGE
-            elif state == Slot.VALID:
-                color = Image.GREEN
-            elif state == Slot.EMPTY:
-                color = Image.GREY
-            else:
-                color = Image.RED
-            self._geometry.draw_pin_highlight(cvimg, color, i+1)
-
-    def crop_image(self, cvimg):
-        self._geometry.crop_image(cvimg)
 
     def contains_barcode(self, barcode):
         """ Returns true if the plate contains a slot with the specified barcode value
@@ -85,47 +92,48 @@ class Plate:
 
         return False
 
-    def has_slots_in_common(self, plateB):
+    def has_slots_in_common(self, plate_b):
         """ Returns true if the specified plate has any slots with valid barcodes in
         common with this plate.
         """
-        plateA = self
-        if plateA.type != plateB.type:
+        plate_a = self
+        if plate_a.type != plate_b.type:
             return False
 
-        for i, slotA in enumerate(plateA.slots):
-            slotB = plateB.slots[i]
-            if slotA.state() == Slot.VALID:
-                if slotA.get_barcode() == slotB.get_barcode():
+        for i, slot_a in enumerate(plate_a._slots):
+            slot_b = plate_b.slot(i+1)
+            if slot_a.state() == Slot.VALID:
+                if slot_a.get_barcode() == slot_b.get_barcode():
                     return True
 
         return False
 
-    def merge(self, partial_plate):
-        """ Merge this plate with another plate to make a new plate. This is used if
-        each plate is from a partially successful scan, i.e., some of the barcodes were
-        captured but some were missed. By combining the two plates we can hopefully capture
-        every barcode.
-        """
-        plateB = partial_plate
+    #########################
+    # DRAWING FUNCTIONS
+    #########################
+    def draw_barcodes(self, cvimg, ok_color, bad_color):
+        for slot in self._slots:
+            if slot.contains_barcode():
+                slot._barcode.draw(cvimg, ok_color, bad_color)
 
-        # Raise exception if plate type incompatible
-        if self.type != plateB.type:
-            raise Exception("Cannot merge plate of type '{}' with one of type '{}'".format(self.type, plateB.type))
+    def draw_plate(self, cvimg, color):
+        self._geometry.draw_plate(cvimg, color)
 
-        slots = []
+    def draw_pins(self, cvimg):
+        from dls_barcode import Image
+        for i, slot in enumerate(self._slots):
+            state = slot.state()
+            if state == Slot.UNREADABLE:
+                color = Image.ORANGE
+            elif state == Slot.VALID:
+                color = Image.GREEN
+            elif state == Slot.EMPTY:
+                color = Image.GREY
+            else:
+                color = Image.RED
+            self._geometry.draw_pin_highlight(cvimg, color, i+1)
 
-        # TODO: implement transform function
-        # a_to_b_transform = geometry.create_mapping(plateB._geometry)
-
-        # TODO: throw exception if the two barcodes in the same slot do not match
-        test_before = max(plateB.num_valid_barcodes, self.num_valid_barcodes)
-        for i, slotA in enumerate(self.slots):
-            slotB = plateB.slots[i]
-            if not slotA.state() == Slot.VALID and slotB.state() == Slot.VALID:
-                self.slots[i] = slotB
-                # TODO: transform location of B barcode - so that printing of barcodes on image is about right
-
-        self._sort_slots()
+    def crop_image(self, cvimg):
+        self._geometry.crop_image(cvimg)
 
 
