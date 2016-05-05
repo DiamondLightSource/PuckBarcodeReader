@@ -7,11 +7,11 @@ import numpy as np
 from .finder_pattern import FinderPattern
 from dls_barcode.util import Transform, Image
 
-DEBUG = True
-
 class SquareLocator:
     """ Utility to locate a single datamatrix finder pattern in a small image in which the datamatrix
     is located roughly in the middle of the image, but at any orientation. """
+
+    DEBUG = False
 
     def __init__(self):
         self.metric_cache = dict()
@@ -21,7 +21,7 @@ class SquareLocator:
         # Clear cache
         self.metric_cache = dict()
 
-        if DEBUG:
+        if self.DEBUG:
             gray_img.rescale(4).popup()
 
         # Threshold the image converting it to a binary image
@@ -32,20 +32,18 @@ class SquareLocator:
         # Get the finder pattern
         fp = self._locate_finder_in_square(binary_image, best_transform, barcode_size)
 
-        if DEBUG and fp is not None:
+        if self.DEBUG and fp is not None:
             img = _draw_finder_pattern(binary_image, best_transform, barcode_size, fp)
             img.rescale(4).popup()
 
         best_transform = self.DEBUG_find_best_L(binary_image, best_transform, barcode_size)
         fp = self._locate_finder_in_square(binary_image, best_transform, barcode_size)
 
-        if DEBUG and fp is not None:
+        if self.DEBUG and fp is not None:
             img = _draw_finder_pattern(binary_image, best_transform, barcode_size, fp)
             img.rescale(4).popup()
 
-
         return fp
-
 
     def _adaptive_threshold(self, image, blocksize, C):
         """ Perform an adaptive threshold operation on the image, reducing it to a binary image.
@@ -54,7 +52,6 @@ class SquareLocator:
             cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, blocksize, C)
 
         return Image(None, thresh)
-
 
     def _minimise_integer_grid(self, binary_image, center, side_length):
         """ Attempt to locate the square area (of the specified size, centered on the specified
@@ -70,7 +67,7 @@ class SquareLocator:
         best_trs = initial_transform
 
         ITERS = 0
-        if DEBUG:
+        if self.DEBUG:
             img = binary_image.to_alpha()
             img = _draw_square(img, initial_transform, side_length)
             img.rescale(4).popup()
@@ -89,7 +86,7 @@ class SquareLocator:
 
             initial_transform = best_trs
 
-            if DEBUG:
+            if self.DEBUG:
                 img = binary_image.to_alpha()
                 img = _draw_square(img, initial_transform, side_length)
                 img.rescale(4).popup()
@@ -140,11 +137,7 @@ class SquareLocator:
 
         else:
             rotated = binary_image.rotate(angle, center)
-
-            x1, y1 = int(round(cx-size/2)), int(round(cy-size/2))
-            x2, y2 = int(round(x1 + size)), int(round(y1 + size))
-
-            brightness = np.sum(rotated.img[y1:y2, x1:x2]) / (size * size)
+            brightness = rotated.calculate_brightness(center, size)
 
             # Store in dictionary
             self.metric_cache[key] = brightness

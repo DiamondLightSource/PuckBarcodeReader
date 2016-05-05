@@ -1,7 +1,6 @@
 from __future__ import division
 
 import numpy as np
-from functools import partial
 
 from .locate_square import SquareLocator
 from .locate_contour import ContourLocator
@@ -17,9 +16,7 @@ class Locator:
         self._image = None
         self._single = False
 
-
     def locate_datamatrices(self, gray_img, single=False, expected_radius=0):
-
         self._image = gray_img
         self._single = single
         self._median_radius = expected_radius
@@ -29,7 +26,7 @@ class Locator:
             finder_patterns = list(filter(self._filter_image_edges, finder_patterns))
             finder_patterns = list(filter(self._filter_median_radius, finder_patterns))
             if not finder_patterns:
-                pass#finder_patterns = [self._square_single()]
+                finder_patterns = [self._square_single()]
 
         else:
             finder_patterns = self._contours_global()
