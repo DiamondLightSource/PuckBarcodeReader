@@ -43,6 +43,7 @@ class Scanner:
         geometry = Unipuck(pin_centers)
         is_aligned = geometry.is_aligned()
 
+        # ---------- READ SOME BARCODES ----------------------
         if is_aligned:
             try:
                 # Determine if the previous plate scan has any barcodes in common with this one.
@@ -54,22 +55,14 @@ class Scanner:
                 is_aligned = False
                 old_num_fps = len(self.plate._geometry._pin_centers)
                 new_num_fps = len(finder_patterns)
-                print(old_num_fps, new_num_fps)
+                print("ALIGN ERROR", old_num_fps, new_num_fps)
                 # TODO: resolve conflict if alignments don't match - assume one with most points is best
 
-        # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
-        # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
-        # previous late over to their slot in the new plate. Then r toread any that we haven't already read.
-        if is_aligned and is_same_plate:
-            print("MERGING!!!!!!!!")
-            self.plate.merge_fps(geometry, finder_patterns, self.frame_img)
-            self._slot_deep_scans(finder_patterns)
-            diagnostic.has_barcodes = True
-
+        # ------------- NEW PLATE ----------------------------
         # If there are no barcodes in common with the previous plate scan, read any that
         # haven't already been read and return a new plate.
         if is_aligned and not is_same_plate:
-            print("NEW PLATE")
+            print("NEW PLATE")  # DEBUG
             used_fps = [barcode._finder_pattern for barcode in read_barcodes]
             remaining_fps = [fp for fp in finder_patterns if fp not in used_fps]
             barcodes = [DataMatrix(fp, frame_img) for fp in remaining_fps]
@@ -79,10 +72,20 @@ class Scanner:
             diagnostic.has_barcodes = any_valid_barcodes
             if any_valid_barcodes:
                 self.plate = Plate(self.plate_type, self.num_slots)
-                self.plate.merge_barcodes(geometry, barcodes)
+                self.plate.initialize_from_barcodes(geometry, barcodes)
                 self._slot_deep_scans(finder_patterns)
 
-        print(self.plate.barcodes())
+        # ------------- SAME PLATE --------------------------
+        # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
+        # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
+        # previous plate over to their slot in the new plate. Then read any that we haven't already read.
+        if is_aligned and is_same_plate:
+            print("MERGING!!!!!!!!")  # DEBUG
+            self.plate.merge_new_frame(geometry, finder_patterns, self.frame_img)
+            self._slot_deep_scans(finder_patterns)
+            diagnostic.has_barcodes = True
+
+        print(self.plate.barcodes())  # DEBUG
 
         diagnostic.is_aligned = is_aligned
         return self.plate, diagnostic
@@ -211,7 +214,11 @@ class Scanner:
                     Scanner.DEBUG_SAVE_IMAGE(slot_img, "no_locate", i)
 
     def _calculate_average_pin_brightness(self, finder_patterns):
-        # Calculate the average brightness of the located barcodes
+        """ Calculate the brightness of a small area at each finder pattern and return the average value.
+        A finder pattern will be much brighter than an empty slot as it usually contains plenty of white
+        pixels. This allows us to distinguish between an empty slot with no pin, and a slot with a pin
+        where we just haven't been able to locate the finder pattern.
+        """
         pin_brights = []
         for fp in finder_patterns:
             center_in_frame = Scanner._image_contains_point(self.frame_img, fp.center, radius=fp.radius/2)

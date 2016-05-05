@@ -12,7 +12,7 @@ class Plate:
     """ Represents a sample holder plate.
     """
     def __init__(self, plate_type="Unipuck", num_slots=16):
-        self.frame = 0
+        self.total_frames = 0
         self.id = str(uuid.uuid1())
 
         self.num_slots = num_slots
@@ -21,31 +21,35 @@ class Plate:
         self._geometry = None
 
         # Initialize slots
-        self._slots = [Slot(i) for i in range(self.num_slots)]
-        self._count_slots()
+        self._slots = [Slot(i) for i in range(1, self.num_slots+1)]
 
-    def _count_slots(self):
-        self.num_empty_slots = len([slot for slot in self._slots if slot.state() == Slot.EMPTY])
-        self.num_valid_barcodes = len([slot for slot in self._slots if slot.state() == Slot.VALID])
-
-    def merge_barcodes(self, geometry, barcodes):
+    def initialize_from_barcodes(self, geometry, barcodes):
         """ Merge the set of barcodes from the scan of a new frame into this plate. """
+        # Set the frame count
+        self.total_frames += 1
+
         # If sample holder is aligned, fill appropriate slots with the correct barcodes
         if not geometry.is_aligned:
             raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
-        for bc in barcodes:
-            center = bc.bounds()[0]
-            slot_num = geometry.containing_slot(center)
-            self.slot(slot_num).set_barcode(bc)
+        for slot in self._slots:
+            slot_num = slot.number()
+            bounds = geometry.slot_bounds(slot_num)
+            barcode = _find_matching_barcode(bounds, barcodes)
 
-        self._count_slots()
+            slot.set_bounds(bounds)
+            slot.set_barcode(barcode)
+
         self._geometry = geometry
         self.error = geometry.error
-        self.frame += 1
+        self.total_frames += 1
 
-    def merge_fps(self, geometry, new_finder_patterns, frame_img):
-        """ Merge the set of finder patterns from a new scan into this plate. """
+    def merge_new_frame(self, geometry, new_finder_patterns, frame_img):
+        """ Merge the set of finder patterns from a new scan into this plate.
+        """
+        # Set the frame count
+        self.total_frames += 1
+
         if not geometry.is_aligned:
             raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
@@ -63,11 +67,12 @@ class Plate:
                 barcode = DataMatrix(fp, frame_img)
                 self.slot(i).set_barcode(barcode)
 
-        self._count_slots()
         self._geometry = geometry
         self.error = geometry.error
-        self.frame += 1
 
+    #########################
+    # ACCESSOR FUNCTIONS
+    #########################
     def slot(self, i):
         """ Get the numbered slot on this sample plate."""
         return self._slots[i - 1]
@@ -77,12 +82,20 @@ class Plate:
         """
         return [slot.get_barcode() for slot in self._slots]
 
+    #########################
+    # STATUS FUNCTIONS
+    #########################
+    def num_empty_slots(self):
+        return len([slot for slot in self._slots if slot.state() == Slot.EMPTY])
+
+    def num_valid_barcodes(self):
+        return len([slot for slot in self._slots if slot.state() == Slot.VALID])
+
     def is_full_valid(self):
-        return (self.num_valid_barcodes + self.num_empty_slots) == self.num_slots
+        return (self.num_valid_barcodes() + self.num_empty_slots()) == self.num_slots
 
     def contains_barcode(self, barcode):
-        """ Returns true if the plate contains a slot with the specified barcode value
-        """
+        """ Returns true if the plate contains a slot with the specified barcode value. """
         if barcode == EMPTY_SLOT_SYMBOL or barcode == NOT_FOUND_SLOT_SYMBOL:
             return False
 
@@ -137,3 +150,20 @@ class Plate:
         self._geometry.crop_image(cvimg)
 
 
+def _find_matching_barcode(slot_bounds, barcodes):
+    slot_center, slot_radius = slot_bounds
+    slot_sq = slot_radius * slot_radius
+    for bc in barcodes:
+        barcode_center = bc.bounds()[0]
+        if _distance_sq(slot_center, barcode_center) < slot_sq:
+            return bc
+
+    return None
+
+
+def _distance_sq(a, b):
+    """ Calculates the square of the distance from a to b.
+    """
+    x = a[0]-b[0]
+    y = a[1]-b[1]
+    return x**2+y**2

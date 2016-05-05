@@ -55,6 +55,21 @@ class Unipuck:
         """
         return self._aligned
 
+    def slot_bounds(self, slot_num):
+        center = self._template_centers[slot_num-1]
+        return center, self._slot_radius
+
+    def containing_slot(self, point):
+        """ Returns the number of the slot which contains the specified point or 0 otherwise.
+        """
+        slot_sq = self._slot_radius * self._slot_radius
+        for i, center in  enumerate(self._template_centers):
+            # slots are non-overlapping so if its in the slot radius, it must be the closest
+            if distance_sq(center, point) < slot_sq:
+                return i+1
+
+        return None
+
     def draw_plate(self, cvimg, color):
         """ Draws an outline of the puck on the supplied image including the locations of the slots.
         """
@@ -76,17 +91,6 @@ class Unipuck:
         """ Crops the image to the area which contains the puck.
         """
         cvimg.crop_image(self._puck_center, 1.1 * self._puck_radius)
-
-    def containing_slot(self, point):
-        """ Returns the number of the slot which contains the specified point or 0 otherwise.
-        """
-        slot_sq = self._slot_radius * self._slot_radius
-        for i, center in  enumerate(self._template_centers):
-            # slots are non-overlapping so if its in the slot radius, it must be the closest
-            if distance_sq(center, point) < slot_sq:
-                return i+1
-
-        return None
 
     def _perform_alignment(self):
         """ Determine the puck geometry (position and orientation) for the locations of the
@@ -122,13 +126,13 @@ class Unipuck:
         centroid = calculate_centroid(pin_centers)
 
         # Calculate distance from center to each pin-center
-        distances = [[p,distance(p, centroid)] for p in pin_centers]
+        distances = [[p, distance(p, centroid)] for p in pin_centers]
         distances = sorted(distances, key=lambda distance: distance[1])
 
         # Sort the points into two layers based on their distance from the centroid
         layer_break = _partition([d for p, d in distances])
-        first_layer = [[x,y] for (x,y), d in distances[:layer_break]]
-        second_layer = [[x,y] for (x,y), d in distances[layer_break:]]
+        first_layer = [[x, y] for (x, y), d in distances[:layer_break]]
+        second_layer = [[x, y] for (x, y), d in distances[layer_break:]]
 
         # Optimise for the puck center by finding the point that is equidistant from every point in each layer
         center = fmin(func=_center_minimiser, x0=centroid, args=tuple([[first_layer, second_layer]]), xtol=1, disp=False)
@@ -241,7 +245,7 @@ def calculate_centroid(points):
     """
     x = [p[0] for p in points]
     y = [p[1] for p in points]
-    return (int(sum(x) / len(points)), int(sum(y) / len(points)))
+    return int(sum(x) / len(points)), int(sum(y) / len(points))
 
 
 def _center_minimiser(center, layers):
@@ -285,7 +289,7 @@ def _partition(numbers):
 
         s += 1
 
-        distance_from_av1 =  numbers[s] - gp1_average
+        distance_from_av1 = numbers[s] - gp1_average
         distance_from_av2 = gp2_average - numbers[s]
 
         if distance_from_av1 > distance_from_av2:

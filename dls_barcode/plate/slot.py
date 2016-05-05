@@ -12,12 +12,33 @@ class Slot:
 
     def __init__(self, number):
         self._number = number
+        self._bounds = None
+        self._barcode_position = None
         self._barcode = None
         self._empty = False
+
+        self._total_frames = 0
+
+    def increment_frame(self):
+        self._total_frames += 1
 
     def number(self):
         """ Get the slot number. """
         return self._number
+
+    def bounds(self):
+        """ Get the bounds ((x,y), radius) of the slot (as determined by the geometry). """
+        return self._bounds
+
+    def barcode_position(self):
+        """ Get the position (x,y) of the center of the barcode. """
+        return self._barcode_position
+
+    def set_bounds(self, bounds):
+        self._bounds = bounds
+
+    def set_barcode_position(self, coord):
+        self._barcode_position = coord
 
     def set_barcode(self, barcode):
         self._barcode = barcode
@@ -55,4 +76,3 @@ class Slot:
             return EMPTY_SLOT_SYMBOL
         else:
             return NOT_FOUND_SLOT_SYMBOL
-
