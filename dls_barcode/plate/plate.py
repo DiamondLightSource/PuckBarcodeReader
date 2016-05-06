@@ -80,13 +80,15 @@ class Plate:
             # otherwise use the slot center position (from geometry) as an approximation
             if barcode:
                 slot.set_barcode_position(barcode.center())
-            elif state == Slot.VALID or state == Slot.UNREADABLE:
+            else:
                 slot.set_barcode_position(bounds[0])
 
             # If we haven't already found this barcode data, try to read it from the new barcode
             if state != Slot.VALID and barcode:
                 barcode.perform_read()
                 slot.set_barcode(barcode)
+            elif state == Slot.UNREADABLE:
+                slot.set_barcode(None)
 
             slot.increment_frame()
 

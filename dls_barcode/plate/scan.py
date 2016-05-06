@@ -1,10 +1,9 @@
 from __future__ import division
 
-import math
 import numpy as np
 from pkg_resources import require
 
-from dls_barcode.datamatrix import DataMatrix, Locator
+from dls_barcode.datamatrix import DataMatrix
 from dls_barcode.util import Transform
 from .geometry_unipuck import Unipuck
 from .plate import Plate, Slot
@@ -63,7 +62,7 @@ class Scanner:
             if any_valid_barcodes:
                 self.plate = Plate(self.plate_type, self.num_slots)
                 self.plate.initialize_from_barcodes(geometry, barcodes)
-                #self._slot_deep_scans(finder_patterns)
+                self._slot_deep_scans(barcodes)
 
         # ------------- ADJUST ALIGNMENT -------------------
         if is_aligned and is_same_plate and not is_same_align:
@@ -78,7 +77,7 @@ class Scanner:
         # previous plate over to their slot in the new plate. Then read any that we haven't already read.
         if is_aligned and is_same_plate:
             self.plate.merge_new_frame(geometry, barcodes)
-            #self._slot_deep_scans(finder_patterns)
+            self._slot_deep_scans(barcodes)
             diagnostic.has_barcodes = True
 
         print(self.plate.barcodes())  # DEBUG
@@ -122,7 +121,6 @@ class Scanner:
             has_common_geometry = new_bc.data() == old_slot.barcode_data()
             has_common_barcodes = has_common_geometry or self.plate.contains_barcode(new_bc.data())
 
-
             # If the geometry of this and the previous frame line up, then we are done. Otherwise we
             # need to read at least 2 barcodes so we can perform a realignment.
             if has_common_geometry or num_common_barcodes >= 2:
@@ -132,11 +130,10 @@ class Scanner:
         return has_common_barcodes, has_common_geometry
 
     def _adjust_alignment(self, barcodes):
+        # TODO: document this method
         # Get the two common barcodes
         valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
-
-        # DEBUG
-        if len(valid_barcodes) != 2:
+        if len(valid_barcodes) != 2:  # DEBUG
             raise Exception("Not enough barcodes to perform realignment")
 
         print("ALIGNMENT ADJUSTMENT")
@@ -156,15 +153,7 @@ class Scanner:
                 pos_b_old = slot.barcode_position()
 
         # Determine the transformation that maps the old points to the new
-        try:
-            line_transform = Transform.line_mapping(pos_a_old, pos_b_old, pos_a_new, pos_b_new)
-        except Exception as e:
-            # DEBUG
-            print("-----Error checker------")
-            print("valid", [bc.data() for bc in valid_barcodes])
-            print("slots", self.plate.barcodes())
-            print("------------------------")
-            raise e
+        line_transform = Transform.line_mapping(pos_a_old, pos_b_old, pos_a_new, pos_b_new)
 
         # Transform all old space bc centers to new space
         transformed_bc_centers = []
@@ -193,7 +182,7 @@ class Scanner:
 
         return geometry
 
-    def _slot_deep_scans(self, finder_patterns, brightness_ratio=5):
+    def _slot_deep_scans(self, barcodes, brightness_ratio=5):
         """ Determine if any of the slots in the plate which don't contain barcodes are actually empty
         (i.e. don't contain a pin). If this is the case then mark them as such. If this is not the case
         then it probably means that the slot contains a pin but the locator algorithm was not able to
@@ -206,33 +195,35 @@ class Scanner:
         empty (do not contain a pin).
         """
         # Calculate the average brightness of the located barcodes
-        avg_brightness = self._calculate_average_pin_brightness(finder_patterns)
+        avg_brightness = self._calculate_average_pin_brightness(barcodes)
         brightness_threshold = avg_brightness / brightness_ratio
 
-        # Calculate average finder pattern radius
-        fp_radius = np.mean([fp.radius for fp in finder_patterns])
+        # Calculate average barcode radius
+        bc_radius = np.mean([bc.radius() for bc in barcodes])
 
         # Perform more detailed examination of slots for which we don't have results
-        slot_centers = self.plate._geometry._template_centers
-        for i, p in enumerate(slot_centers):
-            slot = self.plate.slot(i+1)
+        for slot in self.plate._slots:
+            center = slot.barcode_position()
+            state = slot.state()
 
-            # If we cant see the slot in the current frame, continue to next slot
-            slot_in_frame = Scanner._image_contains_point(self.frame_img, p, radius=fp_radius/2)
+            # If the slot barcode has already been read correctly, skip it
+            if state == Slot.VALID:
+                continue
+
+            # If we cant see the slot in the current frame, skip it
+            slot_in_frame = Scanner._image_contains_point(self.frame_img, center, radius=bc_radius/2)
             if not slot_in_frame:
                 continue
 
-            # If no valid barcode, check if slot is empty
-            state = slot.state()
-            if state != Slot.VALID:
-                brightness = self.frame_img.calculate_brightness(p, fp_radius / 2)
-                if brightness < brightness_threshold:
-                    slot.set_empty()
-                elif state == Slot.EMPTY:
-                    slot.set_no_result()
+            # Check if slot is empty
+            brightness = self.frame_img.calculate_brightness(center, bc_radius / 2)
+            if brightness < brightness_threshold:
+                slot.set_empty()
+            elif state == Slot.EMPTY:
+                slot.set_no_result()
 
+            '''
             # If still no result, do a more careful scan for finder patterns and a more careful read
-            state = slot.state()
             if state == Slot.NO_RESULT or state == Slot.UNREADABLE:
                 slot_img, _ = self.frame_img.sub_image(p, fp_radius * 2)
 
@@ -279,17 +270,19 @@ class Scanner:
                 else:
                     Scanner.DEBUG_SAVE_IMAGE(slot_img, "no_locate", i)
 
-    def _calculate_average_pin_brightness(self, finder_patterns):
-        """ Calculate the brightness of a small area at each finder pattern and return the average value.
-        A finder pattern will be much brighter than an empty slot as it usually contains plenty of white
+            '''
+
+    def _calculate_average_pin_brightness(self, barcodes):
+        """ Calculate the brightness of a small area at each barcode and return the average value.
+        A barcode will be much brighter than an empty slot as it usually contains plenty of white
         pixels. This allows us to distinguish between an empty slot with no pin, and a slot with a pin
-        where we just haven't been able to locate the finder pattern.
+        where we just haven't been able to locate the barcode.
         """
         pin_brights = []
-        for fp in finder_patterns:
-            center_in_frame = Scanner._image_contains_point(self.frame_img, fp.center, radius=fp.radius/2)
+        for bc in barcodes:
+            center_in_frame = Scanner._image_contains_point(self.frame_img, bc.center(), radius=bc.radius()/2)
             if center_in_frame:
-                brightness = self.frame_img.calculate_brightness(fp.center, fp.radius / 2)
+                brightness = self.frame_img.calculate_brightness(bc.center(), bc.radius() / 2)
                 pin_brights.append(brightness)
 
         if any(pin_brights):
