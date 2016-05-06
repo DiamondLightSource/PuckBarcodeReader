@@ -136,16 +136,16 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
 
             # If the plate has the required number of barcodes, store it
             elif plate.is_full_valid():
-                    Overlay(plate).draw_on_image(cv_image.img)
-                    plate.crop_image(cv_image)
-                    result_queue.put((plate, cv_image))
-                    last_full_plate = plate
+                Overlay(plate).draw_on_image(cv_image.img)
+                plate.crop_image(cv_image)
+                result_queue.put((plate, cv_image))
+                last_full_plate = plate
 
             # If there were any barcodes in the frame, make a beep sound
             elif diagnostic.has_barcodes:
-                    frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes) / plate.num_slots)) + 37
-                    winsound.Beep(frequency, 200)
-                    overlay_queue.put(Overlay(plate))
+                frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots)) + 37
+                winsound.Beep(frequency, 200)
+                overlay_queue.put(Overlay(plate))
 
             last_plate = plate
 

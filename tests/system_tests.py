@@ -69,7 +69,7 @@ def run_tests():
             text = expected_code[0]
             slot = expected_code[1]
 
-            data = plate.slot(slot).get_barcode()
+            data = plate.slot(slot).barcode_data()
             if data == text:
                 pass_count += 1
 

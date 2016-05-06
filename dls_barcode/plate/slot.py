@@ -31,7 +31,8 @@ class Slot:
         return self._bounds
 
     def barcode_position(self):
-        """ Get the position (x,y) of the center of the barcode. """
+        """ Get the position (x,y) of the center of the barcode (not exactly the same as the
+        bounds center as predicted by the geometry. """
         return self._barcode_position
 
     def set_bounds(self, bounds):
@@ -66,7 +67,7 @@ class Slot:
         state = self.state()
         return state == Slot.UNREADABLE or state == Slot.VALID
 
-    def get_barcode(self):
+    def barcode_data(self):
         """ Gets a string representation of the barcode data; returns an empty
         string if slot is empty
         """

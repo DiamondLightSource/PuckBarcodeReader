@@ -7,26 +7,68 @@ from .reedsolo import ReedSolomonError
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
 # reading doesn't produce sensible results, we try to offset the estimated location of the squares
 # and try again.
-wiggle_offsets = [[0,0]]
+wiggle_offsets = [[0, 0]]
 
 # Data value that is returned if the barcode cannot be read for whatever reason
 BAD_DATA_SYMBOL = "-CANT-READ-"
 
+
+class BarcodeReadNotPerformedException(Exception):
+    pass
+
+
+class BarcodeReadAlreadyPerformedException(Exception):
+    pass
+
+
 class DataMatrix:
-    def __init__(self, finder_pattern, gray_img, offsets=wiggle_offsets):
-        """ Representation of a DataMatrix in an image.
-        """
+    """ Representation of a DataMatrix and its location in an image.
+    """
+    def __init__(self, finder_pattern, image):
+        """ Initialize the DataMatrix object with its finder pattern location in an image. To actually
+        interpret the DataMatrix, the perform_read() function must be called, which will attempt to read
+        the DM from the supplied image."""
         self._finder_pattern = finder_pattern
+        self._image = image.img
         self._data = None
         self._error_message = ""
         self._read_ok = False
         self._damaged_symbol = False
-        self._offsets = offsets
+        self._is_read_performed = False
 
-        # Read the data contained in the barcode from the image
-        self._read(gray_img.img)
+    def perform_read(self, offsets=wiggle_offsets):
+        """ Attempt to read the DataMatrix from the image supplied in the constructor at the position
+        given by the finder pattern. This is not performed automatically upon construction because the
+        read operation is relatively expensive and might not always be needed.
+        """
+        if not self._is_read_performed:
+            # Read the data contained in the barcode from the image
+            self._read(self._image, offsets)
+            self._is_read_performed = True
+
+    def is_read(self):
+        """ True if the read operation has been performed (whether successful or not) """
+        return self._is_read_performed
+
+    def is_valid(self):
+        """ True if the data matrix was read successfully. """
+        if not self._is_read_performed:
+            raise BarcodeReadNotPerformedException()
+
+        return self._read_ok
+
+    def is_unreadable(self):
+        """ True if the data matrix could not be decoded (because of damage to the symbol). """
+        if not self._is_read_performed:
+            raise BarcodeReadNotPerformedException()
+
+        return self._damaged_symbol
 
     def data(self):
+        """ String representation of the barcode data. """
+        if not self._is_read_performed:
+            raise BarcodeReadNotPerformedException()
+
         if self._read_ok:
             return self._data
         elif self._damaged_symbol:
@@ -35,21 +77,18 @@ class DataMatrix:
             return ''
 
     def bounds(self):
-        """ A circle which bounds the data matrix (center, radius)
-        """
+        """ A circle which bounds the data matrix (center, radius). """
         return self._finder_pattern.bounds()
 
-    def is_valid(self):
-        """ True if the data matrix was read successfully
-        """
-        return self._read_ok
+    def center(self):
+        """ The center position (x,y) of the DataMatrix finder pattern. """
+        return self._finder_pattern.center
 
-    def is_unreadable(self):
-        """ True if the data matrix could not be decoded (because of damage to the symbol)
-        """
-        return self._damaged_symbol
+    def radius(self):
+        """ The radius (center-to-corner distance) of the DataMatrix finder pattern. """
+        return self._finder_pattern.radius
 
-    def _read(self, gray_image):
+    def _read(self, gray_image, offsets):
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
@@ -57,27 +96,27 @@ class DataMatrix:
         decoder = Decoder()
 
         # Try a few different small offsets for the sample positions until we find one that works
-        for offset in self._offsets:
+        for offset in offsets:
             # Read the bit array at the target location (with offset)
             bit_array = reader.read_bitarray(self._finder_pattern, offset, gray_image)
 
+            if bit_array is None:
+                continue
+
             # If the bit array is valid, decode it and create a datamatrix object
-            if bit_array is not None:
-                # Decode the bits from the datamatrix
-                try:
-                    self._data = decoder.read_datamatrix(bit_array)
-                    self._read_ok = True
-                    self._damaged_symbol = False
-                    self._error_message = ""
-                    break
-                except (ReedSolomonError, Exception) as ex:
-                    self._read_ok = False
-                    self._damaged_symbol = True
-                    self._error_message = ex.message
+            try:
+                self._data = decoder.read_datamatrix(bit_array)
+                self._read_ok = True
+                self._damaged_symbol = False
+                self._error_message = ""
+                break
+            except (ReedSolomonError, Exception) as ex:
+                self._read_ok = False
+                self._damaged_symbol = True
+                self._error_message = ex.message
 
     def draw(self, cvimg, ok_color, bad_color):
-        """ Draw the lines of the finder pattern on the specified image
-        """
+        """ Draw the lines of the finder pattern on the specified image. """
         fp = self._finder_pattern
         color = bad_color if self.is_unreadable() else ok_color
         cvimg.draw_line(fp.c1, fp.c2, color)
@@ -89,4 +128,5 @@ class DataMatrix:
         """
         locator = Locator()
         finder_patterns = locator.locate_datamatrices(grayscale_img)
-        return list(finder_patterns)
+        unread_barcodes = [DataMatrix(fp, grayscale_img) for fp in finder_patterns]
+        return list(unread_barcodes)

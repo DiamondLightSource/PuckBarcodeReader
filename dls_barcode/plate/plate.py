@@ -1,7 +1,6 @@
 import uuid
 
 from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
-from dls_barcode.datamatrix import DataMatrix
 
 
 class BadGeometryException(Exception):
@@ -24,28 +23,41 @@ class Plate:
         self._slots = [Slot(i) for i in range(1, self.num_slots+1)]
 
     def initialize_from_barcodes(self, geometry, barcodes):
-        """ Merge the set of barcodes from the scan of a new frame into this plate. """
-        # Set the frame count
-        self.total_frames += 1
-
-        # If sample holder is aligned, fill appropriate slots with the correct barcodes
+        """ Initialize the plate with the set of barcodes from the scan of a new frame. The position
+        of each slot (in the image) has already been calculated in the Geometry object. We store this
+        calculated position as well as the actual center position of the barcode itself in the slot
+        object. This allows us to properly determine which barcode goes in which slot in subsequent
+        image frames, even if the sample holder has been moved around.
+        """
         if not geometry.is_aligned:
             raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
+        # Fill each slot with the correct barcodes
         for slot in self._slots:
             slot_num = slot.number()
             bounds = geometry.slot_bounds(slot_num)
             barcode = _find_matching_barcode(bounds, barcodes)
+            position = barcode.center() if barcode else bounds[0]
 
             slot.set_bounds(bounds)
             slot.set_barcode(barcode)
+            slot.set_barcode_position(position)
+            slot.increment_frame()
 
         self._geometry = geometry
         self.error = geometry.error
         self.total_frames += 1
 
-    def merge_new_frame(self, geometry, new_finder_patterns, frame_img):
-        """ Merge the set of finder patterns from a new scan into this plate.
+    def merge_new_frame(self, geometry, new_barcodes):
+        """ Merge the set of barcodes from a new scan into this plate. The new set comes from a new image
+        of the same plate, so will almost certainly contain many of the same barcodes. Actually reading a
+        barcode is relatively expensive; we iterate through each slot in the plate and only attempt to
+        perform a read if we don't already have valid barcode data for the slot.
+
+        For each new frame we update the slot bounds (center, radius) with that calculated by the geometry
+        object and update the slot position with the actual position of the center of the barcode. The
+        position is likely to be similar to, but not exactly the same as, the bound's center. This info
+        is retained as it allows us to properly calculate the geometry for future frames.
         """
         # Set the frame count
         self.total_frames += 1
@@ -53,19 +65,30 @@ class Plate:
         if not geometry.is_aligned:
             raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
-        # Determine the slot numbers of the new finder patterns
-        slotted_fps = [None] * geometry.num_slots
-        for fp in new_finder_patterns:
-            slot_num = geometry.containing_slot(fp.center)
-            slotted_fps[slot_num-1] = fp
+        for slot in self._slots:
+            slot_num = slot.number()
+            state = slot.state()
 
-        # Add in any new barcodes that we are missing
-        for i, existing_slot in enumerate(self._slots):
-            state = existing_slot.state()
-            fp = slotted_fps[i]
-            if state != Slot.VALID and fp:
-                barcode = DataMatrix(fp, frame_img)
-                self.slot(i).set_barcode(barcode)
+            # Set slot bounds - as determined by the geometry
+            bounds = geometry.slot_bounds(slot_num)
+            slot.set_bounds(bounds)
+
+            # Find the barcode from the new set that is in the slot position
+            barcode = _find_matching_barcode(bounds, new_barcodes)
+
+            # Update the barcode position - use the actual position of the new barcode if available,
+            # otherwise use the slot center position (from geometry) as an approximation
+            if barcode:
+                slot.set_barcode_position(barcode.center())
+            elif state == Slot.VALID or state == Slot.UNREADABLE:
+                slot.set_barcode_position(bounds[0])
+
+            # If we haven't already found this barcode data, try to read it from the new barcode
+            if state != Slot.VALID and barcode:
+                barcode.perform_read()
+                slot.set_barcode(barcode)
+
+            slot.increment_frame()
 
         self._geometry = geometry
         self.error = geometry.error
@@ -80,7 +103,7 @@ class Plate:
     def barcodes(self):
         """ Returns a list of barcode strings. Empty slots are represented by the empty string.
         """
-        return [slot.get_barcode() for slot in self._slots]
+        return [slot.barcode_data() for slot in self._slots]
 
     #########################
     # STATUS FUNCTIONS
@@ -116,7 +139,7 @@ class Plate:
         for i, slot_a in enumerate(plate_a._slots):
             slot_b = plate_b.slot(i+1)
             if slot_a.state() == Slot.VALID:
-                if slot_a.get_barcode() == slot_b.get_barcode():
+                if slot_a.barcode_data() == slot_b.barcode_data():
                     return True
 
         return False
