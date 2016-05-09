@@ -63,7 +63,7 @@ class Record:
         self.num_slots = len(barcodes)
         self.num_empty_slots = len([b for b in barcodes if b == EMPTY_SLOT_SYMBOL])
         self.num_unread_slots = len([b for b in barcodes if b == NOT_FOUND_SLOT_SYMBOL])
-        self.num_invalid_barcodes = len([b for b in barcodes if b==BAD_DATA_SYMBOL])
+        self.num_invalid_barcodes = len([b for b in barcodes if b == BAD_DATA_SYMBOL])
         self.num_valid_barcodes = self.num_slots - self.num_unread_slots \
                                   - self.num_invalid_barcodes - self.num_empty_slots
 

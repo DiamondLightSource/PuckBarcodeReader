@@ -71,9 +71,9 @@ class Slot:
         """ Gets a string representation of the barcode data; returns an empty
         string if slot is empty
         """
-        if not self._empty and self._barcode is not None:
-            return self._barcode.data()
-        elif self._empty:
+        if self._empty:
             return EMPTY_SLOT_SYMBOL
+        elif self._barcode is not None:
+            return self._barcode.data()
         else:
             return NOT_FOUND_SLOT_SYMBOL

@@ -100,6 +100,7 @@ class DataMatrix:
             # Read the bit array at the target location (with offset)
             bit_array = reader.read_bitarray(self._finder_pattern, offset, gray_image)
 
+            # Todo: empty detection?
             if bit_array is None:
                 continue
 
@@ -107,13 +108,13 @@ class DataMatrix:
             try:
                 self._data = decoder.read_datamatrix(bit_array)
                 self._read_ok = True
-                self._damaged_symbol = False
                 self._error_message = ""
                 break
             except (ReedSolomonError, Exception) as ex:
                 self._read_ok = False
-                self._damaged_symbol = True
                 self._error_message = ex.message
+
+        self._damaged_symbol = not self._read_ok
 
     def draw(self, cvimg, ok_color, bad_color):
         """ Draw the lines of the finder pattern on the specified image. """
