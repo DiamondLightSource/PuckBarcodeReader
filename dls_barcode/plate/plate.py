@@ -22,7 +22,7 @@ class Plate:
         # Initialize slots
         self._slots = [Slot(i) for i in range(1, self.num_slots+1)]
 
-    def initialize_from_barcodes(self, geometry, barcodes):
+    def initialize_from_barcodes(self, geometry, barcodes, slot_scanner):
         """ Initialize the plate with the set of barcodes from the scan of a new frame. The position
         of each slot (in the image) has already been calculated in the Geometry object. We store this
         calculated position as well as the actual center position of the barcode itself in the slot
@@ -42,13 +42,16 @@ class Plate:
             slot.set_bounds(bounds)
             slot.set_barcode(barcode)
             slot.set_barcode_position(position)
+
+            self._slot_deep_scan(slot, slot_scanner)
+
             slot.increment_frame()
 
         self._geometry = geometry
         self.error = geometry.error
         self.total_frames += 1
 
-    def merge_new_frame(self, geometry, new_barcodes):
+    def merge_new_frame(self, geometry, new_barcodes, slot_scanner):
         """ Merge the set of barcodes from a new scan into this plate. The new set comes from a new image
         of the same plate, so will almost certainly contain many of the same barcodes. Actually reading a
         barcode is relatively expensive; we iterate through each slot in the plate and only attempt to
@@ -90,10 +93,28 @@ class Plate:
             elif state == Slot.UNREADABLE:
                 slot.set_barcode(None)
 
+            self._slot_deep_scan(slot, slot_scanner)
+
             slot.increment_frame()
 
         self._geometry = geometry
         self.error = geometry.error
+
+    def _slot_deep_scan(self, slot, slot_scanner):
+
+        # If the slot barcode has already been read correctly, skip it
+        if slot.state() == Slot.VALID:
+            return
+
+        elif slot_scanner.is_slot_empty(slot):
+            slot.set_empty()
+
+        else:
+            barcode = slot_scanner.deep_scan(slot)
+            if barcode is not None:
+                print(barcode.data(), barcode._read_ok, barcode._damaged_symbol, barcode._is_read_performed)
+                slot.set_barcode(barcode)
+                slot.set_barcode_position(barcode.center())
 
     #########################
     # ACCESSOR FUNCTIONS

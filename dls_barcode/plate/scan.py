@@ -7,6 +7,7 @@ from dls_barcode.datamatrix import DataMatrix
 from dls_barcode.util import Transform
 from .geometry_unipuck import Unipuck
 from .plate import Plate, Slot
+from .slot_scan import SlotScanner
 
 
 require('numpy')
@@ -45,6 +46,9 @@ class Scanner:
         geometry = Unipuck(bc_centers)
         is_aligned = geometry.is_aligned()
 
+        # Create slot scanner
+        slot_scanner = SlotScanner(frame_img, barcodes)
+
         # ---------- READ SOME BARCODES ----------------------
         if is_aligned:
             # Determine if the previous plate scan has any barcodes in common with this one.
@@ -61,8 +65,7 @@ class Scanner:
             diagnostic.has_barcodes = any_valid_barcodes
             if any_valid_barcodes:
                 self.plate = Plate(self.plate_type, self.num_slots)
-                self.plate.initialize_from_barcodes(geometry, barcodes)
-                self._slot_deep_scans(barcodes)
+                self.plate.initialize_from_barcodes(geometry, barcodes, slot_scanner)
 
         # ------------- ADJUST ALIGNMENT -------------------
         if is_aligned and is_same_plate and not is_same_align:
@@ -76,8 +79,7 @@ class Scanner:
         # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
         # previous plate over to their slot in the new plate. Then read any that we haven't already read.
         if is_aligned and is_same_plate:
-            self.plate.merge_new_frame(geometry, barcodes)
-            self._slot_deep_scans(barcodes)
+            self.plate.merge_new_frame(geometry, barcodes, slot_scanner)
             diagnostic.has_barcodes = True
 
         print(self.plate.barcodes())  # DEBUG
@@ -182,133 +184,6 @@ class Scanner:
 
         return geometry
 
-    def _slot_deep_scans(self, barcodes, brightness_ratio=5):
-        """ Determine if any of the slots in the plate which don't contain barcodes are actually empty
-        (i.e. don't contain a pin). If this is the case then mark them as such. If this is not the case
-        then it probably means that the slot contains a pin but the locator algorithm was not able to
-        locate the finder pattern. If this is the case perform a more detailed search of the area where
-        the barcode should be in order to locate it.
-
-        Empty detection is achieved by examining the average brightness of the slots that we know contain finder
-        patterns, and comparing this with the slots that we think are empty. If the slots without an
-        identified pin are much less bright than the average then we can infer that they are indeed
-        empty (do not contain a pin).
-        """
-        # Calculate the average brightness of the located barcodes
-        avg_brightness = self._calculate_average_pin_brightness(barcodes)
-        brightness_threshold = avg_brightness / brightness_ratio
-
-        # Calculate average barcode radius
-        bc_radius = np.mean([bc.radius() for bc in barcodes])
-
-        # Perform more detailed examination of slots for which we don't have results
-        for slot in self.plate._slots:
-            center = slot.barcode_position()
-            state = slot.state()
-
-            # If the slot barcode has already been read correctly, skip it
-            if state == Slot.VALID:
-                continue
-
-            # If we cant see the slot in the current frame, skip it
-            slot_in_frame = Scanner._image_contains_point(self.frame_img, center, radius=bc_radius/2)
-            if not slot_in_frame:
-                continue
-
-            # Check if slot is empty
-            brightness = self.frame_img.calculate_brightness(center, bc_radius / 2)
-            if brightness < brightness_threshold:
-                slot.set_empty()
-            elif state == Slot.EMPTY:
-                slot.set_no_result()
-
-            '''
-            # If still no result, do a more careful scan for finder patterns and a more careful read
-            if state == Slot.NO_RESULT or state == Slot.UNREADABLE:
-                slot_img, _ = self.frame_img.sub_image(p, fp_radius * 2)
-
-                patterns_deep = list(Locator().locate_datamatrices(slot_img, True, fp_radius))
-                patterns = list(Locator().locate_datamatrices(slot_img))
-
-                if len(patterns_deep) > len(patterns):
-                    pass#print("deep - " + str(len(patterns_deep)) + " | shallow - " + str(len(patterns)))
-
-                # If we have a valid looking finder pattern from shallow scan, try to use wiggles to read it
-                if(len(patterns) > 0):
-                    # probably don't need to bother with wiggles in continuous mode but perhaps we can keep a count
-                    # of the number of frames so far and then use wiggles if its taking a while.
-                    w = 0.25
-                    wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
-
-                    barcode = DataMatrix(patterns[0], slot_img, offsets=wiggle_offsets)
-                    if barcode.is_valid():
-                        slot.set_barcode(barcode)
-                        print("Good Wiggles - slot " + str(i+1))
-                        Scanner.DEBUG_SAVE_IMAGE(slot_img, "shallow_locate_wiggles_read", i)
-                    else:
-                        Scanner.DEBUG_SAVE_IMAGE(slot_img, "shallow_locate_no_read", i)
-
-                # If we have a valid looking finder pattern from the deep scan, try to read it
-                elif len(patterns_deep) > 0:
-                    w = 0.25
-                    wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
-
-                    barcode = DataMatrix(patterns_deep[0], slot_img, wiggle_offsets)
-
-                    if barcode.is_valid():
-                        slot.set_barcode(barcode)
-                        print("Good Deep scan - slot " + str(i+1))
-                        Scanner.DEBUG_SAVE_IMAGE(slot_img, "deep_locate_read", i)
-                    else:
-                        Scanner.DEBUG_SAVE_IMAGE(slot_img, "deep_locate_no_read", i)
-                        color = slot_img.to_alpha()
-                        for fp in patterns_deep:
-                            fp.draw_to_image(color)
-                        Scanner.DEBUG_SAVE_IMAGE(color, "deep_locate_no_read_highlight", i)
-
-                # DEBUG - print image of slot if couldn't read anything
-                else:
-                    Scanner.DEBUG_SAVE_IMAGE(slot_img, "no_locate", i)
-
-            '''
-
-    def _calculate_average_pin_brightness(self, barcodes):
-        """ Calculate the brightness of a small area at each barcode and return the average value.
-        A barcode will be much brighter than an empty slot as it usually contains plenty of white
-        pixels. This allows us to distinguish between an empty slot with no pin, and a slot with a pin
-        where we just haven't been able to locate the barcode.
-        """
-        pin_brights = []
-        for bc in barcodes:
-            center_in_frame = Scanner._image_contains_point(self.frame_img, bc.center(), radius=bc.radius()/2)
-            if center_in_frame:
-                brightness = self.frame_img.calculate_brightness(bc.center(), bc.radius() / 2)
-                pin_brights.append(brightness)
-
-        if any(pin_brights):
-            avg_brightness = np.mean(pin_brights)
-        else:
-            avg_brightness = 0
-
-        return avg_brightness
-
-    @staticmethod
-    def _image_contains_point(image, point, radius=0):
-        h, w = image.img.shape
-        x, y = point
-        return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
-
-    @staticmethod
-    def DEBUG_SAVE_IMAGE(image, prefix, slotnum):
-        return
-
-        import time
-        import os
-        dir = "../test-output/bad_barcodes/" + prefix + "/"
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-        filename = dir + prefix + "_" + str(time.clock()) + "_slot_" + str(slotnum+1) + ".png"
-        image.save_as(filename)
 
 
 
