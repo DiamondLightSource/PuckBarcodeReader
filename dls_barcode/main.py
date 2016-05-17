@@ -140,7 +140,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             plate, cv_image = self._new_scan_queue.get(False)
 
             # Store scan results and display in GUI
-            self.recordTable.add_record(plate.type, plate.barcodes(), cv_image)
+            self.recordTable.add_record_frame(plate.type, plate.barcodes(), cv_image)
 
             if plate.is_full_valid():
                 # Notify user of new scan
@@ -152,10 +152,6 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
                 if paste_results:
                     pyperclip.copy('\n'.join(plate.barcodes()))
                     #spam = pyperclip.paste()
-
-
-
-
 
     def _scan_file_image(self):
         """Load and process (scan for barcodes) an image from file

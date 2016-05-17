@@ -101,6 +101,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
     last_full_plate = None
 
     frame_number = 0
+    barcode_counter = 0
     plate_frame_number = 0
 
     scanner = Scanner()
@@ -145,9 +146,16 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
             elif diagnostic.has_barcodes:
                 frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots)) + 37
                 winsound.Beep(frequency, 200)
-                overlay_queue.put(Overlay(plate))
+                overlay = Overlay(plate)
+                overlay_queue.put(overlay)
+
+                if plate == last_plate and plate.num_valid_barcodes() > barcode_counter:
+                    overlay.draw_on_image(cv_image.img)
+                    plate.crop_image(cv_image)
+                    result_queue.put((plate, cv_image))
 
             last_plate = plate
+            barcode_counter = plate.num_valid_barcodes()
 
         # Diagnostics
         frame_end_time = time.time()

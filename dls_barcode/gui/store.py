@@ -28,6 +28,8 @@ class Record:
     BC_SEPARATOR = ","
     DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+    BAD_SYMBOLS = [EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL, BAD_DATA_SYMBOL]
+
     def __init__(self, plate_type, barcodes, imagepath, timestamp=0, id=0):
         """
         :param plate_type: the type of the sample holder plate (string)
@@ -45,8 +47,7 @@ class Record:
         self.barcodes = barcodes
         self.id = str(id)
 
-        self.filtered_barcodes = [bc if (bc != EMPTY_SLOT_SYMBOL and bc != NOT_FOUND_SLOT_SYMBOL
-            and bc != BAD_DATA_SYMBOL) else '' for bc in barcodes]
+        self.filtered_barcodes = [bc if (bc not in self.BAD_SYMBOLS) else '' for bc in barcodes]
 
         # Generate timestamp and uid if none are supplied
         if timestamp==0:
@@ -66,7 +67,6 @@ class Record:
         self.num_invalid_barcodes = len([b for b in barcodes if b == BAD_DATA_SYMBOL])
         self.num_valid_barcodes = self.num_slots - self.num_unread_slots \
                                   - self.num_invalid_barcodes - self.num_empty_slots
-
 
     @staticmethod
     def from_string(string):
@@ -95,11 +95,11 @@ class Record:
         return Record.ITEM_SEPARATOR.join(items)
         return Record.ITEM_SEPARATOR.join(items)
 
-    def any_barcode_matches(self, plate):
+    def any_barcode_matches(self, barcodes):
         """ Returns true if the record contains any barcode which is also
-        contained by the specified plate
+        contained in the specified list
         """
-        barcodes = [bc for bc in plate.barcodes() if bc != '' and bc != BAD_DATA_SYMBOL]
+        barcodes = [bc for bc in barcodes if bc not in Record.BAD_SYMBOLS]
         for bc in barcodes:
             if bc in self.barcodes:
                 return True
@@ -112,7 +112,7 @@ class Record:
         return datetime.datetime.fromtimestamp(self.timestamp).strftime(Record.DATE_FORMAT)
 
 
-class Store():
+class Store:
     """ Maintains a list of records of previous barcodes scans. Any changes (additions
     or deletions) are automatically written to the backing file.
     """
@@ -148,6 +148,17 @@ class Store():
 
         self.records.append(record)
         self._process_change()
+
+    def merge_record(self, plate_type, barcodes, cv_img):
+        """ Create new record or replace existing record if it has the same barcodes as the most
+        recent record. Save to backing store. """
+        top_record = self.records[0]
+        if top_record.any_barcode_matches(barcodes):
+            self.delete_records([top_record])
+            self.add_record(plate_type, barcodes, cv_img)
+
+        else:
+            self.add_record(plate_type, barcodes, cv_img)
 
     def delete_records(self, records):
         """ Remove all of the records in the supplied list from the store and
