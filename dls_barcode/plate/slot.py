@@ -18,9 +18,12 @@ class Slot:
         self._empty = False
 
         self._total_frames = 0
+        self._barcode_set_this_frame = False
 
-    def increment_frame(self):
+    def new_frame(self):
+        """ Call this at the start of a new frame before setting anything. """
         self._total_frames += 1
+        self._barcode_set_this_frame = False
 
     def number(self):
         """ Get the slot number. """
@@ -35,6 +38,10 @@ class Slot:
         bounds center as predicted by the geometry. """
         return self._barcode_position
 
+    def barcode_this_frame(self):
+        """ True if the barcode has been set this frame. """
+        return self._barcode_set_this_frame
+
     def set_bounds(self, bounds):
         self._bounds = bounds
 
@@ -43,7 +50,9 @@ class Slot:
 
     def set_barcode(self, barcode):
         self._barcode = barcode
-        self._empty = False
+        if barcode is not None:
+            self._empty = False
+            self._barcode_set_this_frame = True
 
     def set_empty(self):
         self._barcode = None

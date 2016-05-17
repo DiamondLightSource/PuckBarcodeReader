@@ -246,5 +246,12 @@ class Image:
         else:
             return None
 
+    @staticmethod
+    def random_color():
+        from random import randint
+        color = (randint(0, 255), randint(0, 255),randint(0, 255), 255)
+        return color
+
+
 
 

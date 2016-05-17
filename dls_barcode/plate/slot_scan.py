@@ -28,46 +28,49 @@ class SlotScanner:
         brightness = self.image.calculate_brightness(center, self.radius_avg / 2)
         return brightness < self.brightness_threshold
 
+    def wiggles_read(self, barcode):
+        w = 0.25
+        wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
+        barcode.perform_read(wiggle_offsets)
+
+        return barcode
+
     def deep_scan(self, slot):
         # Perform more detailed examination of slots for which we don't have results
         slot_num = slot.number()
         center = slot.barcode_position()
         state = slot.state()
-        barcode = None
+        barcodes = []
 
         # If we cant see the slot in the current frame, skip it
         slot_in_frame = self._image_contains_point(center, self.radius_avg/2)
         if not slot_in_frame:
-            return barcode
+            return []
 
-        # ------------- CAREFUL SCANNING ----------------------------
-        # If still no result, do a more careful scan for finder patterns and a more careful read
         if state == Slot.NO_RESULT or state == Slot.UNREADABLE:
             slot_img, _ = self.image.sub_image(center, self.radius_avg * 2)
 
-            patterns_deep = list(Locator().locate_datamatrices(slot_img, True, self.radius_avg))
-            patterns = list(Locator().locate_datamatrices(slot_img))
+            fps = list(Locator().locate_datamatrices(slot_img, True, self.radius_avg))
 
-            w = 0.25
-            wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
+            if len(fps) > 0:
 
-            # If we have a valid looking finder pattern from shallow scan, try to use wiggles to read it
-            if len(patterns) > 0:
-                # probably don't need to bother with wiggles in continuous mode but perhaps we can keep a count
-                # of the number of frames so far and then use wiggles if its taking a while.
+                if len(fps) > 1:
+                    from dls_barcode.util import Image
+                    # print("DEEP PATTERNS = " + str(len(fps)))
+                    color = slot_img.to_alpha()
+                    for fp in fps:
+                        fp.draw_to_image(color, Image.random_color())
+                    DEBUG_SAVE_IMAGE(color, "double deep fps", slot_num)
 
-                barcode = DataMatrix(patterns[0], slot_img)
-                barcode.perform_read(wiggle_offsets)
+            barcodes = [DataMatrix(fp, slot_img) for fp in fps]
 
-            # If we have a valid looking finder pattern from the deep scan, try to read it
-            elif len(patterns_deep) > 0:
-                barcode = DataMatrix(patterns_deep[0], slot_img)
-                barcode.perform_read(wiggle_offsets)
-
-        return barcode
+        return barcodes
 
     def _calculate_average_radius(self):
-        return np.mean([bc.radius() for bc in self.barcodes])
+        if self.barcodes:
+            return np.mean([bc.radius() for bc in self.barcodes])
+        else:
+            return 0
 
     def _calculate_brightness_threshold(self):
         """ Calculate the brightness of a small area at each barcode and return the average value.
@@ -96,7 +99,6 @@ class SlotScanner:
 
 
 def DEBUG_SAVE_IMAGE(image, prefix, slotnum):
-    return
 
     import time
     import os

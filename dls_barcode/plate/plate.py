@@ -1,4 +1,5 @@
 import uuid
+import random
 
 from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
 
@@ -22,7 +23,7 @@ class Plate:
         # Initialize slots
         self._slots = [Slot(i) for i in range(1, self.num_slots+1)]
 
-    def initialize_from_barcodes(self, geometry, barcodes, slot_scanner):
+    def initialize_from_barcodes(self, geometry, barcodes, slot_scanner, single_frame=False):
         """ Initialize the plate with the set of barcodes from the scan of a new frame. The position
         of each slot (in the image) has already been calculated in the Geometry object. We store this
         calculated position as well as the actual center position of the barcode itself in the slot
@@ -34,6 +35,8 @@ class Plate:
 
         # Fill each slot with the correct barcodes
         for slot in self._slots:
+            slot.new_frame()
+
             slot_num = slot.number()
             bounds = geometry.slot_bounds(slot_num)
             barcode = _find_matching_barcode(bounds, barcodes)
@@ -43,9 +46,7 @@ class Plate:
             slot.set_barcode(barcode)
             slot.set_barcode_position(position)
 
-            self._slot_deep_scan(slot, slot_scanner)
-
-            slot.increment_frame()
+            self._slot_scan(slot, slot_scanner, force=single_frame)
 
         self._geometry = geometry
         self.error = geometry.error
@@ -69,6 +70,8 @@ class Plate:
             raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
         for slot in self._slots:
+            slot.new_frame()
+
             slot_num = slot.number()
             state = slot.state()
 
@@ -93,28 +96,46 @@ class Plate:
             elif state == Slot.UNREADABLE:
                 slot.set_barcode(None)
 
-            self._slot_deep_scan(slot, slot_scanner)
-
-            slot.increment_frame()
+            self._slot_scan(slot, slot_scanner)
 
         self._geometry = geometry
         self.error = geometry.error
 
-    def _slot_deep_scan(self, slot, slot_scanner):
+    def _slot_scan(self, slot, slot_scanner, force=False):
 
         # If the slot barcode has already been read correctly, skip it
         if slot.state() == Slot.VALID:
             return
 
-        elif slot_scanner.is_slot_empty(slot):
+        # Check for empty slot
+        if slot_scanner.is_slot_empty(slot):
             slot.set_empty()
+            return
 
-        else:
-            barcode = slot_scanner.deep_scan(slot)
-            if barcode is not None:
-                print(barcode.data(), barcode._read_ok, barcode._damaged_symbol, barcode._is_read_performed)
+        if force or self.total_frames > 3:
+            # Wiggles Reading
+            if slot.barcode_this_frame() and slot.state() == Slot.UNREADABLE:
+                barcode = slot._barcode
+                slot_scanner.wiggles_read(barcode)
                 slot.set_barcode(barcode)
-                slot.set_barcode_position(barcode.center())
+                if barcode.is_valid(): print("DEBUG - WIGGLES SUCCESSFUL")
+
+            # Careful look for finder patterns
+            if slot.state() != Slot.VALID:
+                barcodes = slot_scanner.deep_scan(slot)
+
+                # Pick a random finder pattern from those returned
+                if not force and barcodes:
+                    barcodes = [random.choice(barcodes)]
+                    #barcodes.append(barcodes[-1])
+
+                for barcode in barcodes:
+                    slot_scanner.wiggles_read(barcode)
+                    if barcode.is_valid():
+                        print("DEBUG - DEEP SUCCESSFUL")
+                        slot.set_barcode(barcode)
+                        slot.set_barcode_position(barcode.center())
+                        break
 
     #########################
     # ACCESSOR FUNCTIONS

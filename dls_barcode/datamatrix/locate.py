@@ -25,8 +25,7 @@ class Locator:
             finder_patterns = self._contours_single()
             finder_patterns = list(filter(self._filter_image_edges, finder_patterns))
             finder_patterns = list(filter(self._filter_median_radius, finder_patterns))
-            if not finder_patterns:
-                finder_patterns = [self._square_single()]
+            #finder_patterns.append(self._square_single())
 
         else:
             finder_patterns = self._contours_global()
@@ -36,40 +35,43 @@ class Locator:
                 self._median_radius = np.median([fp.radius for fp in finder_patterns])
                 finder_patterns = list(filter(self._filter_median_radius, finder_patterns))
 
-        # check that finder patterns dont overlap
-        valid_patterns = []
-        for fp in finder_patterns:
-            in_radius = False
-            for ex in valid_patterns:
-                in_radius = in_radius | ex.point_in_radius(fp.center)
-            if not in_radius:
-                valid_patterns.append(fp)
+        # check that finder patterns don't overlap
+        if single:  #DEBUG
+            valid_patterns = finder_patterns
+        else:
+            valid_patterns = []
+            for fp in finder_patterns:
+                in_radius = False
+                for ex in valid_patterns:
+                    in_radius = in_radius | ex.point_in_radius(fp.center)
+                if not in_radius:
+                    valid_patterns.append(fp)
 
         return valid_patterns
 
     def _contours_global(self):
-        C_values = [16,8]
-        morphsize = 3
-        blocksize = 35
+        c_values = [16, 8]
+        morph_size = 3
+        block_size = 35
 
         # Use a couple of different values of C as much more likely to locate the finder patterns
         finder_patterns = []
-        for C in C_values:
-            fps = ContourLocator().locate_datamatrices(self._image, blocksize, C, morphsize)
+        for C in c_values:
+            fps = ContourLocator().locate_datamatrices(self._image, block_size, C, morph_size)
             finder_patterns.extend(fps)
 
         return finder_patterns
 
     def _contours_single(self):
-        C_values = [0,4,20,16,8]
-        morphsizes = [3,2]
-        blocksize = 35
+        c_values = [0, 4, 20, 16, 8]
+        morph_sizes = [3, 2]
+        block_size = 35
 
         # Use a couple of different values of C as much more likely to locate the finder patterns
         finder_patterns = []
-        for ms in morphsizes:
-            for C in C_values:
-                fps = ContourLocator().locate_datamatrices(self._image, blocksize, C, ms)
+        for ms in morph_sizes:
+            for C in c_values:
+                fps = ContourLocator().locate_datamatrices(self._image, block_size, C, ms)
                 finder_patterns.extend(fps)
 
         return finder_patterns

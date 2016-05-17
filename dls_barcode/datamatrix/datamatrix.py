@@ -36,12 +36,12 @@ class DataMatrix:
         self._damaged_symbol = False
         self._is_read_performed = False
 
-    def perform_read(self, offsets=wiggle_offsets):
+    def perform_read(self, offsets=wiggle_offsets, force_read=False):
         """ Attempt to read the DataMatrix from the image supplied in the constructor at the position
         given by the finder pattern. This is not performed automatically upon construction because the
         read operation is relatively expensive and might not always be needed.
         """
-        if not self._is_read_performed:
+        if not self._is_read_performed or force_read:
             # Read the data contained in the barcode from the image
             self._read(self._image, offsets)
             self._is_read_performed = True

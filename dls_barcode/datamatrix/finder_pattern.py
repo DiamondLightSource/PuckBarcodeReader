@@ -31,7 +31,9 @@ class FinderPattern():
     def bounds(self):
         return (self.center, self.radius)
 
-    def draw_to_image(self, image):
+    def draw_to_image(self, image, color=None):
         from dls_barcode.util.image import Image
-        image.draw_line(self.c1, self.c2, Image.GREEN, 1)
-        image.draw_line(self.c3, self.c1, Image.GREEN, 1)
+        if color is None:
+            color = Image.GREEN
+        image.draw_line(self.c1, self.c2, color, 1)
+        image.draw_line(self.c3, self.c1, color, 1)

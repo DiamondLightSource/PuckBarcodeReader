@@ -31,7 +31,7 @@ class Scanner:
         self.num_slots = 16
         self.plate = Plate(self.plate_type, self.num_slots)
 
-    def scan_next_frame(self, frame_img):
+    def scan_next_frame(self, frame_img, single_image=False):
         self.frame_img = frame_img
 
         # Diagnostic object that contains additional info about the scan
@@ -65,7 +65,7 @@ class Scanner:
             diagnostic.has_barcodes = any_valid_barcodes
             if any_valid_barcodes:
                 self.plate = Plate(self.plate_type, self.num_slots)
-                self.plate.initialize_from_barcodes(geometry, barcodes, slot_scanner)
+                self.plate.initialize_from_barcodes(geometry, barcodes, slot_scanner, single_image)
 
         # ------------- ADJUST ALIGNMENT -------------------
         if is_aligned and is_same_plate and not is_same_align:
