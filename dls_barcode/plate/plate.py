@@ -127,7 +127,7 @@ class Plate:
                 # Pick a random finder pattern from those returned
                 if not force and barcodes:
                     barcodes = [random.choice(barcodes)]
-                    #barcodes.append(barcodes[-1])
+                    barcodes.append(barcodes[-1])
 
                 for barcode in barcodes:
                     slot_scanner.wiggles_read(barcode)

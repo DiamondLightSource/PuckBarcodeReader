@@ -128,6 +128,6 @@ class DataMatrix:
         """ Searches the image for all datamatrix finder patterns
         """
         locator = Locator()
-        finder_patterns = locator.locate_datamatrices(grayscale_img)
+        finder_patterns = locator.locate_shallow(grayscale_img)
         unread_barcodes = [DataMatrix(fp, grayscale_img) for fp in finder_patterns]
         return list(unread_barcodes)

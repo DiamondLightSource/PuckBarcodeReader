@@ -28,7 +28,8 @@ class SlotScanner:
         brightness = self.image.calculate_brightness(center, self.radius_avg / 2)
         return brightness < self.brightness_threshold
 
-    def wiggles_read(self, barcode):
+    @staticmethod
+    def wiggles_read(barcode):
         w = 0.25
         wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
         barcode.perform_read(wiggle_offsets)
@@ -50,17 +51,10 @@ class SlotScanner:
         if state == Slot.NO_RESULT or state == Slot.UNREADABLE:
             slot_img, _ = self.image.sub_image(center, self.radius_avg * 2)
 
-            fps = list(Locator().locate_datamatrices(slot_img, True, self.radius_avg))
+            fps = list(Locator().locate_deep(slot_img, self.radius_avg))
 
-            if len(fps) > 0:
-
-                if len(fps) > 1:
-                    from dls_barcode.util import Image
-                    # print("DEEP PATTERNS = " + str(len(fps)))
-                    color = slot_img.to_alpha()
-                    for fp in fps:
-                        fp.draw_to_image(color, Image.random_color())
-                    DEBUG_SAVE_IMAGE(color, "double deep fps", slot_num)
+            if len(fps) > 1:
+                DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num)
 
             barcodes = [DataMatrix(fp, slot_img) for fp in fps]
 
@@ -98,8 +92,15 @@ class SlotScanner:
         return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
 
 
-def DEBUG_SAVE_IMAGE(image, prefix, slotnum):
+def DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num):
+    from dls_barcode.util import Image
+    # print("DEEP PATTERNS = " + str(len(fps)))
+    color = slot_img.to_alpha()
+    for fp in fps:
+        fp.draw_to_image(color, Image.random_color())
+    DEBUG_SAVE_IMAGE(color, "double deep fps", slot_num)
 
+def DEBUG_SAVE_IMAGE(image, prefix, slotnum):
     import time
     import os
     dir = "../test-output/bad_barcodes/" + prefix + "/"
