@@ -128,17 +128,18 @@ class Scanner:
             if has_common_geometry or num_common_barcodes >= 2:
                 break
 
-        # todo: case where we have common barcodes but not common geometry and only 1 common barcode
         return has_common_barcodes, has_common_geometry
 
     def _adjust_alignment(self, barcodes):
         # TODO: document this method
-        # Get the two common barcodes
-        valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
-        if len(valid_barcodes) != 2:  # DEBUG
-            raise Exception("Not enough barcodes to perform realignment")
 
-        print("ALIGNMENT ADJUSTMENT")
+        # If we don't have 2 common barcodes, we can't realign, so return a blank geometry (which
+        # will cause this frame to be skipped).
+        valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
+        if len(valid_barcodes) < 2:
+            return Unipuck([])
+
+        print("ALIGNMENT ADJUSTMENT")  # DEBUG
 
         # Get the positions of the two common barcodes in the current frame and the previous one
         barcode_a = valid_barcodes[0]
