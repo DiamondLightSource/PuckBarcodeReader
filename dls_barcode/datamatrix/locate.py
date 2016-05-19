@@ -44,10 +44,8 @@ class Locator:
 
         return finder_patterns
 
-    def locate_square(self, img, expected_radius):
-        self._median_radius = expected_radius
-
-        finder_pattern = SquareLocator().locate(img, self._median_radius)
+    def locate_square(self, img, side_length):
+        finder_pattern = SquareLocator().locate(img, side_length)
         return finder_pattern
 
     @staticmethod

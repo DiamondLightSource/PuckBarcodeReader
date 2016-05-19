@@ -1,11 +1,14 @@
 import numpy as np
+import math
 
 from .slot import Slot
 from dls_barcode.datamatrix import DataMatrix, Locator
+from dls_barcode.util import Image
 
 
 class SlotScanner:
     BRIGHTNESS_RATIO = 5
+    DEBUG_MODE = True
 
     def __init__(self, image, barcodes):
         self.image = image
@@ -34,31 +37,52 @@ class SlotScanner:
         wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
         barcode.perform_read(wiggle_offsets)
 
+        DEBUG_WIGGLES_READ(barcode)
+
         return barcode
 
     def deep_scan(self, slot):
-        # Perform more detailed examination of slots for which we don't have results
-        slot_num = slot.number()
-        center = slot.barcode_position()
+        if not self._is_slot_worth_scanning(slot):
+            return []
+
+        img = self._slot_image(slot)
+        fps = list(Locator().locate_deep(img, self.radius_avg))
+        barcodes = [DataMatrix(fp, img) for fp in fps]
+
+        DEBUG_MULTI_FP_IMAGE(img, fps, slot.number())
+
+        return barcodes
+
+    def square_scan(self, slot):
+        if not self._is_slot_worth_scanning(slot):
+            return []
+
+        img = self._slot_image(slot)
+        side_length = self.radius_avg * (2 / math.sqrt(2))
+        fp = Locator().locate_square(img, side_length)
+
+        DEBUG_SQUARE_LOCATOR(img, fp, slot.number())
+
+        return DataMatrix(fp, img)
+
+    def _is_slot_worth_scanning(self, slot):
         state = slot.state()
-        barcodes = []
+        center = slot.barcode_position()
 
         # If we cant see the slot in the current frame, skip it
         slot_in_frame = self._image_contains_point(center, self.radius_avg/2)
         if not slot_in_frame:
-            return []
+            return False
 
-        if state == Slot.NO_RESULT or state == Slot.UNREADABLE:
-            slot_img, _ = self.image.sub_image(center, self.radius_avg * 2)
+        if state == Slot.VALID or state == Slot.EMPTY:
+            return False
 
-            fps = list(Locator().locate_deep(slot_img, self.radius_avg))
+        return True
 
-            if len(fps) > 1:
-                DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num)
-
-            barcodes = [DataMatrix(fp, slot_img) for fp in fps]
-
-        return barcodes
+    def _slot_image(self, slot):
+        center = slot.barcode_position()
+        slot_img, _ = self.image.sub_image(center, self.radius_avg * 2)
+        return slot_img
 
     def _calculate_average_radius(self):
         if self.barcodes:
@@ -92,20 +116,41 @@ class SlotScanner:
         return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
 
 
+def DEBUG_WIGGLES_READ(barcode):
+    if not SlotScanner.DEBUG_MODE:
+        return
+
+    if barcode.is_valid():
+        print("DEBUG - WIGGLES SUCCESSFUL")
+
+
 def DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num):
-    from dls_barcode.util import Image
-    # print("DEEP PATTERNS = " + str(len(fps)))
+    if not SlotScanner.DEBUG_MODE:
+        return
+
+    if len(fps) > 1:
+        # print("DEEP PATTERNS = " + str(len(fps)))
+        color = slot_img.to_alpha()
+        for fp in fps:
+            fp.draw_to_image(color, Image.random_color())
+        DEBUG_SAVE_IMAGE(color, "double deep fps", slot_num)
+
+
+def DEBUG_SQUARE_LOCATOR(slot_img, fp, slot_num):
     color = slot_img.to_alpha()
-    for fp in fps:
-        fp.draw_to_image(color, Image.random_color())
-    DEBUG_SAVE_IMAGE(color, "double deep fps", slot_num)
+    fp.draw_to_image(color, Image.GREEN)
+    DEBUG_SAVE_IMAGE(color, "square locator fps", slot_num)
+
 
 def DEBUG_SAVE_IMAGE(image, prefix, slotnum):
+    if not SlotScanner.DEBUG_MODE:
+        return
+
     import time
     import os
     dir = "../test-output/bad_barcodes/" + prefix + "/"
     if not os.path.exists(dir):
         os.makedirs(dir)
-    filename = dir + prefix + "_" + str(time.clock()) + "_slot_" + str(slotnum+1) + ".png"
+    filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum+1) + ".png"
     image.save_as(filename)
 
