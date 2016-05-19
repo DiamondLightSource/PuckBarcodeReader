@@ -120,15 +120,19 @@ def DEBUG_WIGGLES_READ(barcode, locate_type):
     if not SlotScanner.DEBUG_MODE:
         return
 
-    slot_img = Image(None, barcode._image).to_alpha()
-    fp = barcode._finder_pattern
-    fp.draw_to_image(slot_img, Image.GREEN)
-
     if barcode.is_valid():
         print("DEBUG - WIGGLES SUCCESSFUL - " + locate_type)
         result = "_success"
     else:
         result = "_fail"
+
+    slot_img = Image(None, barcode._image).to_alpha()
+
+    if locate_type == "SQUARE":
+        DEBUG_SAVE_IMAGE(slot_img, "SQUARE" + result, -1)
+
+    fp = barcode._finder_pattern
+    fp.draw_to_image(slot_img, Image.GREEN)
 
     DEBUG_SAVE_IMAGE(slot_img, locate_type + result, -1)
 
