@@ -145,6 +145,9 @@ def DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num):
 
 
 def DEBUG_SQUARE_LOCATOR(slot_img, fp, slot_num):
+    if not SlotScanner.DEBUG_MODE:
+        return
+
     color = slot_img.to_alpha()
     fp.draw_to_image(color, Image.GREEN)
     DEBUG_SAVE_IMAGE(color, "square locator fp", slot_num)

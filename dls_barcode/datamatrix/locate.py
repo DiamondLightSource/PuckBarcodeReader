@@ -1,5 +1,6 @@
 from __future__ import division
 
+import math
 import numpy as np
 
 from .locate_square import SquareLocator
@@ -41,6 +42,10 @@ class Locator:
         finder_patterns = self._contours_deep(img)
         finder_patterns = list(filter(self._filter_image_edges, finder_patterns))
         finder_patterns = list(filter(self._filter_median_radius, finder_patterns))
+
+        # If the fps are asymmetrical, correct the side lengths
+        side = expected_radius * (2 / math.sqrt(2))
+        finder_patterns = [fp.correct_lengths(side) for fp in finder_patterns]
 
         return finder_patterns
 
