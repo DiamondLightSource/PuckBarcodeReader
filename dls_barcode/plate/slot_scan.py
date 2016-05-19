@@ -32,12 +32,12 @@ class SlotScanner:
         return brightness < self.brightness_threshold
 
     @staticmethod
-    def wiggles_read(barcode):
+    def wiggles_read(barcode, locate_type="NORMAL"):
         w = 0.25
         wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
         barcode.perform_read(wiggle_offsets)
 
-        DEBUG_WIGGLES_READ(barcode)
+        DEBUG_WIGGLES_READ(barcode, locate_type)
 
         return barcode
 
@@ -116,12 +116,21 @@ class SlotScanner:
         return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
 
 
-def DEBUG_WIGGLES_READ(barcode):
+def DEBUG_WIGGLES_READ(barcode, locate_type):
     if not SlotScanner.DEBUG_MODE:
         return
 
+    slot_img = Image(None, barcode._image).to_alpha()
+    fp = barcode._finder_pattern
+    fp.draw_to_image(slot_img, Image.GREEN)
+
     if barcode.is_valid():
-        print("DEBUG - WIGGLES SUCCESSFUL")
+        print("DEBUG - WIGGLES SUCCESSFUL - " + locate_type)
+        result = "_success"
+    else:
+        result = "_fail"
+
+    DEBUG_SAVE_IMAGE(slot_img, locate_type + result, -1)
 
 
 def DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num):
@@ -129,17 +138,16 @@ def DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num):
         return
 
     if len(fps) > 1:
-        # print("DEEP PATTERNS = " + str(len(fps)))
         color = slot_img.to_alpha()
         for fp in fps:
             fp.draw_to_image(color, Image.random_color())
-        DEBUG_SAVE_IMAGE(color, "double deep fps", slot_num)
+        DEBUG_SAVE_IMAGE(color, "deep contour fps", slot_num)
 
 
 def DEBUG_SQUARE_LOCATOR(slot_img, fp, slot_num):
     color = slot_img.to_alpha()
     fp.draw_to_image(color, Image.GREEN)
-    DEBUG_SAVE_IMAGE(color, "square locator fps", slot_num)
+    DEBUG_SAVE_IMAGE(color, "square locator fp", slot_num)
 
 
 def DEBUG_SAVE_IMAGE(image, prefix, slotnum):

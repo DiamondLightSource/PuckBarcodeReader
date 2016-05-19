@@ -108,22 +108,14 @@ class Plate:
             return
 
         do_empty_check = True
-        do_wiggles = force or self.total_frames > 3
         do_deep = force or self.total_frames > 3
-        do_square = force or self.total_frames > 5
+        do_square = force or self.total_frames > 3
 
         # Check for empty slot
         if do_empty_check:
             if slot_scanner.is_slot_empty(slot):
                 slot.set_empty()
                 return
-
-        if do_wiggles:
-            # Wiggles Reading
-            if slot.barcode_this_frame() and slot.state() == Slot.UNREADABLE:
-                barcode = slot._barcode
-                slot_scanner.wiggles_read(barcode)
-                slot.set_barcode(barcode)
 
         if do_deep:
             # Careful look for finder patterns
@@ -135,21 +127,16 @@ class Plate:
                     barcodes = [random.choice(barcodes)]
 
                 for barcode in barcodes:
-                    slot_scanner.wiggles_read(barcode)
+                    slot_scanner.wiggles_read(barcode, "DEEP CONTOUR")
+                    slot.set_barcode(barcode)
                     if barcode.is_valid():
-                        print("DEBUG - DEEP SUCCESSFUL")
-                        slot.set_barcode(barcode)
-                        slot.set_barcode_position(barcode.center())
                         break
 
         if do_square:
             if slot.state() != Slot.VALID:
                 barcode = slot_scanner.square_scan(slot)
-                slot_scanner.wiggles_read(barcode)
-                if barcode.is_valid():
-                    print("DEBUG - SQUARE SUCCESSFUL")
-                    slot.set_barcode(barcode)
-                    slot.set_barcode_position(barcode.center())
+                slot_scanner.wiggles_read(barcode, "SQUARE")
+                slot.set_barcode(barcode)
 
 
     #########################
