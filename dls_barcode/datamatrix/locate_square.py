@@ -15,11 +15,13 @@ class SquareLocator:
 
     def __init__(self):
         self.metric_cache = dict()
+        self.count = 0
 
     def locate(self, gray_img, barcode_size):
         """ Get the finder pattern of the datamatrix of the specified side length. """
         # Clear cache
         self.metric_cache = dict()
+        self.count = 0
 
         if self.DEBUG:
             gray_img.rescale(4).popup()
@@ -42,6 +44,7 @@ class SquareLocator:
         if self.DEBUG and fp is not None:
             img = _draw_finder_pattern(binary_image, best_transform, barcode_size, fp)
             img.rescale(4).popup()
+            print(self.count)
 
         return fp
 
@@ -66,7 +69,6 @@ class SquareLocator:
         best_val = 1000000000000000
         best_trs = initial_transform
 
-        ITERS = 0
         if self.DEBUG:
             img = binary_image.to_alpha()
             img = _draw_square(img, initial_transform, side_length)
@@ -75,7 +77,6 @@ class SquareLocator:
         while not done:
             kings = self._make_iteration_transforms(initial_transform)
             for trs in kings:
-                ITERS += 1
                 val = self._calculate_average_brightness(binary_image, trs, side_length)
                 if val < best_val:
                     best_val = val
@@ -91,7 +92,6 @@ class SquareLocator:
                 img = _draw_square(img, initial_transform, side_length)
                 img.rescale(4).popup()
 
-        print(ITERS)
         return best_trs
 
     def _make_iteration_transforms(self, transform, large=True):
@@ -124,6 +124,7 @@ class SquareLocator:
         so a lower average brightness corresponds to a greater likelihood of the
         area being the datamatrix.
         """
+        self.count += 1
         cx, cy = transform.x, transform.y
         center = (cx, cy)
         angle = transform.rot
@@ -232,8 +233,9 @@ class SquareLocator:
         """ For the located barcode in the image, identify which of the sides make
         up the finder pattern.
         """
+        self.count += 1
         radius = int(round(size/2))
-        cx,cy = transform.x, transform.y
+        cx, cy = transform.x, transform.y
         angle = transform.rot
 
         rotated = image.rotate(angle, (cx,cy))
