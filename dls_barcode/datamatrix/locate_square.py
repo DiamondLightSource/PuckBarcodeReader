@@ -14,6 +14,8 @@ class SquareLocator:
 
     DEBUG = False
 
+    OPT_ADAPT_SIZE = True
+
     def __init__(self):
         self.metric_cache = dict()
         self.count = 0
@@ -30,30 +32,32 @@ class SquareLocator:
         # Threshold the image converting it to a binary image
         binary_image = self._adaptive_threshold(gray_img.img, 99, 0)
 
+        # Find the transform that best fits the square to the barcode
         best_transform = self._minimise_integer_grid(binary_image, gray_img.center(), barcode_size)
 
         # Get the finder pattern
         fp = self._locate_finder_in_square(binary_image, best_transform, barcode_size)
 
         if self.DEBUG and fp is not None:
-            img = _draw_finder_pattern(binary_image, best_transform, barcode_size, fp)
+            img = _draw_finder_pattern(binary_image, best_transform, fp)
             img.rescale(4).popup()
 
-        best_transform = self.DEBUG_find_best_L(binary_image, best_transform, barcode_size)
+        best_transform = self._find_best_fp(binary_image, best_transform, barcode_size)
         fp = self._locate_finder_in_square(binary_image, best_transform, barcode_size)
 
         if self.DEBUG and fp is not None:
-            img = _draw_finder_pattern(binary_image, best_transform, barcode_size, fp)
+            img = _draw_finder_pattern(binary_image, best_transform, fp)
             img.rescale(4).popup()
             print(self.count)
 
         return fp
 
-    def _adaptive_threshold(self, image, blocksize, C):
+    @staticmethod
+    def _adaptive_threshold(image, block_size, c):
         """ Perform an adaptive threshold operation on the image, reducing it to a binary image.
         """
         thresh = cv2.adaptiveThreshold(image, 255.0,
-            cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, blocksize, C)
+                                       cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, block_size, c)
 
         return Image(None, thresh)
 
@@ -82,7 +86,7 @@ class SquareLocator:
             kings = self._make_iteration_transforms(initial_transform, large=True, iteration=count)
 
             for trs in kings:
-                val = self._calculate_average_brightness(binary_image, trs, side_length)
+                val = self._calculate_square_metric(binary_image, trs, side_length)
                 if val < best_val:
                     best_val = val
                     best_trs = trs
@@ -103,7 +107,8 @@ class SquareLocator:
 
         return best_trs
 
-    def _make_iteration_transforms(self, transform, large=True, iteration=0):
+    @staticmethod
+    def _make_iteration_transforms(transform, large=True, iteration=0):
         """ Create a selection of transforms that differ slightly from the supplied transform.
         """
         if large:
@@ -113,14 +118,12 @@ class SquareLocator:
             even = iteration % 2 == 0
             if even:
                 grid_points = [-5, -1, 0, 1, 5]
-            elif iteration == 1:
-                angle_points = [-30, -20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20, 30]
             else:
-                angle_points = [-20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20]
+                angle_points = [-30, -20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20, 30]
 
         else:
-            grid_points = range(-2,3)
-            angle_points = range(-2,3)
+            grid_points = range(-2, 3)
+            angle_points = range(-2, 3)
 
         kings = []
 
@@ -134,7 +137,7 @@ class SquareLocator:
 
         return kings
 
-    def _calculate_average_brightness(self, binary_image, transform, size):
+    def _calculate_square_metric(self, binary_image, transform, size):
         """ For the square area (defined by the transform and size) in the binary
         image, calculate the average brightness per pixel.
 
@@ -163,15 +166,16 @@ class SquareLocator:
 
         return brightness
 
-    def _locate_finder_in_square(self, image, transform, size):
+    @staticmethod
+    def _locate_finder_in_square(image, transform, size):
         """ For the located barcode in the image, identify which of the sides make
         up the finder pattern.
         """
         radius = int(round(size/2))
-        cx,cy = transform.x, transform.y
+        cx, cy = transform.x, transform.y
         angle = transform.rot
 
-        rotated = image.rotate(angle, (cx,cy))
+        rotated = image.rotate(angle, (cx, cy))
 
         sx1, sy1 = cx-radius, cy-radius
         sx2, sy2 = cx+radius, cy+radius
@@ -227,27 +231,24 @@ class SquareLocator:
         c1 = (int(c1[0]), int(c1[1]))
         side1 = (int(c2[0]-c1[0]), int(c2[1]-c1[1]))
         side2 = (int(c3[0]-c1[0]), int(c3[1]-c1[1]))
-        fp = FinderPattern(c1,side1,side2)
+        fp = FinderPattern(c1, side1, side2)
 
         return fp
 
-
-    def DEBUG_find_best_L(self, binary_image, initial_transform, side_length):
-
+    def _find_best_fp(self, binary_image, initial_transform, side_length):
         best_val = 1000000000000000
         best_trs = initial_transform
 
         kings = self._make_iteration_transforms(initial_transform, False)
         for trs in kings:
-            val = self.DEBUG_calculate_L_metric(binary_image, trs, side_length)
+            val = self._calculate_fp_metric(binary_image, trs, side_length)
             if val < best_val:
                 best_val = val
                 best_trs = trs
 
         return best_trs
 
-
-    def DEBUG_calculate_L_metric(self, image, transform, size):
+    def _calculate_fp_metric(self, image, transform, size):
         """ For the located barcode in the image, identify which of the sides make
         up the finder pattern.
         """
@@ -256,7 +257,7 @@ class SquareLocator:
         cx, cy = transform.x, transform.y
         angle = transform.rot
 
-        rotated = image.rotate(angle, (cx,cy))
+        rotated = image.rotate(angle, (cx, cy))
 
         sx1, sy1 = cx-radius, cy-radius
         sx2, sy2 = cx+radius, cy+radius
@@ -305,7 +306,8 @@ def _rotate_around_point(point, angle, center):
     sin = math.sin(angle)
     x_ = x * cos - y * sin
     y_ = x * sin + y * cos
-    return (x_+center[0], y_+center[1])
+    return x_+center[0], y_+center[1]
+
 
 def _draw_square(image, transform, size):
     radius = size/2
@@ -315,12 +317,13 @@ def _draw_square(image, transform, size):
     x1, y1 = center[0]-radius, center[1]-radius
     x2, y2 = x1 + size, y1 + size
 
-    roi = (x1,y1,x2,y2)
+    roi = (x1, y1, x2, y2)
     marked_img = rotated.to_alpha()
     marked_img.draw_rectangle(roi, Image.GREEN, 1)
     return marked_img
 
-def _draw_finder_pattern(image, transform, size, fp):
+
+def _draw_finder_pattern(image, transform, fp):
     center = (transform.x, transform.y)
     angle = transform.rot
     rotated = image.rotate(transform.rot, center)
