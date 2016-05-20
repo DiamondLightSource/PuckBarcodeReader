@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 import math
 
@@ -15,6 +17,7 @@ class SlotScanner:
         self.barcodes = barcodes
 
         self.radius_avg = self._calculate_average_radius()
+        self.side_avg = self.radius_avg * (2 / math.sqrt(2))
         self.brightness_threshold = None
 
     def is_slot_empty(self, slot):
@@ -31,13 +34,12 @@ class SlotScanner:
         brightness = self.image.calculate_brightness(center, self.radius_avg / 2)
         return brightness < self.brightness_threshold
 
-    @staticmethod
-    def wiggles_read(barcode, locate_type="NORMAL"):
+    def wiggles_read(self, barcode, locate_type="NORMAL"):
         w = 0.25
         wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
         barcode.perform_read(wiggle_offsets)
 
-        DEBUG_WIGGLES_READ(barcode, locate_type)
+        DEBUG_WIGGLES_READ(barcode, locate_type, self.side_avg)
 
         return barcode
 
@@ -55,11 +57,10 @@ class SlotScanner:
 
     def square_scan(self, slot):
         if not self._is_slot_worth_scanning(slot):
-            return []
+            return None
 
         img = self._slot_image(slot)
-        side_length = self.radius_avg * (2 / math.sqrt(2))
-        fp = Locator().locate_square(img, side_length)
+        fp = Locator().locate_square(img, self.side_avg)
 
         DEBUG_SQUARE_LOCATOR(img, fp, slot.number())
 
@@ -116,7 +117,7 @@ class SlotScanner:
         return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
 
 
-def DEBUG_WIGGLES_READ(barcode, locate_type):
+def DEBUG_WIGGLES_READ(barcode, locate_type, side_length):
     if not SlotScanner.DEBUG_MODE:
         return
 
@@ -128,13 +129,12 @@ def DEBUG_WIGGLES_READ(barcode, locate_type):
 
     slot_img = Image(None, barcode._image).to_alpha()
 
-    if locate_type == "SQUARE":
-        DEBUG_SAVE_IMAGE(slot_img, "SQUARE" + result, -1)
+    DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length-1)
 
     fp = barcode._finder_pattern
     fp.draw_to_image(slot_img, Image.GREEN)
 
-    DEBUG_SAVE_IMAGE(slot_img, locate_type + result, -1)
+    DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length-1)
 
 
 def DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num):

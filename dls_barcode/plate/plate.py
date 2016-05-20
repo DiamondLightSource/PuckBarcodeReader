@@ -135,9 +135,9 @@ class Plate:
         if do_square:
             if slot.state() != Slot.VALID:
                 barcode = slot_scanner.square_scan(slot)
-                slot_scanner.wiggles_read(barcode, "SQUARE")
-                slot.set_barcode(barcode)
-
+                if barcode is not None:
+                    slot_scanner.wiggles_read(barcode, "SQUARE")
+                    slot.set_barcode(barcode)
 
     #########################
     # ACCESSOR FUNCTIONS

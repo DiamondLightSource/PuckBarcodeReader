@@ -7,6 +7,7 @@ import numpy as np
 from .finder_pattern import FinderPattern
 from dls_barcode.util import Transform, Image
 
+
 class SquareLocator:
     """ Utility to locate a single datamatrix finder pattern in a small image in which the datamatrix
     is located roughly in the middle of the image, but at any orientation. """
@@ -74,8 +75,12 @@ class SquareLocator:
             img = _draw_square(img, initial_transform, side_length)
             img.rescale(4).popup()
 
+        count = 0
+        done_previous = False
         while not done:
-            kings = self._make_iteration_transforms(initial_transform)
+            count += 1
+            kings = self._make_iteration_transforms(initial_transform, large=True, iteration=count)
+
             for trs in kings:
                 val = self._calculate_average_brightness(binary_image, trs, side_length)
                 if val < best_val:
@@ -83,7 +88,11 @@ class SquareLocator:
                     best_trs = trs
 
             if best_trs == initial_transform:
-                done = True
+                if done_previous:
+                    done = True
+                done_previous = True
+            else:
+                done_previous = False
 
             initial_transform = best_trs
 
@@ -94,15 +103,24 @@ class SquareLocator:
 
         return best_trs
 
-    def _make_iteration_transforms(self, transform, large=True):
+    def _make_iteration_transforms(self, transform, large=True, iteration=0):
         """ Create a selection of transforms that differ slightly from the supplied transform.
         """
         if large:
-            grid_points = [-5, -1, 0, 1, 5]
-            angle_points = [-10, -5, -1, 0, 1, 5, 10]
+            angle_points = [0]
+            grid_points = [0]
+
+            even = iteration % 2 == 0
+            if even:
+                grid_points = [-5, -1, 0, 1, 5]
+            elif iteration == 1:
+                angle_points = [-30, -20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20, 30]
+            else:
+                angle_points = [-20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20]
+
         else:
-            grid_points = range(-4,5)
-            angle_points = range(-4,5)
+            grid_points = range(-2,3)
+            angle_points = range(-2,3)
 
         kings = []
 
@@ -111,7 +129,7 @@ class SquareLocator:
                 for degrees in angle_points:
                     radians = degrees * math.pi / 180
                     trs = transform.by_offset(x, y)
-                    trs = trs.by_rotation(radians )
+                    trs = trs.by_rotation(radians)
                     kings.append(trs)
 
         return kings
@@ -124,7 +142,6 @@ class SquareLocator:
         so a lower average brightness corresponds to a greater likelihood of the
         area being the datamatrix.
         """
-        self.count += 1
         cx, cy = transform.x, transform.y
         center = (cx, cy)
         angle = transform.rot
@@ -142,6 +159,7 @@ class SquareLocator:
 
             # Store in dictionary
             self.metric_cache[key] = brightness
+            self.count += 1
 
         return brightness
 
@@ -200,10 +218,10 @@ class SquareLocator:
             return None
 
         # rotate points around center of square
-        center = (cx,cy)
-        c1 = _rotate_around_point(c1,angle,center)
-        c2 = _rotate_around_point(c2,angle,center)
-        c3 = _rotate_around_point(c3,angle,center)
+        center = (cx, cy)
+        c1 = _rotate_around_point(c1, angle, center)
+        c2 = _rotate_around_point(c2, angle, center)
+        c3 = _rotate_around_point(c3, angle, center)
 
         # Create finder pattern
         c1 = (int(c1[0]), int(c1[1]))
