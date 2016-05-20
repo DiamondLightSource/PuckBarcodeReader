@@ -31,7 +31,8 @@ class SlotScanner:
         if not slot_in_frame:
             return False
 
-        brightness = self.image.calculate_brightness(center, self.radius_avg / 2)
+        size = self.radius_avg / 2
+        brightness = self.image.calculate_brightness(center, size, size)
         return brightness < self.brightness_threshold
 
     def wiggles_read(self, barcode, locate_type="NORMAL"):
@@ -99,9 +100,10 @@ class SlotScanner:
         """
         pin_brights = []
         for bc in self.barcodes:
-            center_in_frame = self._image_contains_point(bc.center(), radius=bc.radius()/2)
+            size = bc.radius() / 2
+            center_in_frame = self._image_contains_point(bc.center(), radius=size)
             if center_in_frame:
-                brightness = self.image.calculate_brightness(bc.center(), bc.radius() / 2)
+                brightness = self.image.calculate_brightness(bc.center(), size, size)
                 pin_brights.append(brightness)
 
         if any(pin_brights):

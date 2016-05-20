@@ -16,6 +16,13 @@ class SquareLocator:
 
     OPT_ADAPT_SIZE = True
 
+    # Specifies the geometry of the text that appears above and below each
+    # barcode relative to barcode size.
+    GAP = 0.1
+    TXT_HEIGHT = 0.2
+    TXT_WIDTH = 0.75
+    TXT_OFFSET = 0.5 * (1 + TXT_HEIGHT) + GAP
+
     def __init__(self):
         self.metric_cache = dict()
         self.count = 0
@@ -83,14 +90,16 @@ class SquareLocator:
         done_previous = False
         while not done:
             count += 1
-            kings = self._make_iteration_transforms(initial_transform, large=True, iteration=count)
+            transforms = self._make_minimisation_transforms(initial_transform, iteration=count)
 
-            for trs in kings:
+            for trs in transforms:
                 val = self._calculate_square_metric(binary_image, trs, side_length)
                 if val < best_val:
                     best_val = val
                     best_trs = trs
 
+            # if transform doesn't move for 2 iterations (one angle, one space), it
+            # has reached a minimum
             if best_trs == initial_transform:
                 if done_previous:
                     done = True
@@ -108,24 +117,31 @@ class SquareLocator:
         return best_trs
 
     @staticmethod
-    def _make_iteration_transforms(transform, large=True, iteration=0):
+    def _make_minimisation_transforms(transform, iteration=0):
         """ Create a selection of transforms that differ slightly from the supplied transform.
         """
-        if large:
-            angle_points = [0]
-            grid_points = [0]
+        angle_points = [0]
+        grid_points = [0]
 
-            even = iteration % 2 == 0
-            if even:
-                grid_points = [-5, -1, 0, 1, 5]
-            else:
-                angle_points = [-30, -20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20, 30]
+        even = iteration % 2 == 0
 
+        if even:
+            grid_points = [-5, -1, 0, 1, 5]
         else:
-            grid_points = range(-2, 3)
-            angle_points = range(-2, 3)
+            angle_points = [-30, -20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20, 30]
 
-        kings = []
+        return SquareLocator._make_transforms(transform, grid_points, angle_points)
+
+    @staticmethod
+    def _make_fp_optimiser_transforms(transform):
+        grid_points = range(-2, 3)
+        angle_points = range(-2, 3)
+
+        return SquareLocator._make_transforms(transform, grid_points, angle_points)
+
+    @staticmethod
+    def _make_transforms(transform, grid_points, angle_points):
+        transforms = []
 
         for x in grid_points:
             for y in grid_points:
@@ -133,9 +149,9 @@ class SquareLocator:
                     radians = degrees * math.pi / 180
                     trs = transform.by_offset(x, y)
                     trs = trs.by_rotation(radians)
-                    kings.append(trs)
+                    transforms.append(trs)
 
-        return kings
+        return transforms
 
     def _calculate_square_metric(self, binary_image, transform, size):
         """ For the square area (defined by the transform and size) in the binary
@@ -158,13 +174,102 @@ class SquareLocator:
 
         else:
             rotated = binary_image.rotate(angle, center)
-            brightness = rotated.calculate_brightness(center, size)
+            brightness = rotated.calculate_brightness(center, size, size)
 
             # Store in dictionary
             self.metric_cache[key] = brightness
             self.count += 1
 
         return brightness
+
+    def _calculate_square_and_writing_metric(self, binary_image, transform, size):
+        """ Similar to the _calculate_square_metric function above, but also includes the regions above
+        and below that barcode that contain a text version of the information contained in the barcode.
+        This may do a better job of correctly fitting the square in certain circumstances, but may also
+        get trapped if there are dark/shadow regions around the edge of the image. """
+        cx, cy = transform.x, transform.y
+        center = (cx, cy)
+        angle = transform.rot
+
+        rotated = binary_image.rotate(angle, center)
+        brightness = rotated.calculate_brightness(center, size, size) * size**2
+
+        txt_height = self.TXT_HEIGHT * size
+        txt_width = self.TXT_WIDTH * size
+        area = txt_width * txt_height
+
+        rect1_center = (cx, cy + self.TXT_OFFSET*size)
+        rect2_center = (cx, cy - self.TXT_OFFSET*size)
+
+        brightness += rotated.calculate_brightness(rect1_center, txt_width, txt_height) * area
+        brightness += rotated.calculate_brightness(rect2_center, txt_width, txt_height) * area
+
+        brightness /= (size**2 + 2*area)
+
+        self.count += 1
+        return brightness
+
+    def _find_best_fp(self, binary_image, initial_transform, side_length):
+        best_val = 1000000000000000
+        best_trs = initial_transform
+
+        kings = self._make_fp_optimiser_transforms(initial_transform)
+        for trs in kings:
+            val = self._calculate_fp_metric(binary_image, trs, side_length)
+            if val < best_val:
+                best_val = val
+                best_trs = trs
+
+        return best_trs
+
+    def _calculate_fp_metric(self, image, transform, size):
+        """ For the located barcode in the image, identify which of the sides make
+        up the finder pattern.
+        """
+        self.count += 1
+        radius = int(round(size/2))
+        cx, cy = transform.x, transform.y
+        angle = transform.rot
+
+        rotated = image.rotate(angle, (cx, cy))
+
+        sx1, sy1 = cx-radius, cy-radius
+        sx2, sy2 = cx+radius, cy+radius
+        thick = int(round(size / 14))
+
+        # Top
+        x1, y1 = sx1, sy1
+        x2, y2 = sx2, sy1 + thick
+        top = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
+
+        # Left
+        x1, y1 = sx1, sy1
+        x2, y2 = sx1 + thick, sy2
+        left = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
+
+        # Bottom
+        x1, y1 = sx1, sy2 - thick
+        x2, y2 = sx2, sy2
+        bottom = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
+
+        # Right
+        x1, y1 = sx2 - thick, sy1
+        x2, y2 = sx2, sy2
+        right = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
+
+        # Identify finder edges
+        if top < bottom and left < right:
+            val = top + left
+        elif top < bottom and right < left:
+            val = top + right
+        elif bottom < top and left < right:
+            val = bottom + left
+        elif bottom < top and right < left:
+            val = bottom + right
+        else:
+            val = 100000000
+
+        return val
 
     @staticmethod
     def _locate_finder_in_square(image, transform, size):
@@ -235,68 +340,6 @@ class SquareLocator:
 
         return fp
 
-    def _find_best_fp(self, binary_image, initial_transform, side_length):
-        best_val = 1000000000000000
-        best_trs = initial_transform
-
-        kings = self._make_iteration_transforms(initial_transform, False)
-        for trs in kings:
-            val = self._calculate_fp_metric(binary_image, trs, side_length)
-            if val < best_val:
-                best_val = val
-                best_trs = trs
-
-        return best_trs
-
-    def _calculate_fp_metric(self, image, transform, size):
-        """ For the located barcode in the image, identify which of the sides make
-        up the finder pattern.
-        """
-        self.count += 1
-        radius = int(round(size/2))
-        cx, cy = transform.x, transform.y
-        angle = transform.rot
-
-        rotated = image.rotate(angle, (cx, cy))
-
-        sx1, sy1 = cx-radius, cy-radius
-        sx2, sy2 = cx+radius, cy+radius
-        thick = int(round(size / 14))
-
-        # Top
-        x1, y1 = sx1, sy1
-        x2, y2 = sx2, sy1 + thick
-        top = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
-
-        # Left
-        x1, y1 = sx1, sy1
-        x2, y2 = sx1 + thick, sy2
-        left = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
-
-        # Bottom
-        x1, y1 = sx1, sy2 - thick
-        x2, y2 = sx2, sy2
-        bottom = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
-
-        # Right
-        x1, y1 = sx2 - thick, sy1
-        x2, y2 = sx2, sy2
-        right = np.sum(rotated.img[y1:y2, x1:x2]) / (size * thick)
-
-        # Identify finder edges
-        if top < bottom and left < right:
-            val = top + left
-        elif top < bottom and right < left:
-            val = top + right
-        elif bottom < top and left < right:
-            val = bottom + left
-        elif bottom < top and right < left:
-            val = bottom + right
-        else:
-            val = 100000000
-
-        return val
-
 
 def _rotate_around_point(point, angle, center):
     """ Rotate the point about the center position """
@@ -320,6 +363,29 @@ def _draw_square(image, transform, size):
     roi = (x1, y1, x2, y2)
     marked_img = rotated.to_alpha()
     marked_img.draw_rectangle(roi, Image.GREEN, 1)
+
+    return marked_img
+
+def _draw_square_and_writing(image, transform, size):
+
+    marked_img = _draw_square(image, transform, size)
+
+    txt_height = SquareLocator.TXT_HEIGHT * size
+    txt_width = SquareLocator.TXT_WIDTH * size
+
+    center = (transform.x, transform.y)
+    x1 = center[0]-txt_width/2
+    x2 = x1 + txt_width
+    y_offset = SquareLocator.TXT_OFFSET*size
+
+    y1 = center[1] + y_offset - txt_height/2
+    y2 = y1 + txt_height
+    marked_img.draw_rectangle((x1, y1, x2, y2), Image.GREEN, 1)
+
+    y1 = center[1] - y_offset - txt_height/2
+    y2 = y1 + txt_height
+    marked_img.draw_rectangle((x1, y1, x2, y2), Image.GREEN, 1)
+
     return marked_img
 
 
