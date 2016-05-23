@@ -6,7 +6,7 @@ Data Matrix symbols are rectangular and are composed of a grid of pixels which r
 
 ![Data Matrix](img/datamatrix.jpg)
 
-Every Data Matrix is composed of two solid adjacent borders in an "L" shape (called the "finder pattern") and two other borders consisting of alternating dark and light "cells" or modules (called the "timing pattern"). Within these borders are rows and columns of cells encoding information. The finder pattern is used to locate and orient the symbol while the timing pattern provides a count of the number of rows and columns in the symbol.
+Every Data Matrix is composed of two solid adjacent borders in an 'L' shape (called the 'finder pattern') and two other borders consisting of alternating dark and light 'cells' or modules (called the 'timing pattern'). Within these borders are rows and columns of cells encoding information. The finder pattern is used to locate and orient the symbol while the timing pattern provides a count of the number of rows and columns in the symbol.
 
 While the symbols may vary in size from 10x10 to 144x144, **all of the barcodes we are currently using for the DLS barcode scanner are 14x14, with 12x12 data area, encoding 18 bytes.**
 
