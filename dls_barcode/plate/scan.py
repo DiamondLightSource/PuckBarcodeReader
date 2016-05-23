@@ -82,7 +82,7 @@ class Scanner:
             self.plate.merge_new_frame(geometry, barcodes, slot_scanner)
             diagnostic.has_barcodes = True
 
-        print(self.plate.barcodes())  # DEBUG
+        print(self.plate.total_frames, self.plate.barcodes())  # DEBUG
 
         diagnostic.is_aligned = is_aligned
         return self.plate, diagnostic
@@ -137,6 +137,7 @@ class Scanner:
         # will cause this frame to be skipped).
         valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
         if len(valid_barcodes) < 2:
+            print("ALIGNMENT ADJUSTMENT FAIL")  # DEBUG
             return Unipuck([])
 
         print("ALIGNMENT ADJUSTMENT")  # DEBUG

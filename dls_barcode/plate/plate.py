@@ -160,6 +160,9 @@ class Plate:
     def num_valid_barcodes(self):
         return len([slot for slot in self._slots if slot.state() == Slot.VALID])
 
+    def num_unread_barcodes(self):
+        return self.num_slots - self.num_valid_barcodes() - self.num_empty_slots()
+
     def is_full_valid(self):
         return (self.num_valid_barcodes() + self.num_empty_slots()) == self.num_slots
 
