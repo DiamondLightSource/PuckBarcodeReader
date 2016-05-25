@@ -7,7 +7,6 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 
-from dls_barcode.gui import STORE_FILE, STORE_IMAGE_PATH
 from dls_barcode.gui.store import Store
 from dls_barcode.util.image import Image
 
@@ -18,15 +17,11 @@ from dls_barcode.util.image import Image
 class ScanRecordTable(QGroupBox):
     COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
-    def __init__(self, barcode_table, image_frame):
+    def __init__(self, barcode_table, image_frame, options):
         super(ScanRecordTable, self).__init__()
 
-        # Create directory if missing
-        if not os.path.exists(STORE_IMAGE_PATH):
-            os.makedirs(STORE_IMAGE_PATH)
-
         # Read the store from file
-        self._store = Store.from_file(STORE_FILE)
+        self._store = Store(options.store_directory)
 
         self._barcodeTable = barcode_table
         self._imageFrame = image_frame

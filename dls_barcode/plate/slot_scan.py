@@ -12,7 +12,6 @@ from dls_barcode.util import Image
 
 class SlotScanner:
     BRIGHTNESS_RATIO = 5
-    DEBUG_MODE = True
 
     def __init__(self, image, barcodes, options):
         self.image = image

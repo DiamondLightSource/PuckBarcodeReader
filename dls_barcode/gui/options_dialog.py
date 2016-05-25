@@ -21,6 +21,16 @@ class OptionsDialog(QtGui.QDialog):
         self.setWindowTitle('Options')
         self.setWindowIcon(QtGui.QIcon('web.png'))
 
+        # ------ STORE OPTIONS --------
+        self.txt_store_dir = QLineEdit(self.options.store_directory)
+
+        grp_store = QGroupBox("Store")
+        grp_store_vbox = QVBoxLayout()
+        grp_store_vbox.addWidget(self.txt_store_dir)
+        grp_store_vbox.addStretch()
+        grp_store.setLayout(grp_store_vbox)
+
+        # ------ DEBUG OPTIONS --------
         # Slot scan debug output
         self.chk_slot_debug = QCheckBox("Save images of failed slot scans")
         self.chk_slot_debug.stateChanged.connect(self._slot_debug_clicked)
@@ -58,7 +68,9 @@ class OptionsDialog(QtGui.QDialog):
 
         # ----- MAIN LAYOUT -----
         vbox = QVBoxLayout()
+        vbox.addWidget(grp_store)
         vbox.addWidget(grp_debug)
+        vbox.addStretch()
         vbox.addLayout(hbox_ok_cancel)
 
         self.setLayout(vbox)
@@ -87,6 +99,7 @@ class OptionsDialog(QtGui.QDialog):
     def _dialog_close_ok(self):
         self.options.slot_images = (self.chk_slot_debug.checkState() != 0)
         self.options.slot_image_directory = self.txt_slot_files_dir.text()
+        self.options.store_directory = self.txt_store_dir.text()
 
         self.options.update_config_file()
         self.close()

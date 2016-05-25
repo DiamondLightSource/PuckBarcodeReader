@@ -6,8 +6,6 @@ import os
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 
-STORE_IMAGE_PATH = '../test-output/img_store/'
-
 
 class Record:
     """ Represents a record of a single scan, including the time, type of
@@ -116,16 +114,40 @@ class Store:
     """ Maintains a list of records of previous barcodes scans. Any changes (additions
     or deletions) are automatically written to the backing file.
     """
-    def __init__(self, filepath, records):
+    def __init__(self, directory):
         """ Initializes a new instance of Store. Users of the class should use the
         static 'from_file' as the __init__ function does not read from the existing
         file, it only stores the path for later writing.
         :param filepath: absolute path of file to write any updates to.
         :param records: list of Record items
         """
-        self._filepath = filepath
-        self.records = records
+        self._directory = directory
+        self._file = directory + "store.txt"
+        self._img_dir = directory + "/img_dir/"
+
+        if not os.path.exists(self._img_dir):
+            os.makedirs(self._img_dir)
+
+        self.records = []
+        self._load_records_from_file()
         self._sort_records()
+
+    def _load_records_from_file(self):
+        """ Clear the current record store and load a new set of records from the specified file. """
+        self.records = []
+
+        if not os.path.isfile(self._file):
+            return
+
+        with open(self._file, mode="rt") as file:
+            lines = [line for line in file]
+
+            for line in lines:
+                try:
+                    record = Record.from_string(line)
+                    self.records.append(record)
+                except Exception:
+                    pass
 
     def size(self):
         """ Returns the number of records in the store
@@ -141,7 +163,7 @@ class Store:
         """ Add a new record to the store and save to the backing file.
         """
         id = str(uuid.uuid4())
-        filename = os.path.abspath(STORE_IMAGE_PATH + id + '.png')
+        filename = os.path.abspath(self._img_dir + id + '.png')
         cv_img.save_as(filename)
 
         record = Record(plate_type=plate_type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
@@ -152,9 +174,8 @@ class Store:
     def merge_record(self, plate_type, barcodes, cv_img):
         """ Create new record or replace existing record if it has the same barcodes as the most
         recent record. Save to backing store. """
-        top_record = self.records[0]
-        if top_record.any_barcode_matches(barcodes):
-            self.delete_records([top_record])
+        if len(self.records) > 0 and self.records[0].any_barcode_matches(barcodes):
+            self.delete_records([self.records[0]])
             self.add_record(plate_type, barcodes, cv_img)
 
         else:
@@ -186,25 +207,7 @@ class Store:
         """
         record_lines = [rec.to_string() for rec in self.records]
         file_contents = "\n".join(record_lines)
-        with open(self._filepath, mode="wt") as file:
+        with open(self._file, mode="wt") as file:
             file.writelines(file_contents)
 
-    @staticmethod
-    def from_file(filepath):
-        """ Create a store object by reading a set of
-        records from a file
-        """
-        records = []
-        if not os.path.isfile(filepath):
-            return Store(filepath, records)
 
-        with open(filepath, mode="rt") as file:
-            lines = [line for line in file]
-
-            for line in lines:
-                try:
-                    record = Record.from_string(line)
-                    records.append(record)
-                except Exception:
-                    pass
-        return Store(filepath, records)

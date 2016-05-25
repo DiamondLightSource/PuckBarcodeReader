@@ -64,7 +64,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
 
         # Scan record table - lists all the records in the store
         # TODO - do linking with events
-        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame)
+        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._options)
 
         # Create layout
         hbox = QtGui.QHBoxLayout()
