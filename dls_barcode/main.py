@@ -45,8 +45,6 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         self.barcodeTable = None
         self.imageFrame = None
 
-        self.paste_action = None
-
         self._init_ui()
 
     def _init_ui(self):
@@ -107,12 +105,6 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(QtGui.qApp.quit)
 
-        # Paste to cursor
-        self.paste_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Paste Results To Cursor', self, checkable=True)
-        self.paste_action.setShortcut('Ctrl+Q')
-        self.paste_action.setStatusTip('Immediately paste new scan results to the cursor')
-        self.paste_action.isCheckable()
-
         # Open options dialog
         options_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Options', self)
         options_action.setShortcut('Ctrl+O')
@@ -150,12 +142,6 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
                 # Notify user of new scan
                 print("Scan Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-
-                # Paste the scan results to the cursor
-                paste_results = self.paste_action.isChecked()
-                if paste_results:
-                    pyperclip.copy('\n'.join(plate.barcodes()))
-                    #spam = pyperclip.paste()
 
     def _scan_file_image(self):
         """Load and process (scan for barcodes) an image from file

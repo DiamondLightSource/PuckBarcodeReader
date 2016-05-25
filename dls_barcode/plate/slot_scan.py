@@ -147,7 +147,7 @@ class SlotScanner:
             color = slot_img.to_alpha()
             for fp in fps:
                 fp.draw_to_image(color, Image.random_color())
-            self._DEBUG_SAVE_IMAGE(color, "DEEP CONTOUR ALL FPS", slot_num)
+            self._DEBUG_SAVE_IMAGE(color, "DEEP CONTOUR_ALL FPS", slot_num)
 
     def _DEBUG_SQUARE_LOCATOR(self, slot_img, fp, slot_num):
         if not self._options.slot_images:
@@ -155,7 +155,7 @@ class SlotScanner:
 
         color = slot_img.to_alpha()
         fp.draw_to_image(color, Image.GREEN)
-        self._DEBUG_SAVE_IMAGE(color, "SQUARE LOCATOR FP", slot_num)
+        self._DEBUG_SAVE_IMAGE(color, "SQUARE_FP", slot_num)
 
     def _DEBUG_SAVE_IMAGE(self, image, prefix, slotnum):
         if not self._options.slot_images:

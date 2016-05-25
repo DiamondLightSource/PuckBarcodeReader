@@ -23,12 +23,21 @@ class OptionsDialog(QtGui.QDialog):
 
         # ------ STORE OPTIONS --------
         self.txt_store_dir = QLineEdit(self.options.store_directory)
+        hbox_store_dir = QHBoxLayout()
+        hbox_store_dir.addWidget(QLabel("Store Directory:"))
+        hbox_store_dir.addWidget(self.txt_store_dir)
+
+        # View Store Directory
+        btn_show_store_files = QtGui.QPushButton('View Store Files')
+        btn_show_store_files.setFixedWidth(150)
+        btn_show_store_files.clicked.connect(self._open_store_files_dir)
 
         grp_store = QGroupBox("Store")
-        grp_store_vbox = QVBoxLayout()
-        grp_store_vbox.addWidget(self.txt_store_dir)
-        grp_store_vbox.addStretch()
-        grp_store.setLayout(grp_store_vbox)
+        vbox_grp_store = QVBoxLayout()
+        vbox_grp_store.addLayout(hbox_store_dir)
+        vbox_grp_store.addWidget(btn_show_store_files)
+        vbox_grp_store.addStretch()
+        grp_store.setLayout(vbox_grp_store)
 
         # ------ DEBUG OPTIONS --------
         # Slot scan debug output
@@ -40,16 +49,19 @@ class OptionsDialog(QtGui.QDialog):
 
         # Set slot images directory
         self.txt_slot_files_dir = QLineEdit(self.options.slot_image_directory)
+        hbox_debug_dir = QHBoxLayout()
+        hbox_debug_dir.addWidget(QLabel("Debug Directory:"))
+        hbox_debug_dir.addWidget(self.txt_slot_files_dir)
 
-        # Shot slot images button
+        # Show slot images button
         btn_show_slot_files = QtGui.QPushButton('View Slot Image Files')
-        btn_show_slot_files.setFixedWidth(200)
+        btn_show_slot_files.setFixedWidth(150)
         btn_show_slot_files.clicked.connect(self._open_slot_image_files_dir)
 
         grp_debug = QGroupBox("Debugging Output")
         grp_debug_vbox = QVBoxLayout()
         grp_debug_vbox.addWidget(self.chk_slot_debug)
-        grp_debug_vbox.addWidget(self.txt_slot_files_dir)
+        grp_debug_vbox.addLayout(hbox_debug_dir)
         grp_debug_vbox.addWidget(btn_show_slot_files)
         grp_debug_vbox.addStretch()
         grp_debug.setLayout(grp_debug_vbox)
@@ -87,12 +99,19 @@ class OptionsDialog(QtGui.QDialog):
     def _open_slot_image_files_dir(self):
         path = self.options.slot_image_directory
         path = os.path.abspath(path)
+        self._open_directory(path)
 
+    def _open_store_files_dir(self):
+        path = self.options.store_directory
+        path = os.path.abspath(path)
+        self._open_directory(path)
+
+    def _open_directory(self, abspath):
         if sys.platform == 'win32':
             try:
-                os.startfile(path)
+                os.startfile(abspath)
             except FileNotFoundError:
-                QMessageBox.critical(self, "File Error", "Unable to find directory: '{}".format(path))
+                QMessageBox.critical(self, "File Error", "Unable to find directory: '{}".format(abspath))
         else:
             QMessageBox.critical(self, "File Error", "Only available on Windows")
 
