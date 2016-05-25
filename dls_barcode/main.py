@@ -15,7 +15,9 @@ from dls_barcode.camera_scanner import CameraScanner
 from dls_barcode.program_options import ProgramOptions
 
 from dls_barcode.gui import ScanRecordTable, BarcodeTable, ImageFrame
-from dls_barcode.gui import TEST_IMAGE_PATH, TEST_OUTPUT_PATH
+
+TEST_IMAGE_PATH = '../tests/test-resources/'
+TEST_OUTPUT_PATH = '../test-output/'
 
 
 class DiamondBarcodeReader(QtGui.QMainWindow):
@@ -164,7 +166,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             gray_image = cv_image.to_grayscale()
 
             # Scan the image for barcodes
-            plate, _ = Scanner().scan_next_frame(gray_image, single_image=True)
+            plate, _ = Scanner(self._options).scan_next_frame(gray_image, single_image=True)
 
             # If the scan was successful, store the results
             if plate is not None:
@@ -176,7 +178,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
                 self.recordTable.add_record(plate.type, plate.barcodes(), cv_image)
             else:
                 QtGui.QMessageBox.warning(self, "Scanning Error",
-                    "There was a problem scanning the image.\n" + plate.error)
+                                          "There was a problem scanning the image.\n" + plate.error)
 
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.

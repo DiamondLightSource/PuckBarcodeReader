@@ -1,8 +1,7 @@
 #!/usr/bin/env dls-python
 from dls_barcode import Image, Scanner, Store, Record
+from dls_barcode.program_options import ProgramOptions
 import time
-import uuid
-import os
 
 # SHOULD BE OPEN CV 2.4.10
 
@@ -32,9 +31,11 @@ TEST_CASES.extend(puck1_testcases)
 #TEST_CASES.extend(puck2_testcases)
 
 TEST_OUTPUT_PATH = '../test-output/'
-STORE_FILE = TEST_OUTPUT_PATH + 'store.txt'
-STORE_IMAGE_PATH = TEST_OUTPUT_PATH + 'img_store/'
-STORE = Store.from_directory(STORE_FILE)
+
+CONFIG_FILE = "../config.ini"
+OPTIONS = ProgramOptions(CONFIG_FILE)
+
+STORE = Store(OPTIONS.store_directory)
 
 
 def store_scan(plate, cvimg):
@@ -59,7 +60,7 @@ def run_tests():
         filename = TEST_IMG_DIR + file
         cv_image = Image(filename)
         gray_image = cv_image.to_grayscale()
-        plate, _ = Scanner().scan_next_frame(gray_image, single_image=True)
+        plate, _ = Scanner(OPTIONS).scan_next_frame(gray_image, single_image=True)
         store_scan(plate, cv_image)
 
         pass_count = 0
