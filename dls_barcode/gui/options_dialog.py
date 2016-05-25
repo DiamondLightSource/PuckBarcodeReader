@@ -1,9 +1,11 @@
 import sys
 import os
+import cv2
 
 from PyQt4 import QtGui
-from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout, QHBoxLayout, QWidget, QCheckBox, QMessageBox, QLineEdit
-from PyQt4.QtCore import Qt, QEvent
+from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout, QHBoxLayout, QWidget, QCheckBox, QMessageBox, \
+    QLineEdit, QPushButton
+
 
 class OptionsDialog(QtGui.QDialog):
 
@@ -23,6 +25,7 @@ class OptionsDialog(QtGui.QDialog):
         self.setWindowIcon(QtGui.QIcon('web.png'))
 
         LABEL_WIDTH = 100
+        BUTTON_WIDTH = 130
 
         # ------ SCANNING OPTIONS -------
         # Set Camera Number
@@ -51,10 +54,16 @@ class OptionsDialog(QtGui.QDialog):
         hbox_cam_res.addWidget(self.txt_camera_height)
         hbox_cam_res.addStretch()
 
+        # Preview camera
+        btn_camera_test = QPushButton("Test Camera")
+        btn_camera_test.setFixedWidth(BUTTON_WIDTH)
+        btn_camera_test.clicked.connect(self._test_camera)
+
         grp_scan = QGroupBox("Scanning")
         vbox_grp_scan = QVBoxLayout()
         vbox_grp_scan.addLayout(hbox_scan_dir)
         vbox_grp_scan.addLayout(hbox_cam_res)
+        vbox_grp_scan.addWidget(btn_camera_test)
         vbox_grp_scan.addStretch()
         grp_scan.setLayout(vbox_grp_scan)
 
@@ -69,8 +78,8 @@ class OptionsDialog(QtGui.QDialog):
         hbox_store_dir.addWidget(self.txt_store_dir)
 
         # View Store Directory
-        btn_show_store_files = QtGui.QPushButton('View Store Files')
-        btn_show_store_files.setFixedWidth(150)
+        btn_show_store_files = QPushButton('View Store Files')
+        btn_show_store_files.setFixedWidth(BUTTON_WIDTH)
         btn_show_store_files.clicked.connect(self._open_store_files_dir)
 
         grp_store = QGroupBox("Store")
@@ -96,8 +105,8 @@ class OptionsDialog(QtGui.QDialog):
         hbox_debug_dir.addWidget(self.txt_slot_files_dir)
 
         # Show slot images button
-        btn_show_slot_files = QtGui.QPushButton('View Slot Image Files')
-        btn_show_slot_files.setFixedWidth(150)
+        btn_show_slot_files = QPushButton('View Slot Image Files')
+        btn_show_slot_files.setFixedWidth(BUTTON_WIDTH)
         btn_show_slot_files.clicked.connect(self._open_slot_image_files_dir)
 
         grp_debug = QGroupBox("Debugging Output")
@@ -115,12 +124,13 @@ class OptionsDialog(QtGui.QDialog):
         btn_ok.pressed.connect(self._dialog_close_ok)
         btn_apply = QtGui.QPushButton("Apply")
         btn_apply.pressed.connect(self._dialog_apply_changes)
+        btn_rest = QtGui.QPushButton("Reset")
 
         hbox_ok_cancel = QtGui.QHBoxLayout()
         hbox_ok_cancel.addStretch(1)
+        hbox_ok_cancel.addWidget(btn_ok)
         hbox_ok_cancel.addWidget(btn_cancel)
         hbox_ok_cancel.addWidget(btn_apply)
-        hbox_ok_cancel.addWidget(btn_ok)
         hbox_ok_cancel.addStretch(1)
 
         # ----- MAIN LAYOUT -----
@@ -167,6 +177,50 @@ class OptionsDialog(QtGui.QDialog):
                 QMessageBox.critical(self, "File Error", "Unable to find directory: '{}".format(abspath))
         else:
             QMessageBox.critical(self, "File Error", "Only available on Windows")
+
+    def _test_camera(self):
+        # Check that values are integers
+        try:
+            camera_num = int(self.txt_camera_number.text())
+            camera_width = int(self.txt_camera_width.text())
+            camera_height = int(self.txt_camera_height.text())
+        except ValueError:
+            QMessageBox.critical(self, "Camera Error", "Camera number, width, and height must be integers")
+            return
+
+        # Check that we can connect to the camera
+        cap = cv2.VideoCapture(camera_num)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
+
+        read_ok, _ = cap.read()
+        if not read_ok:
+            QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
+            return
+
+        # Check resolution is acceptable
+        set_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        set_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if set_width != camera_width or set_height != camera_height:
+            QMessageBox.warning(self, "Camera Error",
+                                "Could not set the camera to the specified resolution: {}x{}.\nThe camera defaulted "
+                                "to {}x{}.".format(camera_width, camera_height, set_width, set_height))
+            self.txt_camera_width.setText(str(set_width))
+            self.txt_camera_height.setText(str(set_height))
+            return
+
+        # Display a preview feed from the camera
+        while True:
+            # Capture the next frame from the camera
+            read_ok, frame = cap.read()
+            small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+            cv2.imshow('Camera Preview', small)
+
+            # Exit scanning mode if the exit key is pressed
+            if cv2.waitKey(1) != -1:
+                cap.release()
+                cv2.destroyAllWindows()
+                break
 
     def _dialog_apply_changes(self):
         self.options.slot_images = (self.chk_slot_debug.checkState() != 0)

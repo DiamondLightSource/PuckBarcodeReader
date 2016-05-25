@@ -57,7 +57,6 @@ def capture_worker(task_queue, overlay_queue, options):
 
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, options.camera_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, options.camera_height)
-    print(cap.get(3), cap.get(4))
 
     # Store the latest image overlay which highlights the puck
     latest_overlay = Overlay(None)
