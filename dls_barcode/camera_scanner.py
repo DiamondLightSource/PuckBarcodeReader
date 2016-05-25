@@ -38,21 +38,26 @@ class CameraScanner:
     def stream_camera(self, camera_num, options):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue,))
+        capture_pool = multiprocessing.Pool(1, capture_worker, (self.task_queue, self.overlay_queue, options))
         scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue,
                                                                 self.result_queue, options))
 
 
-def capture_worker(camera_num, task_queue, overlay_queue):
+def capture_worker(task_queue, overlay_queue, options):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
     position of scanned and unscanned barcodes.
     """
     # Initialize the camera
-    cap = cv2.VideoCapture(camera_num)
-    cap.set(3, 1920)
-    cap.set(4, 1080)
+    cap = cv2.VideoCapture(options.camera_number)
+    read_ok, _ = cap.read()
+    if not read_ok:
+        cap = cv2.VideoCapture(0)
+
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, options.camera_width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, options.camera_height)
+    print(cap.get(3), cap.get(4))
 
     # Store the latest image overlay which highlights the puck
     latest_overlay = Overlay(None)
@@ -60,7 +65,7 @@ def capture_worker(camera_num, task_queue, overlay_queue):
 
     while True:
         # Capture the next frame from the camera
-        _, frame = cap.read()
+        read_ok, frame = cap.read()
 
         # Add the frame to the task queue to be processed
         if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
