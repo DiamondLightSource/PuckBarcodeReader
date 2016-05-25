@@ -25,11 +25,13 @@ class FrameDiagnostic:
 
 
 class Scanner:
-    def __init__(self):
+    def __init__(self, options):
         self.frame_img = None
         self.plate_type = "Unipuck"
         self.num_slots = 16
         self.plate = Plate(self.plate_type, self.num_slots)
+
+        self._options = options
 
     def scan_next_frame(self, frame_img, single_image=False):
         self.frame_img = frame_img
@@ -47,7 +49,7 @@ class Scanner:
         is_aligned = geometry.is_aligned()
 
         # Create slot scanner
-        slot_scanner = SlotScanner(frame_img, barcodes)
+        slot_scanner = SlotScanner(frame_img, barcodes, self._options)
 
         # ---------- READ SOME BARCODES ----------------------
         if is_aligned:

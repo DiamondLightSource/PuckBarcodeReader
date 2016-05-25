@@ -10,7 +10,7 @@ sys.path.append("..")
 
 from dls_barcode.plate import Scanner
 from dls_barcode.util import Image
-from dls_barcode.gui.options import Options, OptionsDialog
+from dls_barcode.gui.options_dialog import Options, OptionsDialog
 from dls_barcode.camera_scanner import CameraScanner
 
 from dls_barcode.gui import ScanRecordTable, BarcodeTable, ImageFrame
@@ -26,6 +26,8 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             os.makedirs(TEST_OUTPUT_PATH)
 
         self._options = Options()
+        self._options.slot_images = False
+        self._options.slot_image_directory = "../debug-output/"
 
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
@@ -123,9 +125,8 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         scan_menu.addAction(load_action)
         scan_menu.addAction(live_action)
 
-        #option_menu = menu_bar.addMenu('&Option')
-        #option_menu.addAction(self.paste_action)
-        #option_menu.addAction(options_action)
+        option_menu = menu_bar.addMenu('&Option')
+        option_menu.addAction(options_action)
 
     def _open_options_dialog(self):
         dialog = OptionsDialog(self._options)
@@ -180,7 +181,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         """ Starts the process of continuous capture from an attached camera.
         """
         scanner = CameraScanner(self._new_scan_queue)
-        scanner.stream_camera(camera_num=0)
+        scanner.stream_camera(camera_num=0, options=self._options)
 
 
 def main():

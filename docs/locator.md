@@ -2,7 +2,7 @@ Data Matrix Locator
 ===================
 Before we can read barcodes from an image, i.e., convert the matrix of black and white pixels into a text string, we must first locate them. In this context, locating means finding the coordinates (in image pixels) of each of the three corners of the data matrix finder pattern. 
 
-In this application, we split the job of reading data matrix barcodes into two arts: 1) locating the barcodes in the image; and 2) reading the barcodes that we have found. The main reason for doing this is that the actual reading of the barcode is relatively expensive computationally. Splitting the functionality allows us to be selective about which barcodes we want to read, which is important in continuous scanning mode where it is likely that we will have read many of the barcodes already and so would waste considerable time if we re-read every barcode.
+In this application, we split the job of reading data matrix barcodes into two parts: 1) locating the barcodes in the image; and 2) reading the barcodes that we have found. The main reason for doing this is that the actual reading of the barcode is relatively expensive computationally. Splitting the functionality allows us to be selective about which barcodes we want to read, which is important in continuous scanning mode where it is likely that we will have read many of the barcodes already and so would waste considerable time if we re-read every barcode.
 
 This application implements two different locator methods. The first (contours) is very fast, whereas the second (squares) is slower but can often locate barcodes that the first method misses.
 

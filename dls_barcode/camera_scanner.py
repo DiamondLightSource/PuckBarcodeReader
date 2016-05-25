@@ -35,11 +35,12 @@ class CameraScanner:
         self.overlay_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
-    def stream_camera(self, camera_num):
+    def stream_camera(self, camera_num, options):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
         capture_pool = multiprocessing.Pool(1, capture_worker, (camera_num, self.task_queue, self.overlay_queue,))
-        scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue, self.result_queue,))
+        scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue,
+                                                                self.result_queue, options))
 
 
 def capture_worker(camera_num, task_queue, overlay_queue):
@@ -50,8 +51,8 @@ def capture_worker(camera_num, task_queue, overlay_queue):
     """
     # Initialize the camera
     cap = cv2.VideoCapture(camera_num)
-    cap.set(3,1920)
-    cap.set(4,1080)
+    cap.set(3, 1920)
+    cap.set(4, 1080)
 
     # Store the latest image overlay which highlights the puck
     latest_overlay = Overlay(None)
@@ -88,7 +89,7 @@ def capture_worker(camera_num, task_queue, overlay_queue):
     cv2.destroyAllWindows()
 
 
-def scanner_worker(task_queue, overlay_queue, result_queue):
+def scanner_worker(task_queue, overlay_queue, result_queue, options):
     """ Function used as the main loop of a worker process. Scan images for barcodes,
     combining partial scans until a full puck is reached.
 
@@ -104,7 +105,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue):
     barcode_counter = 0
     plate_frame_number = 0
 
-    scanner = Scanner()
+    scanner = Scanner(options)
 
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)

@@ -2,6 +2,8 @@ from __future__ import division
 
 import numpy as np
 import math
+import time
+import os
 
 from .slot import Slot
 from dls_barcode.datamatrix import DataMatrix, Locator
@@ -12,9 +14,10 @@ class SlotScanner:
     BRIGHTNESS_RATIO = 5
     DEBUG_MODE = True
 
-    def __init__(self, image, barcodes):
+    def __init__(self, image, barcodes, options):
         self.image = image
         self.barcodes = barcodes
+        self._options = options
 
         self.radius_avg = self._calculate_average_radius()
         self.side_avg = self.radius_avg * (2 / math.sqrt(2))
@@ -40,7 +43,7 @@ class SlotScanner:
         wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
         barcode.perform_read(wiggle_offsets)
 
-        DEBUG_WIGGLES_READ(barcode, locate_type, self.side_avg)
+        self._DEBUG_WIGGLES_READ(barcode, locate_type, self.side_avg)
 
         return barcode
 
@@ -52,7 +55,7 @@ class SlotScanner:
         fps = list(Locator().locate_deep(img, self.radius_avg))
         barcodes = [DataMatrix(fp, img) for fp in fps]
 
-        DEBUG_MULTI_FP_IMAGE(img, fps, slot.number())
+        self._DEBUG_MULTI_FP_IMAGE(img, fps, slot.number())
 
         return barcodes
 
@@ -63,7 +66,7 @@ class SlotScanner:
         img = self._slot_image(slot)
         fp = Locator().locate_square(img, self.side_avg)
 
-        DEBUG_SQUARE_LOCATOR(img, fp, slot.number())
+        self._DEBUG_SQUARE_LOCATOR(img, fp, slot.number())
 
         return DataMatrix(fp, img)
 
@@ -118,56 +121,50 @@ class SlotScanner:
         x, y = point
         return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
 
+    def _DEBUG_WIGGLES_READ(self, barcode, locate_type, side_length):
+        if not self._options.slot_images:
+            return
 
-def DEBUG_WIGGLES_READ(barcode, locate_type, side_length):
-    if not SlotScanner.DEBUG_MODE:
-        return
+        if barcode.is_valid():
+            print("DEBUG - WIGGLES SUCCESSFUL - " + locate_type)
+            result = "_SUCCESS"
+        else:
+            result = "_FAIL"
 
-    if barcode.is_valid():
-        print("DEBUG - WIGGLES SUCCESSFUL - " + locate_type)
-        result = "_success"
-    else:
-        result = "_fail"
+        slot_img = Image(None, barcode._image).to_alpha()
 
-    slot_img = Image(None, barcode._image).to_alpha()
+        self._DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length - 1)
 
-    DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length-1)
+        fp = barcode._finder_pattern
+        fp.draw_to_image(slot_img, Image.GREEN)
 
-    fp = barcode._finder_pattern
-    fp.draw_to_image(slot_img, Image.GREEN)
+        self._DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length - 1)
 
-    DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length-1)
+    def _DEBUG_MULTI_FP_IMAGE(self, slot_img, fps, slot_num):
+        if not self._options.slot_images:
+            return
 
+        if len(fps) > 1:
+            color = slot_img.to_alpha()
+            for fp in fps:
+                fp.draw_to_image(color, Image.random_color())
+            self._DEBUG_SAVE_IMAGE(color, "DEEP CONTOUR ALL FPS", slot_num)
 
-def DEBUG_MULTI_FP_IMAGE(slot_img, fps, slot_num):
-    if not SlotScanner.DEBUG_MODE:
-        return
+    def _DEBUG_SQUARE_LOCATOR(self, slot_img, fp, slot_num):
+        if not self._options.slot_images:
+            return
 
-    if len(fps) > 1:
         color = slot_img.to_alpha()
-        for fp in fps:
-            fp.draw_to_image(color, Image.random_color())
-        DEBUG_SAVE_IMAGE(color, "deep contour fps", slot_num)
+        fp.draw_to_image(color, Image.GREEN)
+        self._DEBUG_SAVE_IMAGE(color, "SQUARE LOCATOR FP", slot_num)
 
+    def _DEBUG_SAVE_IMAGE(self, image, prefix, slotnum):
+        if not self._options.slot_images:
+            return
 
-def DEBUG_SQUARE_LOCATOR(slot_img, fp, slot_num):
-    if not SlotScanner.DEBUG_MODE:
-        return
-
-    color = slot_img.to_alpha()
-    fp.draw_to_image(color, Image.GREEN)
-    DEBUG_SAVE_IMAGE(color, "square locator fp", slot_num)
-
-
-def DEBUG_SAVE_IMAGE(image, prefix, slotnum):
-    if not SlotScanner.DEBUG_MODE:
-        return
-
-    import time
-    import os
-    dir = "../test-output/bad_barcodes/" + prefix + "/"
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum+1) + ".png"
-    image.save_as(filename)
+        dir = self._options.slot_image_directory + prefix + "/"
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum+1) + ".png"
+        image.save_as(filename)
 
