@@ -1,25 +1,9 @@
 import sys
 import os
-import subprocess
 
 from PyQt4 import QtGui
-from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout, QHBoxLayout, QWidget, QCheckBox, QMessageBox
+from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout, QHBoxLayout, QWidget, QCheckBox, QMessageBox, QLineEdit
 from PyQt4.QtCore import Qt, QEvent
-
-from dls_barcode.util.image import Image
-
-
-class Options:
-    def __init__(self):
-        self.colour_ok = Image.GREEN
-        self.color_not_found = Image.RED
-        self.color_unreadable = Image.ORANGE
-
-        self.store_file = ""
-
-        self.slot_images = False
-        self.slot_image_directory = ""
-
 
 class OptionsDialog(QtGui.QDialog):
 
@@ -37,11 +21,6 @@ class OptionsDialog(QtGui.QDialog):
         self.setWindowTitle('Options')
         self.setWindowIcon(QtGui.QIcon('web.png'))
 
-        # Message
-        lbl_explanation = QLabel("Note that the options in this dialog are not "
-                                 "currently saved when the program is closed.")
-        lbl_explanation.setStyleSheet("color:red;")
-
         # Slot scan debug output
         self.chk_slot_debug = QCheckBox("Save images of failed slot scans")
         self.chk_slot_debug.stateChanged.connect(self._slot_debug_clicked)
@@ -49,6 +28,10 @@ class OptionsDialog(QtGui.QDialog):
         state = 2 if self.options.slot_images else 0
         self.chk_slot_debug.setCheckState(state)
 
+        # Set slot images directory
+        self.txt_slot_files_dir = QLineEdit(self.options.slot_image_directory)
+
+        # Shot slot images button
         btn_show_slot_files = QtGui.QPushButton('View Slot Image Files')
         btn_show_slot_files.setFixedWidth(200)
         btn_show_slot_files.clicked.connect(self._open_slot_image_files_dir)
@@ -56,14 +39,27 @@ class OptionsDialog(QtGui.QDialog):
         grp_debug = QGroupBox("Debugging Output")
         grp_debug_vbox = QVBoxLayout()
         grp_debug_vbox.addWidget(self.chk_slot_debug)
+        grp_debug_vbox.addWidget(self.txt_slot_files_dir)
         grp_debug_vbox.addWidget(btn_show_slot_files)
         grp_debug_vbox.addStretch()
         grp_debug.setLayout(grp_debug_vbox)
 
+        # ----- OK /CANCEL BUTTONS -------
+        self._btn_cancel = QtGui.QPushButton("Cancel")
+        self._btn_cancel.pressed.connect(self._dialog_close_cancel)
+        self._btn_ok = QtGui.QPushButton("OK")
+        self._btn_ok.pressed.connect(self._dialog_close_ok)
+
+        hbox_ok_cancel = QtGui.QHBoxLayout()
+        hbox_ok_cancel.addStretch(1)
+        hbox_ok_cancel.addWidget(self._btn_cancel)
+        hbox_ok_cancel.addWidget(self._btn_ok)
+        hbox_ok_cancel.addStretch(1)
+
+        # ----- MAIN LAYOUT -----
         vbox = QVBoxLayout()
-        vbox.addWidget(lbl_explanation)
-        vbox.addSpacing(10)
         vbox.addWidget(grp_debug)
+        vbox.addLayout(hbox_ok_cancel)
 
         self.setLayout(vbox)
 
@@ -87,5 +83,15 @@ class OptionsDialog(QtGui.QDialog):
                 QMessageBox.critical(self, "File Error", "Unable to find directory: '{}".format(path))
         else:
             QMessageBox.critical(self, "File Error", "Only available on Windows")
+
+    def _dialog_close_ok(self):
+        self.options.slot_images = (self.chk_slot_debug.checkState() != 0)
+        self.options.slot_image_directory = self.txt_slot_files_dir.text()
+
+        self.options.update_config_file()
+        self.close()
+
+    def _dialog_close_cancel(self):
+        self.close()
 
 

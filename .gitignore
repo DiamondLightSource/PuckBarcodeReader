@@ -1,7 +1,7 @@
 .idea
+store
 debug-output
 test-output
-test-images
 test-resources
-zxing
 *.pyc
+config.ini

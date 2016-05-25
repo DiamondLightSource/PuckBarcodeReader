@@ -10,14 +10,17 @@ sys.path.append("..")
 
 from dls_barcode.plate import Scanner
 from dls_barcode.util import Image
-from dls_barcode.gui.options_dialog import Options, OptionsDialog
+from dls_barcode.gui.options_dialog import OptionsDialog
 from dls_barcode.camera_scanner import CameraScanner
+from dls_barcode.program_options import ProgramOptions
 
 from dls_barcode.gui import ScanRecordTable, BarcodeTable, ImageFrame
 from dls_barcode.gui import TEST_IMAGE_PATH, TEST_OUTPUT_PATH
 
 
 class DiamondBarcodeReader(QtGui.QMainWindow):
+    CONFIG_FILE = "../config.ini"
+
     def __init__(self):
         super(DiamondBarcodeReader, self).__init__()
 
@@ -25,9 +28,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         if not os.path.exists(TEST_OUTPUT_PATH):
             os.makedirs(TEST_OUTPUT_PATH)
 
-        self._options = Options()
-        self._options.slot_images = False
-        self._options.slot_image_directory = "../debug-output/"
+        self._options = ProgramOptions(DiamondBarcodeReader.CONFIG_FILE)
 
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
