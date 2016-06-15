@@ -209,7 +209,7 @@ class Plate:
         for i, slot in enumerate(self._slots):
             state = slot.state()
             if state == Slot.UNREADABLE:
-                color = Color.Orange()
+                color = Color.Red()
             elif state == Slot.VALID:
                 color = Color.Green()
             elif state == Slot.EMPTY:

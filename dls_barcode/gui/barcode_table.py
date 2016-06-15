@@ -47,7 +47,7 @@ class BarcodeTable(QGroupBox):
         for index, barcode in enumerate(barcodes):
             # Select appropriate background color
             if barcode == BAD_DATA_SYMBOL:
-                color = Color.Orange()
+                color = Color.Red()
             elif barcode == NOT_FOUND_SLOT_SYMBOL:
                 color = Color.Red()
             elif barcode == EMPTY_SLOT_SYMBOL:
