@@ -8,21 +8,6 @@ class Image:
     """Class that wraps an OpenCV image and can perform various
     operations on it that are useful in this program.
     """
-    WHITE = (255,255,255,255)
-    BLACK = (0,0,0,255)
-    GREY = (128,128,128,255)
-
-    BLUE = (255,0,0,255)
-    RED = (0,0,255,255)
-    GREEN = (0,255,0,255)
-
-    YELLOW = (0,255,255,255)
-    CYAN = (255,255,0,255)
-    MAGENTA = (255,0,255,255)
-
-    ORANGE = (0,128,255,255)
-    PURPLE = (255,0,128,255)
-
     def __init__(self, filename, img=None):
         if filename is not None:
             self.img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
@@ -167,36 +152,35 @@ class Image:
         """ Draw the specified rectangle on the image (in place) """
         top_left = self._format_point((roi[0], roi[1]))
         bottom_right = self._format_point((roi[2], roi[3]))
-        cv2.rectangle(self.img, top_left, bottom_right, color, thickness=thickness)
+        cv2.rectangle(self.img, top_left, bottom_right, color.bgra(), thickness=thickness)
 
     def draw_circle(self, center, radius, color, thickness=2):
         """ Draw the specified circle on the image (in place) """
         center = self._format_point(center)
-        cv2.circle(self.img, center, int(radius), color, thickness=thickness)
+        cv2.circle(self.img, center, int(radius), color.bgra(), thickness=thickness)
 
     def draw_dot(self, center, color, thickness=5):
         """ Draw the specified dot on the image (in place) """
         center = self._format_point(center)
-        cv2.circle(self.img, tuple(center), radius=0, color=color, thickness=thickness)
+        cv2.circle(self.img, tuple(center), radius=0, color=color.bgra(), thickness=thickness)
 
     def draw_line(self, p1, p2, color, thickness=2):
         """ Draw the specified line on the image (in place) """
         p1 = self._format_point(p1)
         p2 = self._format_point(p2)
-        cv2.line(self.img, p1, p2, color, thickness=thickness)
+        cv2.line(self.img, p1, p2, color.bgra(), thickness=thickness)
 
     def draw_text(self, text, position, color, centered=False, scale=1.5, thickness=3):
         """ Draw the specified text on the image (in place) """
         if centered:
-            textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
-            position = (int(position[0]-textsize[0]/2), int(position[1]+textsize[1]/2))
+            text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
+            position = (int(position[0]-text_size[0]/2), int(position[1]+text_size[1]/2))
         position = self._format_point(position)
-        cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, color=color, thickness=thickness)
+        cv2.putText(self.img, text, position, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, color=color.bgra(), thickness=thickness)
 
     def _format_point(self, point):
-        """ Offset the point and ensure the coordinates are integers
-        """
-        return (int(point[0]+self.draw_offset[0]), int(point[1]+self.draw_offset[1]))
+        """ Offset the point and ensure the coordinates are integers. """
+        return int(point[0]+self.draw_offset[0]), int(point[1]+self.draw_offset[1])
 
     def calculate_brightness(self, center, width, height):
         """Return the average brightness over a small region surrounding a point.
@@ -242,12 +226,6 @@ class Image:
             return [center, radius]
         else:
             return None
-
-    @staticmethod
-    def random_color():
-        from random import randint
-        color = (randint(0, 255), randint(0, 255),randint(0, 255), 255)
-        return color
 
 
 

@@ -1,11 +1,7 @@
-"""
-Code to test/demo the Transform class
-"""
-
 import math
 import random
 
-from dls_barcode.util.image import Image
+from dls_barcode.util import Image, Color
 from dls_barcode.util.transform import Transform
 
 IMG_CENTER = (500, 400)
@@ -23,8 +19,8 @@ def draw_axes(img, length):
     y_neg = (0, -length)
     y_pos = (0, length)
 
-    img.draw_line(y_neg, y_pos, Image.WHITE, 5)
-    img.draw_line(x_neg, x_pos, Image.WHITE, 5)
+    img.draw_line(y_neg, y_pos, Color.White(), 5)
+    img.draw_line(x_neg, x_pos, Color.White(), 5)
 
 
 def TRIANGLE_DEMO():
@@ -61,14 +57,14 @@ def TRIANGLE_DEMO():
         draw_axes(image, 300)
 
         # Draw original triangle
-        image.draw_line(A, B, Image.RED, 5)
-        image.draw_line(C, B, Image.RED, 5)
-        image.draw_line(A, C, Image.RED, 5)
+        image.draw_line(A, B, Color.Red(), 5)
+        image.draw_line(C, B, Color.Red(), 5)
+        image.draw_line(A, C, Color.Red(), 5)
 
         #Draw transformed triangle
-        image.draw_line(A_, B_, Image.GREEN)
-        image.draw_line(A_, C_, Image.GREEN)
-        image.draw_line(C_, B_, Image.GREEN)
+        image.draw_line(A_, B_, Color.Green())
+        image.draw_line(A_, C_, Color.Green())
+        image.draw_line(C_, B_, Color.Green())
 
         # Check that the reverse transformation works properly
         A__ = transform.reverse(A_)
@@ -76,12 +72,12 @@ def TRIANGLE_DEMO():
         C__ = transform.reverse(C_)
 
         # Draw the reverse transformation - this should overlap the origianl triangle
-        image.draw_line(A__, B__, Image.GREEN, 1)
-        image.draw_line(A__, C__, Image.GREEN, 1)
-        image.draw_line(C__, B__, Image.GREEN, 1)
+        image.draw_line(A__, B__, Color.Green(), 1)
+        image.draw_line(A__, C__, Color.Green(), 1)
+        image.draw_line(C__, B__, Color.Green(), 1)
 
         # Write the transformation on the image
-        image.draw_text(transform.__str__(), (-450, 350), Image.WHITE, centered=False, scale=0.5, thickness=1)
+        image.draw_text(transform.__str__(), (-450, 350), Color.White(), centered=False, scale=0.5, thickness=1)
 
         # Show the image
         image.popup()
@@ -114,11 +110,11 @@ def CIRCLES_DEMO():
         # Draw the circles and transformed circles on the image
         radius = 10
         for p in points:
-            image.draw_circle(p, radius, Image.RED)
-            image.draw_circle(trs.transform(p), radius * trs.zoom, Image.BLUE)
+            image.draw_circle(p, radius, Color.Red())
+            image.draw_circle(trs.transform(p), radius * trs.zoom, Color.Blue())
 
         # Write the transformation on the image
-        image.draw_text(trs.__str__(), (-450, 350), Image.WHITE, centered=False, scale=0.5, thickness=1)
+        image.draw_text(trs.__str__(), (-450, 350), Color.White(), centered=False, scale=0.5, thickness=1)
 
         # Show the image
         image.popup()

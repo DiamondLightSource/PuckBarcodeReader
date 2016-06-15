@@ -7,7 +7,7 @@ import math
 from dls_barcode import Image
 from dls_barcode.datamatrix import DataMatrix
 from dls_barcode.plate.geometry_tray import Tray
-from dls_barcode.util.transform import Transform
+from dls_barcode.util import Transform, Color
 
 
 def rad_to_deg(angle):
@@ -97,6 +97,6 @@ for i in range(4):
 
 # Draw the barcode locations on the image and save to file
 tray.frame_transform = Transform(IMG_OFFSET, IMG_OFFSET, 0, 1)
-tray.draw_highlights(total_img, Image.RED)
-total_img.draw_dot((IMG_OFFSET,IMG_OFFSET), Image.RED, thickness=10)
+tray.draw_highlights(total_img, Color.Red())
+total_img.draw_dot((IMG_OFFSET,IMG_OFFSET), Color.Red(), thickness=10)
 total_img.save_as(file_stitch)

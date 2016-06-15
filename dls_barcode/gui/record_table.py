@@ -1,14 +1,12 @@
 from __future__ import division
 
-import os
-
 import pyperclip
 from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 
 from dls_barcode.gui.store import Store
-from dls_barcode.util.image import Image
+from dls_barcode.util import Color
 
 # todo: allow delete key to be used for deletion
 # todo: allow record selection with arrow keys
@@ -92,16 +90,16 @@ class ScanRecordTable(QGroupBox):
                      record.num_invalid_barcodes+record.num_unread_slots, record.num_empty_slots]
 
             if (record.num_valid_barcodes + record.num_empty_slots) == record.num_slots:
-                color = self._qt_color(Image.GREEN)
+                color = Color.Green()
             else:
-                color = self._qt_color(Image.RED)
+                color = Color.Red()
 
-
+            color.a = 192
             for m, item in enumerate(items):
-                newitem = QtGui.QTableWidgetItem(str(item))
-                newitem.setBackgroundColor(color)
-                newitem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
-                self._table.setItem(n, m, newitem)
+                new_item = QtGui.QTableWidgetItem(str(item))
+                new_item.setBackgroundColor(color.to_qt())
+                new_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+                self._table.setItem(n, m, new_item)
 
         # Display the first (most recent) record
         self._table.setCurrentCell(0, 0)
@@ -158,6 +156,3 @@ class ScanRecordTable(QGroupBox):
         if barcodes:
             pyperclip.copy('\n'.join(barcodes))
         #spam = pyperclip.paste()
-
-    def _qt_color(self, cv_color):
-        return QtGui.QColor(cv_color[2], cv_color[1], cv_color[0], 128)

@@ -1,6 +1,7 @@
 import uuid
 import random
 
+from dls_barcode.util import Color
 from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
 
 
@@ -205,17 +206,16 @@ class Plate:
         self._geometry.draw_plate(cvimg, color)
 
     def draw_pins(self, cvimg):
-        from dls_barcode import Image
         for i, slot in enumerate(self._slots):
             state = slot.state()
             if state == Slot.UNREADABLE:
-                color = Image.ORANGE
+                color = Color.Orange()
             elif state == Slot.VALID:
-                color = Image.GREEN
+                color = Color.Green()
             elif state == Slot.EMPTY:
-                color = Image.GREY
+                color = Color.Grey()
             else:
-                color = Image.RED
+                color = Color.Red()
             self._geometry.draw_pin_highlight(cvimg, color, i+1)
 
     def crop_image(self, cvimg):

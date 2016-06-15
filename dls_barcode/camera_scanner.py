@@ -5,7 +5,7 @@ import winsound
 import time
 import multiprocessing
 
-from dls_barcode.util.image import Image
+from dls_barcode.util import Image, Color
 from dls_barcode.plate import Scanner
 
 Q_LIMIT = 1
@@ -191,12 +191,12 @@ class Overlay:
         # If the overlay has not expired, draw on the plate highlight and/or the status message
         if (time.time() - self._start_time) < self._lifetime:
             if self._plate is not None:
-                self._plate.draw_plate(cv_image, Image.BLUE)
+                self._plate.draw_plate(cv_image, Color.Blue())
                 self._plate.draw_pins(cv_image)
 
             if self._text is not None:
-                cv_image.draw_text(SCANNED_TAG, cv_image.center(), Image.GREEN, centered=True, scale=4, thickness=3)
+                cv_image.draw_text(SCANNED_TAG, cv_image.center(), Color.Green(), centered=True, scale=4, thickness=3)
 
         # Displays a message on the screen telling the user how to exit
         exit_msg = "Press '{}' to exit".format(EXIT_KEY)
-        cv_image.draw_text(exit_msg, (20, 50), Image.BLACK, centered=False, scale=1, thickness=2)
+        cv_image.draw_text(exit_msg, (20, 50), Color.Black(), centered=False, scale=1, thickness=2)

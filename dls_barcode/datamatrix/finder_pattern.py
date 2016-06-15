@@ -1,5 +1,7 @@
 import math
 
+from dls_barcode.util import Color
+
 
 class FinderPattern:
     """A representation of the location of a Datamatrix 'finder pattern'
@@ -33,12 +35,11 @@ class FinderPattern:
         return (point[0] - self.center[0])**2 + (point[1] - self.center[1])**2 < self.radius
 
     def bounds(self):
-        return (self.center, self.radius)
+        return self.center, self.radius
 
     def draw_to_image(self, image, color=None):
-        from dls_barcode.util.image import Image
         if color is None:
-            color = Image.GREEN
+            color = Color.Green()
         image.draw_line(self.c1, self.c2, color, 1)
         image.draw_line(self.c3, self.c1, color, 1)
 

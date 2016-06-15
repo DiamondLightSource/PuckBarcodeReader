@@ -7,7 +7,7 @@ import os
 
 from .slot import Slot
 from dls_barcode.datamatrix import DataMatrix, Locator
-from dls_barcode.util import Image
+from dls_barcode.util import Image, Color
 
 
 class SlotScanner:
@@ -135,7 +135,7 @@ class SlotScanner:
         self._DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length - 1)
 
         fp = barcode._finder_pattern
-        fp.draw_to_image(slot_img, Image.GREEN)
+        fp.draw_to_image(slot_img, Color.Green())
 
         self._DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length - 1)
 
@@ -146,7 +146,7 @@ class SlotScanner:
         if len(fps) > 1:
             color = slot_img.to_alpha()
             for fp in fps:
-                fp.draw_to_image(color, Image.random_color())
+                fp.draw_to_image(color, Color.Random())
             self._DEBUG_SAVE_IMAGE(color, "DEEP CONTOUR_ALL FPS", slot_num)
 
     def _DEBUG_SQUARE_LOCATOR(self, slot_img, fp, slot_num):
@@ -154,7 +154,7 @@ class SlotScanner:
             return
 
         color = slot_img.to_alpha()
-        fp.draw_to_image(color, Image.GREEN)
+        fp.draw_to_image(color, Color.Green())
         self._DEBUG_SAVE_IMAGE(color, "SQUARE_FP", slot_num)
 
     def _DEBUG_SAVE_IMAGE(self, image, prefix, slotnum):

@@ -1,6 +1,7 @@
 #!/usr/bin/env dls-python
-from dls_barcode import Image, Scanner, Store, Record
+from dls_barcode import Image, Scanner, Store
 from dls_barcode.barcode_config import BarcodeConfig
+from dls_barcode.util import Color
 import time
 
 # SHOULD BE OPEN CV 2.4.10
@@ -18,11 +19,11 @@ PUCK2_CODES = [['DF150E0101', 1], ['DF150E0073', 2], ['DF150E0144', 3], ['DF150E
                ['DF150E0250', 16]]
 
 # List of files for Puck type 1
-puck1_files = ['puck1_'+ ("0"+str(i) if i <10 else str(i)) +".png" for i in range(1,26)]
+puck1_files = ['puck1_'+ ("0"+str(i) if i <10 else str(i)) + ".png" for i in range(1,26)]
 puck1_testcases = [(file, PUCK1_CODES) for file in puck1_files]
 
 # List of files for Puck type 2
-puck2_files = ['puck2_'+ ("0"+str(i) if i <10 else str(i)) +".png" for i in range(1,5)]
+puck2_files = ['puck2_'+ ("0"+str(i) if i <10 else str(i)) + ".png" for i in range(1,5)]
 puck2_testcases = [(file, PUCK2_CODES) for file in puck2_files]
 
 # Create a list of test cases
@@ -39,7 +40,7 @@ STORE = Store(OPTIONS.store_directory.value())
 
 
 def store_scan(plate, cvimg):
-    plate.draw_plate(cvimg, Image.BLUE)
+    plate.draw_plate(cvimg, Color.Blue())
     plate.draw_pins(cvimg)
     plate.crop_image(cvimg)
     STORE.add_record(plate.type, plate.barcodes(), cvimg)

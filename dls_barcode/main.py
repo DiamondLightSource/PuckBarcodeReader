@@ -9,7 +9,7 @@ from PyQt4 import QtGui, QtCore
 sys.path.append("..")
 
 from dls_barcode.plate import Scanner
-from dls_barcode.util import Image
+from dls_barcode.util import Image, Color
 from dls_barcode.gui.barcode_config_dialog import BarcodeConfigDialog
 from dls_barcode.camera_scanner import CameraScanner
 from dls_barcode.barcode_config import BarcodeConfig
@@ -157,7 +157,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             # If the scan was successful, store the results
             if plate is not None:
                 # Highlight the image and display it
-                plate.draw_plate(cv_image, Image.BLUE)
+                plate.draw_plate(cv_image, Color.Blue())
                 plate.draw_pins(cv_image)
                 plate.crop_image(cv_image)
 

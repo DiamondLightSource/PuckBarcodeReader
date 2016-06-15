@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 from .finder_pattern import FinderPattern
-from dls_barcode.util import Transform, Image
+from dls_barcode.util import Transform, Image, Color
 
 
 class SquareLocator:
@@ -362,7 +362,7 @@ def _draw_square(image, transform, size):
 
     roi = (x1, y1, x2, y2)
     marked_img = rotated.to_alpha()
-    marked_img.draw_rectangle(roi, Image.GREEN, 1)
+    marked_img.draw_rectangle(roi, Color.Green(), 1)
 
     return marked_img
 
@@ -380,11 +380,11 @@ def _draw_square_and_writing(image, transform, size):
 
     y1 = center[1] + y_offset - txt_height/2
     y2 = y1 + txt_height
-    marked_img.draw_rectangle((x1, y1, x2, y2), Image.GREEN, 1)
+    marked_img.draw_rectangle((x1, y1, x2, y2), Color.Green(), 1)
 
     y1 = center[1] - y_offset - txt_height/2
     y2 = y1 + txt_height
-    marked_img.draw_rectangle((x1, y1, x2, y2), Image.GREEN, 1)
+    marked_img.draw_rectangle((x1, y1, x2, y2), Color.Green(), 1)
 
     return marked_img
 
@@ -399,7 +399,7 @@ def _draw_finder_pattern(image, transform, fp):
     c3 = _rotate_around_point(fp.c3, -angle, center)
 
     img = rotated.to_alpha()
-    img.draw_line(c1, c2, Image.GREEN, 1)
-    img.draw_line(c1, c3, Image.GREEN, 1)
+    img.draw_line(c1, c2, Color.Green(), 1)
+    img.draw_line(c1, c3, Color.Green(), 1)
 
     return img
