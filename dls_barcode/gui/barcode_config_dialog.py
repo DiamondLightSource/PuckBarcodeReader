@@ -26,8 +26,8 @@ class BarcodeConfigDialog(ConfigDialog):
 
         self.start_group("Colors")
         add(cfg.colour_ok)
-        add(cfg.color_not_found)
         add(cfg.color_unreadable)
+        add(cfg.color_empty)
 
         self.start_group("Camera")
         self._add_control(camera)
@@ -85,6 +85,7 @@ class CameraConfigControl(ConfigControl):
         btn_camera_test.clicked.connect(self._test_camera)
 
         vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 0, 0)
         vbox.addLayout(hbox_num)
         vbox.addLayout(hbox_res)
         vbox.addWidget(btn_camera_test)

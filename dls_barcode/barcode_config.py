@@ -7,9 +7,9 @@ class BarcodeConfig(Config):
 
         add = self.add
 
-        self.colour_ok = add(ColorConfigItem, "OK Color", Color.Green())
-        self.color_not_found = add(ColorConfigItem, "Not Found Color", Color.Red())
-        self.color_unreadable = add(ColorConfigItem, "Unreadable Color", Color.Orange())
+        self.colour_ok = add(ColorConfigItem, "Read Color", Color.Green())
+        self.color_unreadable = add(ColorConfigItem, "Not Read Color", Color.Red())
+        self.color_empty = add(ColorConfigItem, "Empty Color", Color.Grey())
 
         self.store_directory = add(DirectoryConfigItem, "Store Directory", default="../store/")
         self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)
