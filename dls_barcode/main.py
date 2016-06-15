@@ -10,9 +10,9 @@ sys.path.append("..")
 
 from dls_barcode.plate import Scanner
 from dls_barcode.util import Image
-from dls_barcode.gui.options_dialog import OptionsDialog
+from dls_barcode.gui.barcode_config_dialog import BarcodeConfigDialog
 from dls_barcode.camera_scanner import CameraScanner
-from dls_barcode.program_options import ProgramOptions
+from dls_barcode.barcode_config import BarcodeConfig
 
 from dls_barcode.gui import ScanRecordTable, BarcodeTable, ImageFrame
 
@@ -30,7 +30,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         if not os.path.exists(TEST_OUTPUT_PATH):
             os.makedirs(TEST_OUTPUT_PATH)
 
-        self._options = ProgramOptions(DiamondBarcodeReader.CONFIG_FILE)
+        self._config = BarcodeConfig(DiamondBarcodeReader.CONFIG_FILE)
 
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
@@ -64,7 +64,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
 
         # Scan record table - lists all the records in the store
         # TODO - do linking with events
-        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._options)
+        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config)
 
         # Create layout
         hbox = QtGui.QHBoxLayout()
@@ -124,7 +124,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         option_menu.addAction(options_action)
 
     def _open_options_dialog(self):
-        dialog = OptionsDialog(self._options)
+        dialog = BarcodeConfigDialog(self._config)
         dialog.exec_()
 
     def _read_new_scan_queue(self):
@@ -152,7 +152,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             gray_image = cv_image.to_grayscale()
 
             # Scan the image for barcodes
-            plate, _ = Scanner(self._options).scan_next_frame(gray_image, single_image=True)
+            plate, _ = Scanner(self._config).scan_next_frame(gray_image, single_image=True)
 
             # If the scan was successful, store the results
             if plate is not None:
@@ -170,7 +170,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         """ Starts the process of continuous capture from an attached camera.
         """
         scanner = CameraScanner(self._new_scan_queue)
-        scanner.stream_camera(camera_num=0, options=self._options)
+        scanner.stream_camera(camera_num=0, config=self._config)
 
 
 def main():

@@ -35,28 +35,28 @@ class CameraScanner:
         self.overlay_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
-    def stream_camera(self, camera_num, options):
+    def stream_camera(self, camera_num, config):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_pool = multiprocessing.Pool(1, capture_worker, (self.task_queue, self.overlay_queue, options))
+        capture_pool = multiprocessing.Pool(1, capture_worker, (self.task_queue, self.overlay_queue, config))
         scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue,
-                                                                self.result_queue, options))
+                                                                self.result_queue, config))
 
 
-def capture_worker(task_queue, overlay_queue, options):
+def capture_worker(task_queue, overlay_queue, config):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
     position of scanned and unscanned barcodes.
     """
     # Initialize the camera
-    cap = cv2.VideoCapture(options.camera_number)
+    cap = cv2.VideoCapture(config.camera_number.value())
     read_ok, _ = cap.read()
     if not read_ok:
         cap = cv2.VideoCapture(0)
 
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, options.camera_width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, options.camera_height)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera_width.value())
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera_height.value())
 
     # Store the latest image overlay which highlights the puck
     latest_overlay = Overlay(None)
@@ -80,7 +80,7 @@ def capture_worker(task_queue, overlay_queue, options):
         latest_overlay.draw_on_image(frame)
 
         # Display the frame on the screen
-        small = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)
+        small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
         cv2.imshow('Barcode Scanner', small)
 
         # Exit scanning mode if the exit key is pressed

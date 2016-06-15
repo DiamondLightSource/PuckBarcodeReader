@@ -1,6 +1,6 @@
 #!/usr/bin/env dls-python
 from dls_barcode import Image, Scanner, Store, Record
-from dls_barcode.program_options import ProgramOptions
+from dls_barcode.barcode_config import BarcodeConfig
 import time
 
 # SHOULD BE OPEN CV 2.4.10
@@ -33,9 +33,9 @@ TEST_CASES.extend(puck1_testcases)
 TEST_OUTPUT_PATH = '../test-output/'
 
 CONFIG_FILE = "../config.ini"
-OPTIONS = ProgramOptions(CONFIG_FILE)
+OPTIONS = BarcodeConfig(CONFIG_FILE)
 
-STORE = Store(OPTIONS.store_directory)
+STORE = Store(OPTIONS.store_directory.value())
 
 
 def store_scan(plate, cvimg):

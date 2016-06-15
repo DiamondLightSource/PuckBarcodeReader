@@ -21,7 +21,7 @@ class ScanRecordTable(QGroupBox):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
-        self._store = Store(options.store_directory)
+        self._store = Store(options.store_directory.value())
 
         self._barcodeTable = barcode_table
         self._imageFrame = image_frame
