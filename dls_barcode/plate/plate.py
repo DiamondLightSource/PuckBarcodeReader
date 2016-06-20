@@ -9,17 +9,54 @@ class BadGeometryException(Exception):
     pass
 
 
+class _ScanDecider:
+    FRAMES_BEFORE_DEEP = 3
+    SQUARE_SCANS_PER_FRAME = 50
+    CONTOUR_SCANS_PER_FRAME = 50
+
+    def __init__(self, force):
+        self.num_deep_scans = 0
+        self.num_square_scans = 0
+        self._force = force
+        self._frame_number = 0
+        self._slots_this_frame = 0
+
+    def new_frame(self, slots_this_frame):
+        self.num_deep_scans = 0
+        self.num_square_scans = 0
+        self._frame_number += 1
+        self._slots_this_frame = slots_this_frame
+
+    def do_square(self):
+        if self._force:
+            return True
+        elif self._frame_number > self.FRAMES_BEFORE_DEEP and \
+                    self.num_square_scans < self.SQUARE_SCANS_PER_FRAME:
+            return True
+        else:
+            return False
+
+    def do_deep_contour(self):
+        if self._force:
+            return True
+        elif self._frame_number > self.FRAMES_BEFORE_DEEP and \
+                        self.num_deep_scans < self.CONTOUR_SCANS_PER_FRAME:
+            return True
+        else:
+            return False
+
+
 class Plate:
     """ Represents a sample holder plate.
     """
     def __init__(self, plate_type="Unipuck", num_slots=16):
-        self.total_frames = 0
         self.id = str(uuid.uuid1())
 
         self.num_slots = num_slots
         self.type = plate_type
         self.error = None
         self._geometry = None
+        self._scan_decider = None
 
         # Initialize slots
         self._slots = [Slot(i) for i in range(1, self.num_slots+1)]
@@ -34,6 +71,9 @@ class Plate:
         if not geometry.is_aligned:
             raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
+        self._scan_decider = _ScanDecider(force=single_frame)
+        self._scan_decider.new_frame(0)
+
         # Fill each slot with the correct barcodes
         for slot in self._slots:
             slot.new_frame()
@@ -47,11 +87,11 @@ class Plate:
             slot.set_barcode(barcode)
             slot.set_barcode_position(position)
 
-            self._slot_scan(slot, slot_scanner, force=single_frame)
+            if slot.state() != Slot.VALID:
+                self._slot_scan(slot, slot_scanner)
 
         self._geometry = geometry
         self.error = geometry.error
-        self.total_frames += 1
 
     def merge_new_frame(self, geometry, new_barcodes, slot_scanner):
         """ Merge the set of barcodes from a new scan into this plate. The new set comes from a new image
@@ -64,9 +104,6 @@ class Plate:
         position is likely to be similar to, but not exactly the same as, the bound's center. This info
         is retained as it allows us to properly calculate the geometry for future frames.
         """
-        # Set the frame count
-        self.total_frames += 1
-
         if not geometry.is_aligned:
             raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
 
@@ -97,48 +134,58 @@ class Plate:
             elif state == Slot.UNREADABLE:
                 slot.set_barcode(None)
 
+        # Deep slot scanning
+        invalid_slots = [s for s in self._slots if s.state() != Slot.VALID]
+        random.shuffle(invalid_slots)
+        num_invalid = len(invalid_slots)
+        self._scan_decider.new_frame(num_invalid)
+
+        for slot in invalid_slots:
             self._slot_scan(slot, slot_scanner)
 
         self._geometry = geometry
         self.error = geometry.error
 
-    def _slot_scan(self, slot, slot_scanner, force=False):
+    def _slot_scan(self, slot, slot_scanner):
 
         # If the slot barcode has already been read correctly, skip it
         if slot.state() == Slot.VALID:
             return
 
-        do_empty_check = True
-        do_deep = force or self.total_frames > 3
-        do_square = force or self.total_frames > 3
-
         # Check for empty slot
-        if do_empty_check:
-            if slot_scanner.is_slot_empty(slot):
-                slot.set_empty()
-                return
+        if slot_scanner.is_slot_empty(slot):
+            slot.set_empty()
+            return
 
-        if do_deep:
-            # Careful look for finder patterns
-            if slot.state() != Slot.VALID:
-                barcodes = slot_scanner.deep_scan(slot)
+        if self._scan_decider.do_deep_contour():
+            self._perform_deep_contour_slot_scan(slot, slot_scanner)
 
-                # Pick a random finder pattern from those returned
-                if not force and barcodes:
-                    barcodes = [random.choice(barcodes)]
+        if self._scan_decider.do_square():
+            self._perform_square_slot_scan(slot, slot_scanner)
 
-                for barcode in barcodes:
-                    slot_scanner.wiggles_read(barcode, "DEEP CONTOUR")
-                    slot.set_barcode(barcode)
-                    if barcode.is_valid():
-                        break
+    def _perform_deep_contour_slot_scan(self, slot, slot_scanner):
+        if slot.state() != Slot.VALID:
+            barcodes = slot_scanner.deep_scan(slot)
+            self._scan_decider.num_deep_scans += 1
 
-        if do_square:
-            if slot.state() != Slot.VALID:
-                barcode = slot_scanner.square_scan(slot)
-                if barcode is not None:
-                    slot_scanner.wiggles_read(barcode, "SQUARE")
-                    slot.set_barcode(barcode)
+            # Pick a random finder pattern from those returned
+            force_all = self._scan_decider._force
+            if not force_all and barcodes:
+                barcodes = [random.choice(barcodes)]
+
+            for barcode in barcodes:
+                slot_scanner.wiggles_read(barcode, "DEEP CONTOUR")
+                slot.set_barcode(barcode)
+                if barcode.is_valid():
+                    break
+
+    def _perform_square_slot_scan(self, slot, slot_scanner):
+        if slot.state() != Slot.VALID:
+            self._scan_decider.num_square_scans += 1
+            barcode = slot_scanner.square_scan(slot)
+            if barcode is not None:
+                slot_scanner.wiggles_read(barcode, "SQUARE")
+                slot.set_barcode(barcode)
 
     #########################
     # ACCESSOR FUNCTIONS
