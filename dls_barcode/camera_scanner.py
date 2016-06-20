@@ -127,7 +127,8 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
         # If we have an existing partial plate, merge the new plate with it and only try to read the
         # barcodes which haven't already been read. This significantly increases efficiency because
         # barcode read is expensive.
-        plate, diagnostic = scanner.scan_next_frame(gray_image)
+        plate = scanner.scan_next_frame(gray_image)
+        diagnostic = scanner.get_frame_diagnostic()
 
         if last_plate and plate.id == last_plate.id:
             plate_frame_number += 1

@@ -120,8 +120,11 @@ class SlotScanner:
         x, y = point
         return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
 
+    def _is_debug_images_on(self):
+        return self._options.slot_images.value()
+
     def _DEBUG_WIGGLES_READ(self, barcode, locate_type, side_length):
-        if not self._options.slot_images.value():
+        if not self._is_debug_images_on():
             return
 
         if barcode.is_valid():
@@ -140,7 +143,7 @@ class SlotScanner:
         self._DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length - 1)
 
     def _DEBUG_MULTI_FP_IMAGE(self, slot_img, fps, slot_num):
-        if not self._options.slot_images.value():
+        if not self._is_debug_images_on():
             return
 
         if len(fps) > 1:
@@ -150,7 +153,7 @@ class SlotScanner:
             self._DEBUG_SAVE_IMAGE(color, "DEEP CONTOUR_ALL FPS", slot_num)
 
     def _DEBUG_SQUARE_LOCATOR(self, slot_img, fp, slot_num):
-        if not self._options.slot_images.value():
+        if not self._is_debug_images_on():
             return
 
         color = slot_img.to_alpha()
@@ -158,7 +161,7 @@ class SlotScanner:
         self._DEBUG_SAVE_IMAGE(color, "SQUARE_FP", slot_num)
 
     def _DEBUG_SAVE_IMAGE(self, image, prefix, slotnum):
-        if not self._options.slot_images.value():
+        if not self._is_debug_images_on():
             return
 
         dir = self._options.slot_image_directory.value() + prefix + "/"

@@ -25,34 +25,32 @@ class FrameDiagnostic:
 
 class Scanner:
     def __init__(self, options):
-        self.frame_img = None
         self.plate_type = "Unipuck"
         self.num_slots = 16
         self.plate = Plate(self.plate_type, self.num_slots)
 
         self._options = options
 
+        self._frame_img = None
         self._geometry = None
         self._barcodes = None
         self._is_single_image = False
 
-    def _reset_for_new_frame(self):
-        self.frame_img = None
-        self._geometry = None
-        self._barcodes = None
-        self._is_single_image = False
+    def get_frame_diagnostic(self):
+        diagnostic = FrameDiagnostic()
+        diagnostic.num_finder_patterns = len(self._barcodes)
+        diagnostic.is_aligned = self._is_geometry_aligned()
+        diagnostic.has_barcodes = self._any_valid_barcodes()
+        return diagnostic
 
     def scan_next_frame(self, frame_img, is_single_image=False):
         self._reset_for_new_frame()
 
-        self.frame_img = frame_img
+        self._frame_img = frame_img
         self._is_single_image = is_single_image
 
-        self._barcodes = self._locate_all_barcodes(frame_img)
+        self._barcodes = self._locate_all_barcodes_in_image(frame_img)
         self._geometry = self._create_geometry_from_barcodes()
-
-        diagnostic = FrameDiagnostic()
-        diagnostic.num_finder_patterns = len(self._barcodes)
 
         if self._is_geometry_aligned():
             # Determine if the previous plate scan has any barcodes in common with this one.
@@ -61,48 +59,53 @@ class Scanner:
             if has_common_barcodes and not is_same_align:
                 self._geometry = self._adjust_geometry(self._barcodes)
             elif not has_common_barcodes:
-                self._initialize_plate_from_barcodes(diagnostic)
+                self._initialize_plate_from_barcodes()
 
         # ------------- SAME PLATE? --------------------------
         if self._is_geometry_aligned() and has_common_barcodes:
-            self._merge_frame_into_plate(diagnostic)
+            self._merge_frame_into_plate()
 
         print(self.plate.total_frames, self.plate.barcodes())  # DEBUG
+        return self.plate
 
-        diagnostic.is_aligned = self._is_geometry_aligned()
-        return self.plate, diagnostic
+    def _reset_for_new_frame(self):
+        self._frame_img = None
+        self._geometry = None
+        self._barcodes = None
+        self._is_single_image = False
 
-    def _is_geometry_aligned(self):
-        return self._geometry.is_aligned()
-
-    def _locate_all_barcodes(self, frame_img):
+    def _locate_all_barcodes_in_image(self, frame_img):
         return DataMatrix.LocateAllBarcodesInImage(frame_img)
 
     def _create_geometry_from_barcodes(self):
         bc_centers = [bc.center() for bc in self._barcodes]
         return Unipuck(bc_centers)
 
-    def _initialize_plate_from_barcodes(self, diagnostic):
+    def _initialize_plate_from_barcodes(self):
         for bc in self._barcodes:
             bc.perform_read()
 
         if self._any_valid_barcodes():
-            diagnostic.has_barcodes = True
             slot_scanner = self._create_slot_scanner()
             self.plate = Plate(self.plate_type, self.num_slots)
             self.plate.initialize_from_barcodes(self._geometry, self._barcodes,
                                                 slot_scanner, self._is_single_image)
 
-    def _merge_frame_into_plate(self, diagnostic):
+    def _merge_frame_into_plate(self):
         # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
         # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
         # previous plate over to their slot in the new plate. Then read any that we haven't already read.
         slot_scanner = self._create_slot_scanner()
         self.plate.merge_new_frame(self._geometry, self._barcodes, slot_scanner)
-        diagnostic.has_barcodes = True
+
+    def _is_geometry_aligned(self):
+        return self._geometry.is_aligned()
+
+    def _any_valid_barcodes(self):
+        return any([bc.is_read() and bc.is_valid() for bc in self._barcodes])
 
     def _create_slot_scanner(self):
-        slot_scanner = SlotScanner(self.frame_img, self._barcodes, self._options)
+        slot_scanner = SlotScanner(self._frame_img, self._barcodes, self._options)
         return slot_scanner
 
     def _find_common_barcode(self, geometry, barcodes):
@@ -143,9 +146,6 @@ class Scanner:
                 break
 
         return has_common_barcodes, has_common_geometry
-
-    def _any_valid_barcodes(self):
-        return any([bc.is_valid() for bc in self._barcodes])
 
     def _make_slotted_barcodes_list(self, barcodes, geometry):
         # Make a list of the unread barcodes with associated slot numbers - from this frame's geometry
