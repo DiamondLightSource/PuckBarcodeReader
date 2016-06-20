@@ -161,7 +161,7 @@ class SlotScanner:
         if not self._options.slot_images.value():
             return
 
-        dir = self._options.slot_image_directory() + prefix + "/"
+        dir = self._options.slot_image_directory.value() + prefix + "/"
         if not os.path.exists(dir):
             os.makedirs(dir)
         filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum+1) + ".png"
