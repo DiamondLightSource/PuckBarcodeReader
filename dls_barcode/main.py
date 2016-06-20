@@ -3,8 +3,8 @@ import os
 import sys
 import winsound
 
-import pyperclip
 from PyQt4 import QtGui, QtCore
+from PyQt4.QtGui import QPushButton, QVBoxLayout, QHBoxLayout
 
 sys.path.append("..")
 
@@ -31,6 +31,8 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             os.makedirs(TEST_OUTPUT_PATH)
 
         self._config = BarcodeConfig(DiamondBarcodeReader.CONFIG_FILE)
+
+        self._scanner = None
 
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
@@ -66,6 +68,21 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         # TODO - do linking with events
         self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config)
 
+        self._btn_begin = QPushButton("Start Scan")
+        self._btn_begin.setStyleSheet("font-size:20pt;")
+        self._btn_begin.setFixedSize(150, 60)
+        self._btn_begin.clicked.connect(self._start_live_capture)
+
+        self._btn_stop = QPushButton("Stop Scan")
+        self._btn_stop.setStyleSheet("font-size:20pt")
+        self._btn_stop.setFixedSize(150, 60)
+        self._btn_stop.clicked.connect(self._stop_live_capture)
+
+        hbox_btn = QHBoxLayout()
+        hbox_btn.addWidget(self._btn_begin)
+        hbox_btn.addWidget(self._btn_stop)
+        hbox_btn.addStretch()
+
         # Create layout
         hbox = QtGui.QHBoxLayout()
         hbox.setSpacing(10)
@@ -75,8 +92,8 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         hbox.addStretch(1)
 
         vbox = QtGui.QVBoxLayout()
+        vbox.addLayout(hbox_btn)
         vbox.addLayout(hbox)
-        vbox.addStretch(1)
 
         main_widget = QtGui.QWidget()
         main_widget.setLayout(vbox)
@@ -169,9 +186,14 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        scanner = CameraScanner(self._new_scan_queue)
-        scanner.stream_camera(camera_num=0, config=self._config)
+        if self._scanner is None:
+            self._scanner = CameraScanner(self._new_scan_queue)
+            self._scanner.stream_camera(camera_num=0, config=self._config)
 
+    def _stop_live_capture(self):
+        if self._scanner is not None:
+            self._scanner.kill()
+            self._scanner = None
 
 def main():
     app = QtGui.QApplication(sys.argv)
