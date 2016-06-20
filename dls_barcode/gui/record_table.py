@@ -78,6 +78,7 @@ class ScanRecordTable(QGroupBox):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
         self._store.merge_record(plate_type, barcodes, image)
         self._load_store_records()
+        self._copy_selected_to_clipboard()
 
     def _load_store_records(self):
         """ Populate the record table with all of the records in the store.
