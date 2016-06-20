@@ -1,13 +1,12 @@
 from __future__ import division
 
-import numpy as np
 from pkg_resources import require
 
 from dls_barcode.datamatrix import DataMatrix
 from dls_barcode.scan.slot_scan import SlotScanner
-from dls_barcode.util import Transform
 from dls_barcode.plate.geometry_unipuck import Unipuck
 from dls_barcode.plate.plate import Plate, Slot
+from .geometry_adjuster import GeometryAdjuster
 
 
 require('numpy')
@@ -73,7 +72,7 @@ class Scanner:
         if is_aligned and is_same_plate and not is_same_align:
             # If we have a barcode that matches with the previous frame but that isn't in the same slot, then
             # at least one of the frames wasn't properly aligned.
-            geometry = self._adjust_alignment(barcodes)
+            geometry = self._adjust_geometry(barcodes)
             is_aligned = geometry.is_aligned()
 
         # ------------- SAME PLATE? --------------------------
@@ -132,63 +131,7 @@ class Scanner:
 
         return has_common_barcodes, has_common_geometry
 
-    def _adjust_alignment(self, barcodes):
-        # TODO: document this method
-
-        # If we don't have 2 common barcodes, we can't realign, so return a blank geometry (which
-        # will cause this frame to be skipped).
-        valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
-        if len(valid_barcodes) < 2:
-            print("ALIGNMENT ADJUSTMENT FAIL")  # DEBUG
-            return Unipuck([])
-
-        print("ALIGNMENT ADJUSTMENT")  # DEBUG
-
-        # Get the positions of the two common barcodes in the current frame and the previous one
-        barcode_a = valid_barcodes[0]
-        barcode_b = valid_barcodes[1]
-        pos_a_new = barcode_a.center()
-        pos_b_new = barcode_b.center()
-        pos_a_old = None
-        pos_b_old = None
-
-        for slot in self.plate._slots:
-            if slot.barcode_data() == barcode_a.data():
-                pos_a_old = slot.barcode_position()
-            elif slot.barcode_data() == barcode_b.data():
-                pos_b_old = slot.barcode_position()
-
-        # Determine the transformation that maps the old points to the new
-        line_transform = Transform.line_mapping(pos_a_old, pos_b_old, pos_a_new, pos_b_new)
-
-        # Transform all old space bc centers to new space
-        transformed_bc_centers = []
-        for slot in self.plate._slots:
-            center = slot.barcode_position()
-            if center:
-                transformed_center = line_transform.transform(center)
-                transformed_bc_centers.append(transformed_center)
-
-        # Replace any transformed points which overlap new fp centers
-        new_centers = [bc.center() for bc in barcodes]
-        radius_sq = np.mean([bc.radius() for bc in barcodes]) ** 2
-        for old_center in transformed_bc_centers:
-            overlap = False
-            for bc in barcodes:
-                new_center = bc.center()
-                distance = (new_center[0] - old_center[0])**2 + (new_center[1] - old_center[1])**2
-                if distance < radius_sq:
-                    overlap = True
-
-            if not overlap:
-                new_centers.append(old_center)
-
-        # Create a new geometry from the new set of fp centers
-        geometry = Unipuck(new_centers)
-
+    def _adjust_geometry(self, barcodes):
+        adjuster = GeometryAdjuster()
+        geometry = adjuster.adjust(self.plate, barcodes)
         return geometry
-
-
-
-
-
