@@ -177,7 +177,7 @@ class Overlay:
     already been scanned. Also writes status text messages. Has an specified lifetime so that the overlay
     will only be displayed for a short time.
     """
-    def __init__(self, plate, text=None, lifetime=1):
+    def __init__(self, plate, text=None, lifetime=2):
         self._plate = plate
         self._text = text
         self._lifetime = lifetime
