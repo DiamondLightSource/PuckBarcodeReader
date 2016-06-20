@@ -4,10 +4,10 @@ import numpy as np
 from pkg_resources import require
 
 from dls_barcode.datamatrix import DataMatrix
+from dls_barcode.scan.slot_scan import SlotScanner
 from dls_barcode.util import Transform
-from .geometry_unipuck import Unipuck
-from .plate import Plate, Slot
-from .slot_scan import SlotScanner
+from dls_barcode.plate.geometry_unipuck import Unipuck
+from dls_barcode.plate.plate import Plate, Slot
 
 
 require('numpy')

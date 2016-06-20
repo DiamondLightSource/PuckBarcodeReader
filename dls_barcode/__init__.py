@@ -1,6 +1,6 @@
 """Location, retrieval and reading of Data Matrix-style barcodes.
 """
-from dls_barcode.plate import Scanner
+from dls_barcode.scan import Scanner
 from dls_barcode.util import Image, Transform
 
 # testing

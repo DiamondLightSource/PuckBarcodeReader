@@ -8,7 +8,7 @@ from PyQt4 import QtGui, QtCore
 
 sys.path.append("..")
 
-from dls_barcode.plate import Scanner
+from dls_barcode.scan import Scanner
 from dls_barcode.util import Image, Color
 from dls_barcode.gui.barcode_config_dialog import BarcodeConfigDialog
 from dls_barcode.camera_scanner import CameraScanner

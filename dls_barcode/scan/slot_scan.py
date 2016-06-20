@@ -5,7 +5,7 @@ import math
 import time
 import os
 
-from .slot import Slot
+from dls_barcode.plate.slot import Slot
 from dls_barcode.datamatrix import DataMatrix, Locator
 from dls_barcode.util import Image, Color
 

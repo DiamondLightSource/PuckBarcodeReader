@@ -6,7 +6,7 @@ import time
 import multiprocessing
 
 from dls_barcode.util import Image, Color
-from dls_barcode.plate import Scanner
+from dls_barcode.scan import Scanner
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
