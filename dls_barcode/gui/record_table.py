@@ -52,15 +52,8 @@ class ScanRecordTable(QGroupBox):
         deleteBtn.resize(deleteBtn.sizeHint())
         deleteBtn.clicked.connect(self._delete_selected_records)
 
-        # Clipboard button - copy the selected barcodes to the clipboard
-        clipboardBtn = QtGui.QPushButton('Copy To Clipboard')
-        clipboardBtn.setToolTip('Copy barcodes for the selected record to the clipboard')
-        clipboardBtn.resize(clipboardBtn.sizeHint())
-        clipboardBtn.clicked.connect(self._copy_selected_to_clipboard)
-
         hbox = QHBoxLayout()
         hbox.setSpacing(10)
-        hbox.addWidget(clipboardBtn)
         hbox.addWidget(deleteBtn)
         hbox.addStretch(1)
 
@@ -144,18 +137,3 @@ class ScanRecordTable(QGroupBox):
 
             self._store.delete_records(records_to_delete)
             self._load_store_records()
-
-    def _copy_selected_to_clipboard(self):
-        """ Called when the copy to clipboard button is pressed. Copies the list/s of
-        barcodes for the currently selected records to the clipboard so that the user
-        can paste it elsewhere.
-        """
-        rows = self._table.selectionModel().selectedRows()
-        rows = sorted([row.row() for row in rows])
-        barcodes = []
-        for row in rows:
-            record = self._store.get_record(row)
-            barcodes.extend(record.filtered_barcodes)
-
-        if barcodes:
-            pyperclip.copy('\n'.join(barcodes))
