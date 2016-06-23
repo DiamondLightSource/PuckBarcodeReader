@@ -173,11 +173,6 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
 
             # If the scan was successful, store the results
             if plate is not None:
-                # Highlight the image and display it
-                plate.draw_plate(cv_image, Color.Blue())
-                plate.draw_pins(cv_image)
-                plate.crop_image(cv_image)
-
                 self.recordTable.add_record(plate, cv_image)
             else:
                 QtGui.QMessageBox.warning(self, "Scanning Error",

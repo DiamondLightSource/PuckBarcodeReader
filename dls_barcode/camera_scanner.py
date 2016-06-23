@@ -149,8 +149,6 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
 
             # If the plate has the required number of barcodes, store it
             elif plate.is_full_valid():
-                Overlay(plate).draw_on_image(cv_image.img)
-                plate.crop_image(cv_image)
                 result_queue.put((plate, cv_image))
                 last_full_plate = plate
 
@@ -163,8 +161,6 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
                 overlay_queue.put(overlay)
 
                 if plate == last_plate and plate.num_valid_barcodes() > barcode_counter:
-                    overlay.draw_on_image(cv_image.img)
-                    plate.crop_image(cv_image)
                     result_queue.put((plate, cv_image))
 
             last_plate = plate

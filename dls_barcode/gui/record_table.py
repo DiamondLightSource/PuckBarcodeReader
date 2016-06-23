@@ -117,7 +117,7 @@ class ScanRecordTable(QGroupBox):
             row = self._table.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
             self._barcodeTable.populate(record.barcodes)
-            self._imageFrame.display_puck_image(record.image())
+            self._imageFrame.display_puck_image(record.marked_image())
         except IndexError:
             pass
             self._barcodeTable.populate([])

@@ -40,9 +40,6 @@ STORE = Store(OPTIONS.store_directory.value())
 
 
 def store_scan(plate, cvimg):
-    plate.draw_plate(cvimg, Color.Blue())
-    plate.draw_pins(cvimg)
-    plate.crop_image(cvimg)
     STORE.add_record(plate, cvimg)
 
 

@@ -5,7 +5,7 @@ import os
 
 from dls_barcode.plate import Unipuck, NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
-from dls_barcode.util import Image
+from dls_barcode.util import Image, Color
 
 
 class Record:
@@ -126,11 +126,32 @@ class Record:
         image = Image(self.imagepath)
         return image
 
+    def marked_image(self):
+        geo = self.geometry()
+        image = self.image()
+
+        geo.draw_plate(image, Color.Blue())
+        self._draw_pins(image, geo)
+        geo.crop_image(image)
+
+        return image
+
     def geometry(self):
         puck_center = [int(self.puck_center[0]), int(self.puck_center[1])]
         pin6_center = [int(self.pin6_center[0]), int(self.pin6_center[1])]
 
         return Unipuck.from_center_and_pin6(puck_center, pin6_center)
+
+    def _draw_pins(self, image, geometry):
+        for i, bc in enumerate(self.barcodes):
+            if bc == NOT_FOUND_SLOT_SYMBOL or bc == BAD_DATA_SYMBOL:
+                color = Color.Red()
+            elif bc == EMPTY_SLOT_SYMBOL:
+                color = Color.Grey()
+            else:
+                color = Color.Green()
+
+            geometry.draw_pin_highlight(image, color, i+1)
 
     def _formatted_date(self):
         """ Provides a human-readable form of the datetime stamp

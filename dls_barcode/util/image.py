@@ -108,6 +108,9 @@ class Image:
     def crop_image(self, center, radius):
         cropped, _ = self.sub_image(center, radius)
         self.img = cropped.img
+        size = self.img.shape
+        self.width = size[1]
+        self.height = size[0]
 
     def paste(self, src, xOff, yOff):
         """ Paste the source image onto the target one at the specified position.
@@ -221,6 +224,7 @@ class Image:
         rgb = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
         q_img = QImage(rgb.data, self.width, self.height, bytes_per_line, QImage.Format_RGB888)
         pixmap = QPixmap.fromImage(q_img)
+
 
         if scale is not None:
             pixmap = pixmap.scaled(scale, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
