@@ -117,11 +117,11 @@ class ScanRecordTable(QGroupBox):
             row = self._table.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
             self._barcodeTable.populate(record.barcodes)
-            self._imageFrame.display_image(record.imagepath)
+            self._imageFrame.display_puck_image(record.image())
         except IndexError:
             pass
             self._barcodeTable.populate([])
-            self._imageFrame.display_image(None)
+            self._imageFrame.clear_frame()
 
     def _delete_selected_records(self):
         """ Called when the 'Delete' button is pressed. Deletes all of the selected records

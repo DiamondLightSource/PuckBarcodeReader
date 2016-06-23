@@ -5,6 +5,7 @@ import os
 
 from dls_barcode.plate import Unipuck, NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
+from dls_barcode.util import Image
 
 
 class Record:
@@ -120,6 +121,10 @@ class Record:
                 return True
 
         return False
+
+    def image(self):
+        image = Image(self.imagepath)
+        return image
 
     def geometry(self):
         puck_center = [int(self.puck_center[0]), int(self.puck_center[1])]

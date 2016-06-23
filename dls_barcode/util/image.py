@@ -1,7 +1,9 @@
 import cv2
 import math
-import itertools
 import numpy as np
+
+from PyQt4 import QtCore
+from PyQt4.QtGui import QImage, QPixmap
 
 
 class Image:
@@ -24,7 +26,7 @@ class Image:
             self.channels = 1
 
         # All draw requests will be offset by this amount
-        self.draw_offset = (0,0)
+        self.draw_offset = (0, 0)
 
     def save_as(self, filename):
         """ Write an OpenCV image to file """
@@ -213,6 +215,17 @@ class Image:
 
         sub = self.img[ystart:yend, xstart:xend]
         return Image(None, sub), roi_rect
+
+    def to_qt_pixmap(self, scale=None):
+        bytes_per_line = 3 * self.width
+        rgb = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
+        q_img = QImage(rgb.data, self.width, self.height, bytes_per_line, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(q_img)
+
+        if scale is not None:
+            pixmap = pixmap.scaled(scale, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+
+        return pixmap
 
     @staticmethod
     def find_circle(img, minradius, maxradius):

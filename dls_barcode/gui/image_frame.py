@@ -28,18 +28,19 @@ class ImageFrame(QGroupBox):
 
         self.setLayout(vbox)
 
-    def display_image(self, filename):
+    def clear_frame(self):
+        self._frame.clear()
+        self._frame.setText("No Scan Selected")
+
+    def display_puck_image(self, image):
         """ Called when a new row is selected on the record table. Displays the specified
         image (image of the highlighted scan) in the image frame
         """
         self._frame.clear()
         self._frame.setAlignment(Qt.AlignCenter)
 
-        if filename is None:
-            self._frame.setText("No Scan Selected")
-        elif os.path.isfile(filename):
-            pixmap = QtGui.QPixmap(filename)
-            self._frame.setPixmap(pixmap.scaled(self._frame.size(),
-                                                    Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        if image is not None:
+            pixmap = image.to_qt_pixmap(self._frame.size())
+            self._frame.setPixmap(pixmap)
         else:
             self._frame.setText("Image Not Found")
