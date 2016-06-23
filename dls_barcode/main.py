@@ -153,7 +153,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             plate, cv_image = self._new_scan_queue.get(False)
 
             # Store scan results and display in GUI
-            self.recordTable.add_record_frame(plate.type, plate.barcodes(), cv_image)
+            self.recordTable.add_record_frame(plate, cv_image)
 
             if plate.is_full_valid():
                 # Notify user of new scan
@@ -178,7 +178,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
                 plate.draw_pins(cv_image)
                 plate.crop_image(cv_image)
 
-                self.recordTable.add_record(plate.type, plate.barcodes(), cv_image)
+                self.recordTable.add_record(plate, cv_image)
             else:
                 QtGui.QMessageBox.warning(self, "Scanning Error",
                                           "There was a problem scanning the image.\n" + plate.error)

@@ -43,7 +43,7 @@ def store_scan(plate, cvimg):
     plate.draw_plate(cvimg, Color.Blue())
     plate.draw_pins(cvimg)
     plate.crop_image(cvimg)
-    STORE.add_record(plate.type, plate.barcodes(), cvimg)
+    STORE.add_record(plate, cvimg)
 
 
 def run_tests():
@@ -61,7 +61,7 @@ def run_tests():
         filename = TEST_IMG_DIR + file
         cv_image = Image(filename)
         gray_image = cv_image.to_grayscale()
-        plate, _ = Scanner(OPTIONS).scan_next_frame(gray_image, is_single_image=True)
+        plate = Scanner(OPTIONS).scan_next_frame(gray_image, is_single_image=True)
         store_scan(plate, cv_image)
 
         pass_count = 0

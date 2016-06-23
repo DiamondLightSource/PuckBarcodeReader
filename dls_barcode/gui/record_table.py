@@ -70,14 +70,14 @@ class ScanRecordTable(QGroupBox):
 
         self.setLayout(vbox)
 
-    def add_record(self, plate_type, barcodes, image):
+    def add_record(self, plate, image):
         """ Add a new scan record to the store and display it. """
-        self._store.add_record(plate_type, barcodes, image)
+        self._store.add_record(plate, image)
         self._load_store_records()
 
-    def add_record_frame(self, plate_type, barcodes, image):
+    def add_record_frame(self, plate, image):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
-        self._store.merge_record(plate_type, barcodes, image)
+        self._store.merge_record(plate, image)
         self._load_store_records()
         if self._options.scan_clipboard():
             self._copy_selected_to_clipboard()

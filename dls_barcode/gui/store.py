@@ -3,7 +3,7 @@ import datetime
 import uuid
 import os
 
-from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
+from dls_barcode.plate import Unipuck, NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 
 
@@ -19,7 +19,9 @@ class Record:
     IND_IMAGE = 2
     IND_PLATE = 3
     IND_BARCODES = 4
-    NUM_RECORD_ITEMS = 5
+    IND_PUCK_CENTER = 5
+    IND_PIN6_CENTER = 6
+    NUM_RECORD_ITEMS = 7
 
     # Constants
     ITEM_SEPARATOR = ";"
@@ -28,7 +30,7 @@ class Record:
 
     BAD_SYMBOLS = [EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL, BAD_DATA_SYMBOL]
 
-    def __init__(self, plate_type, barcodes, imagepath, timestamp=0, id=0):
+    def __init__(self, plate_type, barcodes, imagepath, puck_center, pin6_center, timestamp=0, id=0):
         """
         :param plate_type: the type of the sample holder plate (string)
         :param barcodes: ordered array of strings giving the barcodes in each slot
@@ -43,14 +45,16 @@ class Record:
         self.imagepath = imagepath
         self.plate_type = plate_type
         self.barcodes = barcodes
+        self.puck_center = puck_center
+        self.pin6_center = pin6_center
         self.id = str(id)
 
         self.filtered_barcodes = [bc if (bc not in self.BAD_SYMBOLS) else '' for bc in barcodes]
 
         # Generate timestamp and uid if none are supplied
-        if timestamp==0:
+        if timestamp == 0:
             self.timestamp = time.time()
-        if id==0:
+        if id == 0:
             self.id = str(uuid.uuid4())
 
         # Separate Data and Time
@@ -67,6 +71,15 @@ class Record:
                                   - self.num_invalid_barcodes - self.num_empty_slots
 
     @staticmethod
+    def from_plate(plate, image_path):
+        points = plate.puck_center_and_pin6()
+        puck_center = points[0]
+        pin6_center = points[1]
+
+        return Record(plate_type=plate.type, barcodes=plate.barcodes(), imagepath=image_path,
+                      puck_center=puck_center, pin6_center=pin6_center)
+
+    @staticmethod
     def from_string(string):
         """ Creates a scan record object from a semi-colon separated string. This is
         used when reading a stored record back from file.
@@ -77,8 +90,11 @@ class Record:
         image = items[Record.IND_IMAGE]
         puck_type = items[Record.IND_PLATE]
         barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
+        puck_center = items[Record.IND_PUCK_CENTER].split(Record.BC_SEPARATOR)
+        pin6_center = items[Record.IND_PIN6_CENTER].split(Record.BC_SEPARATOR)
 
-        return Record(plate_type=puck_type, barcodes=barcodes, timestamp=timestamp, imagepath=image, id=id)
+        return Record(plate_type=puck_type, barcodes=barcodes, timestamp=timestamp, imagepath=image, id=id,
+                      puck_center=puck_center, pin6_center=pin6_center)
 
     def to_string(self):
         """ Converts a scan record object into a string that can be stored in a file
@@ -90,7 +106,8 @@ class Record:
         items[Record.IND_IMAGE] = self.imagepath
         items[Record.IND_PLATE] = self.plate_type
         items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self.barcodes)
-        return Record.ITEM_SEPARATOR.join(items)
+        items[Record.IND_PUCK_CENTER] = "{}{}{}".format(self.puck_center[0], Record.BC_SEPARATOR, self.puck_center[1])
+        items[Record.IND_PIN6_CENTER] = "{}{}{}".format(self.pin6_center[0], Record.BC_SEPARATOR, self.pin6_center[1])
         return Record.ITEM_SEPARATOR.join(items)
 
     def any_barcode_matches(self, barcodes):
@@ -103,6 +120,12 @@ class Record:
                 return True
 
         return False
+
+    def geometry(self):
+        puck_center = [int(self.puck_center[0]), int(self.puck_center[1])]
+        pin6_center = [int(self.pin6_center[0]), int(self.pin6_center[1])]
+
+        return Unipuck.from_center_and_pin6(puck_center, pin6_center)
 
     def _formatted_date(self):
         """ Provides a human-readable form of the datetime stamp
@@ -159,27 +182,28 @@ class Store:
         """
         return self.records[index] if self.records else None
 
-    def add_record(self, plate_type, barcodes, cv_img):
+    def add_record(self, plate, cv_img):
         """ Add a new record to the store and save to the backing file.
         """
         id = str(uuid.uuid4())
         filename = os.path.abspath(self._img_dir + id + '.png')
         cv_img.save_as(filename)
 
-        record = Record(plate_type=plate_type, barcodes=barcodes, imagepath=filename, timestamp=0, id=id)
+        record = Record.from_plate(plate, filename)
 
         self.records.append(record)
         self._process_change()
 
-    def merge_record(self, plate_type, barcodes, cv_img):
+    def merge_record(self, plate, cv_img):
         """ Create new record or replace existing record if it has the same barcodes as the most
         recent record. Save to backing store. """
-        if len(self.records) > 0 and self.records[0].any_barcode_matches(barcodes):
+
+        if len(self.records) > 0 and self.records[0].any_barcode_matches(plate.barcodes()):
             self.delete_records([self.records[0]])
-            self.add_record(plate_type, barcodes, cv_img)
+            self.add_record(plate, cv_img)
 
         else:
-            self.add_record(plate_type, barcodes, cv_img)
+            self.add_record(plate, cv_img)
 
     def delete_records(self, records):
         """ Remove all of the records in the supplied list from the store and
