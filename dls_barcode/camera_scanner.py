@@ -156,8 +156,9 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
 
             # If there were any barcodes in the frame, make a beep sound
             elif diagnostic.has_barcodes:
-                frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots)) + 37
-                winsound.Beep(frequency, 200)
+                if options.scan_beep():
+                    frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots)) + 37
+                    winsound.Beep(frequency, 200)
                 overlay = Overlay(plate)
                 overlay_queue.put(overlay)
 

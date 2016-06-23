@@ -32,6 +32,10 @@ class BarcodeConfigDialog(ConfigDialog):
         self.start_group("Camera")
         self._add_control(camera)
 
+        self.start_group("Scanning")
+        add(cfg.scan_beep)
+        add(cfg.scan_clipboard)
+
         self.start_group("Store")
         add(cfg.store_directory)
 
