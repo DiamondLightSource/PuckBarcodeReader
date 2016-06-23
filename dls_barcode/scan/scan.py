@@ -79,7 +79,7 @@ class Scanner:
 
     def _create_geometry_from_barcodes(self):
         bc_centers = [bc.center() for bc in self._barcodes]
-        return Unipuck(bc_centers)
+        return Unipuck.from_pin_centers(bc_centers)
 
     def _initialize_plate_from_barcodes(self):
         for bc in self._barcodes:

@@ -13,14 +13,14 @@ class GeometryAdjuster:
         valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
         if len(valid_barcodes) < 2:
             print("ALIGNMENT ADJUSTMENT FAIL")  # DEBUG
-            return Unipuck([])
+            return Unipuck.from_pin_centers([])
 
         print("ALIGNMENT ADJUSTMENT")  # DEBUG
 
         line_transform = self._determine_old_to_new_transformation(plate, valid_barcodes)
         transformed_centers = self._transform_barcode_centers(plate, line_transform)
         new_centers = self._get_transformed_barcode_centers_list(barcodes, transformed_centers)
-        geometry = Unipuck(new_centers)
+        geometry = Unipuck.from_pin_centers(new_centers)
 
         return geometry
 

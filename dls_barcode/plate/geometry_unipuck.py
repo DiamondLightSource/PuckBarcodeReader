@@ -31,16 +31,52 @@ class Unipuck:
     center of each slot, the unique orientation and position of the puck can be determined.
     This is possible even if some of the slot locations are not none.
     """
-    def __init__(self, pin_centers):
+    def __init__(self):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
         """
-        self._pin_centers = pin_centers
+        self._pin_centers = None
         self._template = UnipuckTemplate()
         self.num_slots = self._template.slots
 
+        self._slot_radius = None
+        self._puck_center = None
+        self._center_radius = None
+        self._rotation = None
+        self._template_centers = None
+        self._scale = None
+
         self._aligned = False
         self.error = None
+
+    @staticmethod
+    def from_pin_centers(pin_centers):
+        puck = Unipuck()
+        puck.align_from_pin_centers(pin_centers)
+        return puck
+
+    @staticmethod
+    def from_center_and_pin6(puck_center, pin6_center):
+        puck = Unipuck()
+
+        length = distance(puck_center, pin6_center)
+        puck_radius = int(length / puck._template.layer_radii[1])
+        center_radius = puck_radius * puck._template.center_radius
+        slot_radius = puck_radius * puck._template.slot_radius
+
+        puck._puck_center = puck_center
+        puck._puck_radius = puck_radius
+        puck._scale = puck_radius
+        puck._center_radius = center_radius
+        puck._slot_radius = slot_radius
+
+        angle = math.atan2((pin6_center[0]-puck_center[0]), (puck_center[1]-pin6_center[1]))
+        puck._set_rotation(angle)
+
+        return puck
+
+    def align_from_pin_centers(self, pin_centers):
+        self._pin_centers = pin_centers
 
         num_points = len(pin_centers)
         if num_points > self.num_slots:
@@ -63,7 +99,7 @@ class Unipuck:
         """ Returns the number of the slot which contains the specified point or 0 otherwise.
         """
         slot_sq = self._slot_radius * self._slot_radius
-        for i, center in  enumerate(self._template_centers):
+        for i, center in enumerate(self._template_centers):
             # slots are non-overlapping so if its in the slot radius, it must be the closest
             if distance_sq(center, point) < slot_sq:
                 return i+1
