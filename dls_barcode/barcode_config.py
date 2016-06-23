@@ -23,6 +23,8 @@ class BarcodeConfig(Config):
         self.image_crop = add(BoolConfigItem, "Crop to Puck", default=True)
 
         self.store_directory = add(DirectoryConfigItem, "Store Directory", default="../store/")
+        self.store_capacity = add(IntConfigItem, "Results History Size", default=50)
+
         self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)
         self.slot_image_directory = add(DirectoryConfigItem, "Debug Directory", default="../debug-output/")
 

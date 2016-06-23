@@ -43,6 +43,7 @@ class BarcodeConfigDialog(ConfigDialog):
 
         self.start_group("Store")
         add(cfg.store_directory)
+        add(cfg.store_capacity)
 
         self.start_group("Debug")
         add(cfg.slot_images)
@@ -64,7 +65,7 @@ class CameraConfigControl(ConfigControl):
         # Set Camera Number
         self.txt_number = QLineEdit()
         self.txt_number.setFixedWidth(self.RES_TEXT_WIDTH)
-        lbl_camera_number = QLabel("Camera Number:")
+        lbl_camera_number = QLabel("Camera Number")
         lbl_camera_number.setFixedWidth(ConfigDialog.LABEL_WIDTH)
 
         hbox_num = QHBoxLayout()
@@ -73,7 +74,7 @@ class CameraConfigControl(ConfigControl):
         hbox_num.addStretch()
 
         # Set Camera Resolution
-        lbl = QLabel("Camera Resolution:")
+        lbl = QLabel("Camera Resolution")
         lbl.setFixedWidth(ConfigDialog.LABEL_WIDTH)
         self.txt_width = QLineEdit()
         self.txt_width.setFixedWidth(self.RES_TEXT_WIDTH)

@@ -168,13 +168,12 @@ class Store:
     """ Maintains a list of records of previous barcodes scans. Any changes (additions
     or deletions) are automatically written to the backing file.
     """
-    def __init__(self, directory):
+    def __init__(self, directory, options):
         """ Initializes a new instance of Store. Users of the class should use the
         static 'from_file' as the __init__ function does not read from the existing
         file, it only stores the path for later writing.
-        :param filepath: absolute path of file to write any updates to.
-        :param records: list of Record items
         """
+        self._options = options
         self._directory = directory
         self._file = directory + "store.txt"
         self._img_dir = directory + "/img_dir/"
@@ -203,6 +202,8 @@ class Store:
                 except Exception:
                     pass
 
+        self._truncate_record_list()
+
     def size(self):
         """ Returns the number of records in the store
         """
@@ -224,6 +225,7 @@ class Store:
 
         self.records.append(record)
         self._process_change()
+        self._truncate_record_list()
 
     def merge_record(self, plate, cv_img):
         """ Create new record or replace existing record if it has the same barcodes as the most
@@ -245,6 +247,14 @@ class Store:
             if os.path.isfile(record.imagepath):
                 os.remove(record.imagepath)
         self._process_change()
+
+    def _truncate_record_list(self):
+        number = self._options.store_capacity.value()
+        number = max(number, 2)
+
+        if len(self.records) > number:
+            to_delete = self.records[number:]
+            self.delete_records(to_delete)
 
     def _process_change(self):
         """ Sort the records and save to file.

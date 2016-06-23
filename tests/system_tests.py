@@ -36,7 +36,7 @@ TEST_OUTPUT_PATH = '../test-output/'
 CONFIG_FILE = "../config.ini"
 OPTIONS = BarcodeConfig(CONFIG_FILE)
 
-STORE = Store(OPTIONS.store_directory.value())
+STORE = Store(OPTIONS.store_directory.value(), OPTIONS)
 
 
 def store_scan(plate, cvimg):
