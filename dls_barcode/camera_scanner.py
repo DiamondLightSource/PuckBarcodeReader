@@ -33,17 +33,23 @@ class CameraScanner:
         """
         self.task_queue = multiprocessing.Queue()
         self.overlay_queue = multiprocessing.Queue()
+        self.kill_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
     def stream_camera(self, camera_num, config):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_pool = multiprocessing.Pool(1, capture_worker, (self.task_queue, self.overlay_queue, config))
+        capture_pool = multiprocessing.Pool(1, capture_worker, (self.task_queue, self.overlay_queue,
+                                                                self.kill_queue, config))
         scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue,
                                                                 self.result_queue, config))
 
+    def kill(self):
+        self.kill_queue.put(None)
+        self.task_queue.put(None)
 
-def capture_worker(task_queue, overlay_queue, config):
+
+def capture_worker(task_queue, overlay_queue, kill_queue, config):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
@@ -62,7 +68,7 @@ def capture_worker(task_queue, overlay_queue, config):
     latest_overlay = Overlay(None)
     last_time = time.time()
 
-    while True:
+    while kill_queue.empty():
         # Capture the next frame from the camera
         read_ok, frame = cap.read()
 
@@ -196,7 +202,7 @@ class Overlay:
                 self._plate.draw_pins(cv_image)
 
             if self._text is not None:
-                cv_image.draw_text(SCANNED_TAG, cv_image.center(), Color.Green(), centered=True, scale=4, thickness=3)
+                cv_image.draw_text(self._text, cv_image.center(), Color.Green(), centered=True, scale=4, thickness=3)
 
         # Displays a message on the screen telling the user how to exit
         exit_msg = "Press '{}' to exit".format(EXIT_KEY)
