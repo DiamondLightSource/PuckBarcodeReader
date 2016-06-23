@@ -228,6 +228,7 @@ class BoolConfigControl(ConfigControl):
         ConfigControl.__init__(self, config_item)
 
         self._init_ui()
+        self.update_from_config()
 
     def _init_ui(self):
         lbl_bool = QLabel(self._config_item.tag())
@@ -235,7 +236,6 @@ class BoolConfigControl(ConfigControl):
 
         self._chk_box = QCheckBox()
         self._chk_box.setTristate(False)
-        self._chk_box.setCheckState(self._config_item.value())
 
         hbox = QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)
