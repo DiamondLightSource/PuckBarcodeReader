@@ -18,14 +18,12 @@ class BarcodeConfig(Config):
         self.scan_beep = add(BoolConfigItem, "Beep While Scanning", default=True)
         self.scan_clipboard = add(BoolConfigItem, "Results to Clipboard", default=True)
 
+        self.image_puck = add(BoolConfigItem, "Draw Puck", default=True)
+        self.image_pins = add(BoolConfigItem, "Draw Slot Highlights", default=True)
+        self.image_crop = add(BoolConfigItem, "Crop to Puck", default=True)
+
         self.store_directory = add(DirectoryConfigItem, "Store Directory", default="../store/")
         self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)
         self.slot_image_directory = add(DirectoryConfigItem, "Debug Directory", default="../debug-output/")
 
         self.initialize_from_file()
-
-    def scan_beep(self):
-        return self.scan_beep.value()
-
-    def scan_clipboard(self):
-        return self.scan_clipboard()

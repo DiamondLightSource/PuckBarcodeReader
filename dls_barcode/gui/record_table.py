@@ -79,7 +79,7 @@ class ScanRecordTable(QGroupBox):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
         self._store.merge_record(plate, image)
         self._load_store_records()
-        if self._options.scan_clipboard():
+        if self._options.scan_clipboard.value():
             self._copy_selected_to_clipboard()
 
     def _load_store_records(self):
@@ -117,7 +117,8 @@ class ScanRecordTable(QGroupBox):
             row = self._table.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
             self._barcodeTable.populate(record.barcodes)
-            self._imageFrame.display_puck_image(record.marked_image())
+            marked_image = record.marked_image(self._options)
+            self._imageFrame.display_puck_image(marked_image)
         except IndexError:
             pass
             self._barcodeTable.populate([])

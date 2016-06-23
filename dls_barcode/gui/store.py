@@ -126,13 +126,18 @@ class Record:
         image = Image(self.imagepath)
         return image
 
-    def marked_image(self):
+    def marked_image(self, options):
         geo = self.geometry()
         image = self.image()
 
-        geo.draw_plate(image, Color.Blue())
-        self._draw_pins(image, geo)
-        geo.crop_image(image)
+        if options.image_puck.value():
+            geo.draw_plate(image, Color.Blue())
+
+        if options.image_pins.value():
+            self._draw_pins(image, geo)
+
+        if options.image_crop.value():
+            geo.crop_image(image)
 
         return image
 

@@ -36,6 +36,11 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.scan_beep)
         add(cfg.scan_clipboard)
 
+        self.start_group("Result Image")
+        add(cfg.image_puck)
+        add(cfg.image_pins)
+        add(cfg.image_crop)
+
         self.start_group("Store")
         add(cfg.store_directory)
 
