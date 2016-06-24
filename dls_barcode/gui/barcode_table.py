@@ -38,7 +38,7 @@ class BarcodeTable(QGroupBox):
         self._btn_clipboard = QtGui.QPushButton('Copy To Clipboard')
         self._btn_clipboard.setToolTip('Copy barcodes for the selected record to the clipboard')
         self._btn_clipboard.resize(self._btn_clipboard.sizeHint())
-        self._btn_clipboard.clicked.connect(self._copy_selected_to_clipboard)
+        self._btn_clipboard.clicked.connect(self.copy_selected_to_clipboard)
         self._btn_clipboard.setEnabled(False)
 
         hbox = QHBoxLayout()
@@ -93,7 +93,7 @@ class BarcodeTable(QGroupBox):
         else:
             self._btn_clipboard.setEnabled(True)
 
-    def _copy_selected_to_clipboard(self):
+    def copy_selected_to_clipboard(self):
         """ Called when the copy to clipboard button is pressed. Copies the list/s of
         barcodes for the currently selected records to the clipboard so that the user
         can paste it elsewhere.

@@ -73,7 +73,7 @@ class ScanRecordTable(QGroupBox):
         self._store.merge_record(plate, image)
         self._load_store_records()
         if self._options.scan_clipboard.value():
-            self._copy_selected_to_clipboard()
+            self._barcodeTable.copy_selected_to_clipboard()
 
     def _load_store_records(self):
         """ Populate the record table with all of the records in the store.
