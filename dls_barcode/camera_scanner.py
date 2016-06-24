@@ -10,7 +10,6 @@ from dls_barcode.scan import Scanner
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
-EXIT_KEY = 'q'
 
 # Maximum frame rate to sample at (rate will be further limited by speed at which frames can be processed)
 MAX_SAMPLE_RATE = 10.0
@@ -90,9 +89,7 @@ def capture_worker(task_queue, overlay_queue, kill_queue, config):
         cv2.imshow('Barcode Scanner', small)
 
         # Exit scanning mode if the exit key is pressed
-        if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
-            task_queue.put(None)
-            break
+        cv2.waitKey(1)
 
     # Clean up camera and kill the worker threads
     cap.release()
@@ -200,7 +197,3 @@ class Overlay:
 
             if self._text is not None:
                 cv_image.draw_text(self._text, cv_image.center(), Color.Green(), centered=True, scale=4, thickness=3)
-
-        # Displays a message on the screen telling the user how to exit
-        exit_msg = "Press '{}' to exit".format(EXIT_KEY)
-        cv_image.draw_text(exit_msg, (20, 50), Color.Black(), centered=False, scale=1, thickness=2)
