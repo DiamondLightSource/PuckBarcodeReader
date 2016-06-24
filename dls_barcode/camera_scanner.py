@@ -164,11 +164,11 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
             barcode_counter = plate.num_valid_barcodes()
 
         # Diagnostics
-        frame_end_time = time.time()
-        #print("Plate frame number: {}".format(plate_frame_number))
-        #print("Frame number: {}".format(frame_number))
-        #print("Scan Timestamp: {0:.3f} secs".format(frame_end_time))
-        #print("Scan Duration: {0:.3f} secs".format(frame_end_time - frame_start_time))
+        if options.console_frame.value():
+            frame_end_time = time.time()
+            print('-'*30)
+            print("Frame number: {} (Plate frame: {})".format(frame_number, plate_frame_number))
+            print("Frame Duration: {0:.3f} secs".format(frame_end_time - frame_start_time))
 
 
 class Overlay:

@@ -41,7 +41,7 @@ class ConfigDialog(QtGui.QDialog):
         >>>     self.finalize_layout()
     """
 
-    LABEL_WIDTH = 100
+    LABEL_WIDTH = 110
 
     def __init__(self, config):
         super(ConfigDialog, self).__init__()

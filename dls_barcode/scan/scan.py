@@ -65,7 +65,9 @@ class Scanner:
         if self._is_geometry_aligned() and has_common_barcodes:
             self._merge_frame_into_plate()
 
-        print(self.plate.barcodes())  # DEBUG
+        if self._options.console_barcodes.value():
+            print(self.plate.barcodes())
+
         return self.plate
 
     def _reset_for_new_frame(self):
