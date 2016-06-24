@@ -59,7 +59,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
         self.init_menu_bar()
 
         # Barcode table - lists all the barcodes in a record
-        self.barcodeTable = BarcodeTable()
+        self.barcodeTable = BarcodeTable(self._config)
 
         # Image frame - displays image of the currently selected scan record
         self.imageFrame = ImageFrame()
@@ -181,9 +181,11 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        if self._scanner is None:
-            self._scanner = CameraScanner(self._new_scan_queue)
-            self._scanner.stream_camera(camera_num=0, config=self._config)
+        if self._scanner is not None:
+            self._stop_live_capture()
+
+        self._scanner = CameraScanner(self._new_scan_queue)
+        self._scanner.stream_camera(camera_num=0, config=self._config)
 
     def _stop_live_capture(self):
         if self._scanner is not None:

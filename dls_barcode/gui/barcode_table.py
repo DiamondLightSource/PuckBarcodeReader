@@ -13,10 +13,12 @@ from dls_barcode.util import Image, Color
 
 class BarcodeTable(QGroupBox):
 
-    def __init__(self):
+    def __init__(self, options):
         super(BarcodeTable, self).__init__()
 
         self._barcodes = []
+
+        self._options = options
 
         self.setTitle("Barcodes")
         self._init_ui()
@@ -54,7 +56,7 @@ class BarcodeTable(QGroupBox):
 
     def populate(self, barcodes):
         """ Called when a new row is selected on the record table. Displays all of the
-        barcodes from the selected record in the barcode table. Valid barcodes are
+        barcodes from the selected record in the barcode table. By default, valid barcodes are
         highlighted green, invalid barcodes are highlighted red, and empty slots are grey.
         """
         num_slots = len(barcodes)
@@ -64,13 +66,13 @@ class BarcodeTable(QGroupBox):
         for index, barcode in enumerate(barcodes):
             # Select appropriate background color
             if barcode == BAD_DATA_SYMBOL:
-                color = Color.Red()
+                color = self._options.col_bad()
             elif barcode == NOT_FOUND_SLOT_SYMBOL:
-                color = Color.Red()
+                color = self._options.col_bad()
             elif barcode == EMPTY_SLOT_SYMBOL:
-                color = Color.Grey()
+                color = self._options.col_empty()
             else:
-                color = Color.Green()
+                color = self._options.col_ok()
 
             color.a = 192
 

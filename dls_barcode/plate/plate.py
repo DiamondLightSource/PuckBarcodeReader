@@ -255,17 +255,17 @@ class Plate:
     def draw_plate(self, cvimg, color):
         self._geometry.draw_plate(cvimg, color)
 
-    def draw_pins(self, cvimg):
+    def draw_pins(self, cvimg, options):
         for i, slot in enumerate(self._slots):
             state = slot.state()
             if state == Slot.UNREADABLE:
-                color = Color.Red()
+                color = options.col_bad()
             elif state == Slot.VALID:
-                color = Color.Green()
+                color = options.col_ok()
             elif state == Slot.EMPTY:
-                color = Color.Grey()
+                color = options.col_empty()
             else:
-                color = Color.Red()
+                color = options.col_bad()
             self._geometry.draw_pin_highlight(cvimg, color, i+1)
 
     def crop_image(self, cvimg):

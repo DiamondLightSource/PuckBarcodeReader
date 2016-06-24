@@ -10,6 +10,7 @@ from dls_barcode.scan import Scanner
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
+EXIT_KEY = 'q'
 
 # Maximum frame rate to sample at (rate will be further limited by speed at which frames can be processed)
 MAX_SAMPLE_RATE = 10.0
@@ -64,7 +65,7 @@ def capture_worker(task_queue, overlay_queue, kill_queue, config):
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera_height.value())
 
     # Store the latest image overlay which highlights the puck
-    latest_overlay = Overlay(None)
+    latest_overlay = Overlay(None, config)
     last_time = time.time()
 
     while kill_queue.empty():
@@ -89,9 +90,11 @@ def capture_worker(task_queue, overlay_queue, kill_queue, config):
         cv2.imshow('Barcode Scanner', small)
 
         # Exit scanning mode if the exit key is pressed
-        cv2.waitKey(1)
+        if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
+            break
 
     # Clean up camera and kill the worker threads
+    task_queue.put(None)
     cap.release()
     cv2.destroyAllWindows()
 
@@ -142,7 +145,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
         if diagnostic.is_aligned:
             # If the plate matches the last successfully scanned plate, ignore it
             if last_full_plate and last_full_plate.has_slots_in_common(plate):
-                overlay_queue.put(Overlay(None, SCANNED_TAG))
+                overlay_queue.put(Overlay(None, options, SCANNED_TAG))
 
             # If the plate has the required number of barcodes, store it
             elif plate.is_full_valid():
@@ -154,7 +157,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
                 if options.scan_beep.value():
                     frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots)) + 37
                     winsound.Beep(frequency, 200)
-                overlay = Overlay(plate)
+                overlay = Overlay(plate, options)
                 overlay_queue.put(overlay)
 
                 if plate == last_plate and plate.num_valid_barcodes() > barcode_counter:
@@ -177,8 +180,9 @@ class Overlay:
     already been scanned. Also writes status text messages. Has an specified lifetime so that the overlay
     will only be displayed for a short time.
     """
-    def __init__(self, plate, text=None, lifetime=2):
+    def __init__(self, plate, options, text=None, lifetime=2):
         self._plate = plate
+        self._options = options
         self._text = text
         self._lifetime = lifetime
         self._start_time = time.time()
@@ -193,7 +197,8 @@ class Overlay:
         if (time.time() - self._start_time) < self._lifetime:
             if self._plate is not None:
                 self._plate.draw_plate(cv_image, Color.Blue())
-                self._plate.draw_pins(cv_image)
+                self._plate.draw_pins(cv_image, self._options)
 
             if self._text is not None:
-                cv_image.draw_text(self._text, cv_image.center(), Color.Green(), centered=True, scale=4, thickness=3)
+                color_ok = self._options.col_ok()
+                cv_image.draw_text(self._text, cv_image.center(), color_ok, centered=True, scale=4, thickness=3)

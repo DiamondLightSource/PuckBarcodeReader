@@ -134,7 +134,7 @@ class Record:
             geo.draw_plate(image, Color.Blue())
 
         if options.image_pins.value():
-            self._draw_pins(image, geo)
+            self._draw_pins(image, geo, options)
 
         if options.image_crop.value():
             geo.crop_image(image)
@@ -147,14 +147,14 @@ class Record:
 
         return Unipuck.from_center_and_pin6(puck_center, pin6_center)
 
-    def _draw_pins(self, image, geometry):
+    def _draw_pins(self, image, geometry, options):
         for i, bc in enumerate(self.barcodes):
             if bc == NOT_FOUND_SLOT_SYMBOL or bc == BAD_DATA_SYMBOL:
-                color = Color.Red()
+                color = options.col_bad()
             elif bc == EMPTY_SLOT_SYMBOL:
-                color = Color.Grey()
+                color = options.col_empty()
             else:
-                color = Color.Green()
+                color = options.col_ok()
 
             geometry.draw_pin_highlight(image, color, i+1)
 

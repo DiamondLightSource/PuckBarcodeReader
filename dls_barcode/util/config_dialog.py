@@ -354,7 +354,6 @@ class ColorConfigControl(ConfigControl):
         self._swatch = QPushButton("")
         self._swatch.setFixedWidth(25)
         self._swatch.clicked.connect(self._choose_color)
-        self._swatch.setEnabled(False)
 
         hbox = QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)

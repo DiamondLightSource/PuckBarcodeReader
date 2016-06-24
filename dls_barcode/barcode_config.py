@@ -7,7 +7,7 @@ class BarcodeConfig(Config):
 
         add = self.add
 
-        self.colour_ok = add(ColorConfigItem, "Read Color", Color.Green())
+        self.color_ok = add(ColorConfigItem, "Read Color", Color.Green())
         self.color_unreadable = add(ColorConfigItem, "Not Read Color", Color.Red())
         self.color_empty = add(ColorConfigItem, "Empty Color", Color.Grey())
 
@@ -31,3 +31,12 @@ class BarcodeConfig(Config):
         self.slot_image_directory = add(DirectoryConfigItem, "Debug Directory", default="../debug-output/")
 
         self.initialize_from_file()
+
+    def col_ok(self):
+        return self.color_ok.value()
+
+    def col_bad(self):
+        return self.color_unreadable.value()
+
+    def col_empty(self):
+        return self.color_empty.value()
