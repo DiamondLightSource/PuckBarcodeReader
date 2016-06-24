@@ -1,5 +1,6 @@
 from __future__ import division
 
+import os
 import pyperclip
 
 from PyQt4 import QtGui
@@ -100,6 +101,6 @@ class BarcodeTable(QGroupBox):
         barcodes for the currently selected records to the clipboard so that the user
         can paste it elsewhere.
         """
-
+        sep = os.linesep
         if self._barcodes:
-            pyperclip.copy('\n'.join(self._barcodes))
+            pyperclip.copy(sep.join(self._barcodes))
