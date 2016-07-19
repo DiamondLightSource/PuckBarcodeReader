@@ -5,8 +5,8 @@ import winsound
 import time
 import multiprocessing
 
-from dls_barcode.util import Image, Color
-from dls_barcode.scan import Scanner
+from util import Image, Color
+from scan import Scanner
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"

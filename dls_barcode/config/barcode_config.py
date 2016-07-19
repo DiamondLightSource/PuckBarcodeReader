@@ -1,4 +1,4 @@
-from .util import Color, Config, DirectoryConfigItem, ColorConfigItem, IntConfigItem, BoolConfigItem
+from dls_barcode.util import Color, Config, DirectoryConfigItem, ColorConfigItem, IntConfigItem, BoolConfigItem
 
 
 class BarcodeConfig(Config):

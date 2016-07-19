@@ -3,18 +3,19 @@ import os
 import sys
 import winsound
 
+from os.path import dirname
+from sys import path
+path.append(dirname(path[0]))
+
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QPushButton, QVBoxLayout, QHBoxLayout
+from PyQt4.QtGui import QPushButton, QHBoxLayout
 
-sys.path.append("..")
+from scan import Scanner
+from util import Image
+from config import BarcodeConfig, BarcodeConfigDialog
+from camera_scanner import CameraScanner
 
-from dls_barcode.scan import Scanner
-from dls_barcode.util import Image, Color
-from dls_barcode.gui.barcode_config_dialog import BarcodeConfigDialog
-from dls_barcode.camera_scanner import CameraScanner
-from dls_barcode.barcode_config import BarcodeConfig
-
-from dls_barcode.gui import ScanRecordTable, BarcodeTable, ImageFrame
+from gui import ScanRecordTable, BarcodeTable, ImageFrame
 
 TEST_IMAGE_PATH = '../tests/test-resources/'
 TEST_OUTPUT_PATH = '../test-output/'

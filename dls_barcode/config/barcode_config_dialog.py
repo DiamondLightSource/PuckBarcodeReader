@@ -1,10 +1,6 @@
-import sys
-import os
 import cv2
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout, QHBoxLayout, QWidget, QCheckBox, QMessageBox, \
-    QLineEdit, QPushButton
+from PyQt4.QtGui import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
 
 from dls_barcode.util.config_dialog import ConfigDialog, ConfigControl
 
