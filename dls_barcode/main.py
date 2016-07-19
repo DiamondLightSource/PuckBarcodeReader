@@ -18,7 +18,6 @@ from camera_scanner import CameraScanner
 from gui import ScanRecordTable, BarcodeTable, ImageFrame
 
 TEST_IMAGE_PATH = '../tests/test-resources/'
-TEST_OUTPUT_PATH = '../test-output/'
 
 
 class DiamondBarcodeReader(QtGui.QMainWindow):
@@ -26,10 +25,6 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
 
     def __init__(self):
         super(DiamondBarcodeReader, self).__init__()
-
-        # Create directories if missing
-        if not os.path.exists(TEST_OUTPUT_PATH):
-            os.makedirs(TEST_OUTPUT_PATH)
 
         self._config = BarcodeConfig(DiamondBarcodeReader.CONFIG_FILE)
 
