@@ -1,15 +1,10 @@
 from __future__ import division
 
-from pkg_resources import require
-
 from dls_barcode.datamatrix import DataMatrix
-from dls_barcode.scan.slot_scan import SlotScanner
 from dls_barcode.plate.geometry_unipuck import Unipuck
 from dls_barcode.plate.plate import Plate, Slot
 from .geometry_adjuster import GeometryAdjuster
-
-
-require('numpy')
+from .slot_scan import SlotScanner
 
 
 class AlignmentException(Exception):

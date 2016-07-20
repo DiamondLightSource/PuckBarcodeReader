@@ -1,4 +1,3 @@
-from pkg_resources import require;  require('numpy')
 import cv2
 
 import winsound
