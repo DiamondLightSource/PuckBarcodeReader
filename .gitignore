@@ -5,3 +5,8 @@ test-output
 test-resources
 *.pyc
 config.ini
+
+build
+dist
+qt.conf
+*.exe
