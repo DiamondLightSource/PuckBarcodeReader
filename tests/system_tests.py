@@ -1,8 +1,9 @@
-#!/usr/bin/env dls-python
-from dls_barcode import Image, Scanner, Store
-from dls_barcode.barcode_config import BarcodeConfig
-from dls_barcode.util import Color
 import time
+
+from config.barcode_config import BarcodeConfig
+from dls_barcode.util import Image
+from dls_barcode.scan import Scanner
+from dls_barcode.gui.store import Store
 
 # SHOULD BE OPEN CV 2.4.10
 
