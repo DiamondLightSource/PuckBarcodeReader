@@ -1,4 +1,8 @@
+import sys
+
 from dls_barcode.util import Color, Config, DirectoryConfigItem, ColorConfigItem, IntConfigItem, BoolConfigItem
+
+IS_BUNDLED = getattr(sys, 'frozen', False)
 
 
 class BarcodeConfig(Config):
@@ -6,6 +10,11 @@ class BarcodeConfig(Config):
         Config.__init__(self, file)
 
         add = self.add
+
+        if IS_BUNDLED:
+            default_store = "./store/"
+        else:
+            default_store = "../store/"
 
         self.color_ok = add(ColorConfigItem, "Read Color", Color.Green())
         self.color_unreadable = add(ColorConfigItem, "Not Read Color", Color.Red())
@@ -22,7 +31,7 @@ class BarcodeConfig(Config):
         self.image_pins = add(BoolConfigItem, "Draw Slot Highlights", default=True)
         self.image_crop = add(BoolConfigItem, "Crop to Puck", default=True)
 
-        self.store_directory = add(DirectoryConfigItem, "Store Directory", default="../store/")
+        self.store_directory = add(DirectoryConfigItem, "Store Directory", default=default_store)
         self.store_capacity = add(IntConfigItem, "Results History Size", default=50)
 
         self.console_barcodes = add(BoolConfigItem, "Print Barcode List", default=False)

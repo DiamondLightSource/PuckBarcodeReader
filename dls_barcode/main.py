@@ -1,5 +1,4 @@
 import multiprocessing
-import os
 import sys
 import winsound
 
@@ -17,11 +16,16 @@ from camera_scanner import CameraScanner
 
 from gui import ScanRecordTable, BarcodeTable, ImageFrame
 
+IS_BUNDLED = getattr(sys, 'frozen', False)
+
 TEST_IMAGE_PATH = '../tests/test-resources/'
 
 
 class DiamondBarcodeReader(QtGui.QMainWindow):
-    CONFIG_FILE = "../config.ini"
+    if IS_BUNDLED:
+        CONFIG_FILE = "./config.ini"
+    else:
+        CONFIG_FILE = "../config.ini"
 
     def __init__(self):
         super(DiamondBarcodeReader, self).__init__()
