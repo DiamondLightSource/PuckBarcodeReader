@@ -185,7 +185,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
             self._stop_live_capture()
 
         self._scanner = CameraScanner(self._new_scan_queue)
-        self._scanner.stream_camera(camera_num=0, config=self._config)
+        self._scanner.stream_camera(config=self._config)
 
     def _stop_live_capture(self):
         if self._scanner is not None:
@@ -199,4 +199,6 @@ def main():
 
 
 if __name__ == '__main__':
+    import multiprocessing
+    multiprocessing.freeze_support()
     main()

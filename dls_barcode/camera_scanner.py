@@ -35,13 +35,17 @@ class CameraScanner:
         self.kill_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
-    def stream_camera(self, camera_num, config):
+    def stream_camera(self, config):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_pool = multiprocessing.Pool(1, capture_worker, (self.task_queue, self.overlay_queue,
-                                                                self.kill_queue, config))
-        scanner_pool = multiprocessing.Pool(1, scanner_worker, (self.task_queue, self.overlay_queue,
-                                                                self.result_queue, config))
+        capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, config)
+        scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config)
+
+        capture_pool = multiprocessing.Process(target=capture_worker, args=capture_args)
+        scanner_pool = multiprocessing.Process(target=scanner_worker, args=scanner_args)
+
+        capture_pool.start()
+        scanner_pool.start()
 
     def kill(self):
         self.kill_queue.put(None)
