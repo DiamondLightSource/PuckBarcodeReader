@@ -9,6 +9,8 @@ from scan import Scanner
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
+NO_PUCK_TIME = 5
+NO_PUCK_TAG = "No Puck Detected"
 EXIT_KEY = 'q'
 
 # Maximum frame rate to sample at (rate will be further limited by speed at which frames can be processed)
@@ -113,6 +115,7 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
     """
     last_plate = None
     last_full_plate = None
+    last_plate_time = time.time()
 
     frame_number = 0
     barcode_counter = 0
@@ -146,6 +149,9 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
 
         # If the plate is aligned, display overlay results ( + sound + save results)
         if diagnostic.is_aligned:
+            # Record the time so we can see how long its been since we last saw a plate
+            last_plate_time = time.time()
+
             # If the plate matches the last successfully scanned plate, ignore it
             if last_full_plate and last_full_plate.has_slots_in_common(plate):
                 overlay_queue.put(Overlay(None, options, SCANNED_TAG))
@@ -168,6 +174,13 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
 
             last_plate = plate
             barcode_counter = plate.num_valid_barcodes()
+
+        else:
+            # Display a message if we haven't detected a puck for a while
+            time_since_plate = time.time() - last_plate_time
+            if time_since_plate > NO_PUCK_TIME:
+                overlay = Overlay(None, options, NO_PUCK_TAG)
+                overlay_queue.put(overlay)
 
         # Diagnostics
         if options.console_frame.value():
