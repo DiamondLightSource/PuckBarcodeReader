@@ -33,6 +33,13 @@ The following steps will help you prepare an appropriate Python environment to r
 * Open cmd.exe and navigate to the above folder. `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
 
+Creating a Self-Contained Executable
+====================================
+A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used to create a stand-alone windows executable (.exe) file.
+
+Install PyInstaller with `pip install pyinstaller`. Make sure that the correct version of Python is referenced in your system path.
+
+To create the executable file, run the `build.bat` file. This will create the fiel `bin\barcode.exe`. This will be fairly large (~40 MB). If everything has worked correctly, this single file will be all that is needed to run the barcode scanner application.
 
 
 
