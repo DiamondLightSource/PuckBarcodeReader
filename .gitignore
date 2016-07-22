@@ -10,3 +10,4 @@ build
 dist
 qt.conf
 *.exe
+main.spec

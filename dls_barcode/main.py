@@ -1,10 +1,11 @@
-import multiprocessing
 import sys
 import winsound
 
 from os.path import dirname
 from sys import path
 path.append(dirname(path[0]))
+
+import util.multiprocessing_support
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton, QHBoxLayout
@@ -198,7 +199,11 @@ def main():
     sys.exit(app.exec_())
 
 
+# Multiprocessing support for PyInstaller
+# See: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
 if __name__ == '__main__':
-    import multiprocessing
-    multiprocessing.freeze_support()
+    if sys.platform.startswith('win'):
+        import multiprocessing
+        multiprocessing.freeze_support()
+
     main()
