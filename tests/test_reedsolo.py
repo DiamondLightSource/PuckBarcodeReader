@@ -1,6 +1,7 @@
 import unittest
 
-from dls_barcode import *
+from dls_barcode.datamatrix.decode import RSDecode
+from dls_barcode.datamatrix.reedsolo import ReedSolomonError
 
 
 """
@@ -10,7 +11,7 @@ after Reed-Solomon encoding this is:
     [69, 71, 145, 49, 70, 134, 173, 129, 195, 218, 3, 144, 228, 239, 62, 153, 67, 12]
 
 The message has 8 bytes and 10 ECC characters, this means that it can fully recover the
-original message as long as no more thean 5 (=10/2) bytes are damaged.
+original message as long as no more than 5 (=10/2) bytes are damaged.
 
 A ReedSolomonError is raised if the decoding fails
 """
@@ -42,7 +43,6 @@ class TestReedSolo(unittest.TestCase):
     def test_uncorrectable_barcode(self):
         for case in msg_bytes_uncorrectable:
             self.assertRaises(ReedSolomonError, RSDecode, case, num_ecc_bytes)
-
 
 
 if __name__ == '__main__':
