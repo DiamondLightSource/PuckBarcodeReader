@@ -9,11 +9,11 @@ from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 
 from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
-from dls_barcode.util import Image, Color
 
 
 class BarcodeTable(QGroupBox):
-
+    """ GUI component. Displays a list of barcodes for the currently selected puck.
+    """
     def __init__(self, options):
         super(BarcodeTable, self).__init__()
 

@@ -15,6 +15,8 @@ from .image_frame import ImageFrame
 
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
+    """ Main GUI window for the Barcode Scanner App.
+    """
     def __init__(self, config_file):
         super(DiamondBarcodeMainWindow, self).__init__()
 
@@ -53,7 +55,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.imageFrame = ImageFrame()
 
         # Scan record table - lists all the records in the store
-        # TODO - do linking with events
         self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config)
 
         self._btn_begin = QPushButton("Start Scan")

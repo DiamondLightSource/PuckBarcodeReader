@@ -1,14 +1,12 @@
 from __future__ import division
 
-import os
-
-from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout
 
 
 class ImageFrame(QGroupBox):
-
+    """ GUI component. Displays an image of the currently selected barcode.
+    """
     def __init__(self):
         super(ImageFrame, self).__init__()
 

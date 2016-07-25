@@ -11,6 +11,10 @@ from dls_barcode.gui.store import Store
 
 
 class ScanRecordTable(QGroupBox):
+    """ GUI component. Displays a list of previous scan results. Selecting a scan causes
+    details of the scan to appear in other GUI components (list of barcodes in the barcode
+    table and image of the puck in the image frame).
+    """
     COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
     def __init__(self, barcode_table, image_frame, options):
@@ -45,14 +49,14 @@ class ScanRecordTable(QGroupBox):
         self._table.cellPressed.connect(self._record_selected)
 
         # Delete button - deletes selected records
-        deleteBtn = QtGui.QPushButton('Delete')
-        deleteBtn.setToolTip('Delete selected scan/s')
-        deleteBtn.resize(deleteBtn.sizeHint())
-        deleteBtn.clicked.connect(self._delete_selected_records)
+        btn_delete = QtGui.QPushButton('Delete')
+        btn_delete.setToolTip('Delete selected scan/s')
+        btn_delete.resize(btn_delete.sizeHint())
+        btn_delete.clicked.connect(self._delete_selected_records)
 
         hbox = QHBoxLayout()
         hbox.setSpacing(10)
-        hbox.addWidget(deleteBtn)
+        hbox.addWidget(btn_delete)
         hbox.addStretch(1)
 
         vbox = QVBoxLayout()
