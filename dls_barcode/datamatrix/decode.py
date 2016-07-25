@@ -9,7 +9,7 @@ It is based on a similar component in the Java zxing library (see http://git.io/
 from functools import partial
 import numpy as np
 
-from .reedsolo import RSDecode
+from .reedsolo import ReedSolomonDecoder
 
 # The number of bytes in the data matrix that encode data (the remaining bytes are for error correction)
 NUM_DATA_BYTES = 8
@@ -74,7 +74,8 @@ class Decoder:
         """Apply Reed-Solomon error correction to the set of raw bytes
         """
         # Note - can throw an exception - should be caught further up
-        decoded = RSDecode(encoded_bytes, num_data_bytes)
+        rs_decode = ReedSolomonDecoder()
+        decoded = rs_decode.decode(encoded_bytes, num_data_bytes)
         return decoded
 
     @staticmethod

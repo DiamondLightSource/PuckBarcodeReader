@@ -1,7 +1,6 @@
 import unittest
 
-from dls_barcode.datamatrix.decode import RSDecode
-from dls_barcode.datamatrix.reedsolo import ReedSolomonError
+from dls_barcode.datamatrix.reedsolo import ReedSolomonDecoder, ReedSolomonError
 
 
 """
@@ -36,13 +35,15 @@ msg_bytes_uncorrectable = [
 class TestReedSolo(unittest.TestCase):
 
     def test_correctable_barcode(self):
+        decoder = ReedSolomonDecoder()
         for case in msg_bytes_correctable:
-            corrected = RSDecode(case, num_ecc_bytes)
+            corrected = decoder.decode(case, num_ecc_bytes)
             self.assertEquals(msg_bytes, corrected)
 
     def test_uncorrectable_barcode(self):
+        decoder = ReedSolomonDecoder()
         for case in msg_bytes_uncorrectable:
-            self.assertRaises(ReedSolomonError, RSDecode, case, num_ecc_bytes)
+            self.assertRaises(ReedSolomonError, decoder.decode, case, num_ecc_bytes)
 
 
 if __name__ == '__main__':
