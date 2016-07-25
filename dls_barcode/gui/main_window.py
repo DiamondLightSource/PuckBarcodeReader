@@ -152,7 +152,7 @@ class DiamondBarcodeReader(QtGui.QMainWindow):
     def _scan_file_image(self):
         """Load and process (scan for barcodes) an image from file
         """
-        filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file', TEST_IMAGE_PATH))
+        filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
         if filepath:
             cv_image = Image(filepath)
             gray_image = cv_image.to_grayscale()
