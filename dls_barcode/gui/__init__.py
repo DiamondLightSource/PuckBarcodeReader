@@ -1,1 +1,1 @@
-from .main_window import DiamondBarcodeReader
+from .main_window import DiamondBarcodeMainWindow

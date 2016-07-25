@@ -8,7 +8,7 @@ path.append(dirname(path[0]))
 import util.multiprocessing_support
 
 from PyQt4 import QtGui
-from gui import DiamondBarcodeReader
+from gui import DiamondBarcodeMainWindow
 
 # Detect if the program is running from source or has been bundled
 IS_BUNDLED = getattr(sys, 'frozen', False)
@@ -20,7 +20,7 @@ else:
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    ex = DiamondBarcodeReader(CONFIG_FILE)
+    ex = DiamondBarcodeMainWindow(CONFIG_FILE)
     sys.exit(app.exec_())
 
 

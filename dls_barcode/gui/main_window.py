@@ -14,10 +14,9 @@ from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 
 
-class DiamondBarcodeReader(QtGui.QMainWindow):
-
+class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def __init__(self, config_file):
-        super(DiamondBarcodeReader, self).__init__()
+        super(DiamondBarcodeMainWindow, self).__init__()
 
         self._config = BarcodeConfig(config_file)
 
