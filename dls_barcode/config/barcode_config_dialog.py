@@ -6,6 +6,9 @@ from dls_barcode.util.config_dialog import ConfigDialog, ConfigControl
 
 
 class BarcodeConfigDialog(ConfigDialog):
+    """ Dialog to edit the configuration options for the program. Provides a custom control for
+    setting up the camera.
+    """
     def __init__(self, config):
         ConfigDialog.__init__(self, config)
 

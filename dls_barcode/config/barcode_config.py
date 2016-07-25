@@ -1,11 +1,15 @@
 import sys
 
-from dls_barcode.util import Color, Config, DirectoryConfigItem, ColorConfigItem, IntConfigItem, BoolConfigItem
+from dls_barcode.util import Color
+from dls_barcode.util import Config, DirectoryConfigItem, ColorConfigItem, IntConfigItem, BoolConfigItem
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
 
 
 class BarcodeConfig(Config):
+    """ Handles configuration options that are used throughout the program. The values are persisted to file
+    so that the same values are recalled when the program is restarted.
+    """
     def __init__(self, file):
         Config.__init__(self, file)
 

@@ -366,8 +366,8 @@ def _draw_square(image, transform, size):
 
     return marked_img
 
-def _draw_square_and_writing(image, transform, size):
 
+def _draw_square_and_writing(image, transform, size):
     marked_img = _draw_square(image, transform, size)
 
     txt_height = SquareLocator.TXT_HEIGHT * size

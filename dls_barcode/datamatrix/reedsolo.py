@@ -36,9 +36,11 @@ The following is the header from the original author:
 DATAMATRIX_PRIMITIVE = 0x12d
 DATAMATRIX_GEN_BASE = 1
 
+
 class ReedSolomonError(Exception):
     def __init__(self, message):
         self.message = message
+
 
 def RSDecode(encoded_msg, num_data_bytes):
     return rs_correct_msg(encoded_msg, num_data_bytes)
@@ -57,11 +59,11 @@ for i in range(255, 512):
     gf_exp[i] = gf_exp[i - 255]
 
 
-
 def gf_mul(x, y):
     if x == 0 or y == 0:
         return 0
     return gf_exp[gf_log[x] + gf_log[y]]
+
 
 def gf_div(x, y):
     if y == 0:
@@ -70,8 +72,10 @@ def gf_div(x, y):
         return 0
     return gf_exp[gf_log[x] + 255 - gf_log[y]]
 
+
 def gf_poly_scale(p, x):
     return [gf_mul(p[i], x) for i in range(0, len(p))]
+
 
 def gf_poly_add(p, q):
     r = [0] * max(len(p), len(q))
@@ -81,6 +85,7 @@ def gf_poly_add(p, q):
         r[i + len(r) - len(q)] ^= q[i]
     return r
 
+
 def gf_poly_mul(p, q):
     r = [0] * (len(p) + len(q) - 1)
     for j in range(0, len(q)):
@@ -88,17 +93,20 @@ def gf_poly_mul(p, q):
             r[i + j] ^= gf_mul(p[i], q[j])
     return r
 
+
 def gf_poly_eval(p, x):
     y = p[0]
     for i in range(1, len(p)):
         y = gf_mul(y, x) ^ p[i]
     return y
 
+
 def rs_generator_poly(nsym):
     g = [1]
     for i in range(0, nsym):
         g = gf_poly_mul(g, [1, gf_exp[i+DATAMATRIX_GEN_BASE]])
     return g
+
 
 def rs_encode_msg(msg_in, nsym):
     if len(msg_in) + nsym > 255:
@@ -114,8 +122,10 @@ def rs_encode_msg(msg_in, nsym):
     msg_out[:len(msg_in)] = msg_in
     return msg_out
 
+
 def rs_calc_syndromes(msg, nsym):
     return [gf_poly_eval(msg, gf_exp[i+DATAMATRIX_GEN_BASE]) for i in range(nsym)]
+
 
 def rs_correct_errata(msg, synd, pos):
     # calculate error locator polynomial
@@ -140,7 +150,6 @@ def rs_correct_errata(msg, synd, pos):
         if DATAMATRIX_GEN_BASE != 0:
             adj = gf_mul(adj, x)
         msg[pos[i]] ^= adj
-
 
 
 def rs_find_errors(synd, nmess):
@@ -172,6 +181,7 @@ def rs_find_errors(synd, nmess):
         return None    # couldn't find error locations
     return err_pos
 
+
 def rs_forney_syndromes(synd, pos, nmess):
     fsynd = list(synd)      # make a copy
     for i in range(0, len(pos)):
@@ -180,6 +190,7 @@ def rs_forney_syndromes(synd, pos, nmess):
             fsynd[i] = gf_mul(fsynd[i], x) ^ fsynd[i + 1]
         fsynd.pop()
     return fsynd
+
 
 def rs_correct_msg(msg_in, nsym):
     if len(msg_in) > 255:

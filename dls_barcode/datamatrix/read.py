@@ -5,7 +5,8 @@ import itertools
 
 DEFAULT_MATRIX_SIZE = 14
 
-class Reader():
+
+class Reader:
     """ Contains functionality to read the bit pattern that encodes a barcode from an image
     """
 
@@ -37,7 +38,6 @@ class Reader():
             for ((x, y), point) in grid:
                 datamatrix_samples[y, x] = int(self._window_average(cv_img, point))
 
-
             thresholds = [self._threshold(datamatrix_samples, val) for val in range(256)]
             b_errors = [self._border_errors(t) for t in thresholds]
             best_threshold_value, badness = self._smart_minimum(b_errors)
@@ -47,13 +47,14 @@ class Reader():
 
             # Flip the datamatrix so its reference corner is at large i, small j.
             # Also now remove the border (reference edges and timing patterns).
-            bitArray = self._threshold(datamatrix_samples, best_threshold_value)[::-1, :][1:-1, 1:-1]
+            bit_array = self._threshold(datamatrix_samples, best_threshold_value)[::-1, :][1:-1, 1:-1]
         except IndexError:
-            bitArray = None
+            bit_array = None
 
-        return bitArray if bitArray is not None and self._sanity_check(bitArray) else None
+        return bit_array if bit_array is not None and self._sanity_check(bit_array) else None
 
-    def _smart_minimum(self, data):
+    @staticmethod
+    def _smart_minimum(data):
         """Return the index half-way between the outermost minimising indices.
 
         To illustrate:
@@ -70,7 +71,8 @@ class Reader():
         rightmost = len(data) - list(reversed(data)).index(least_y)
         return int((leftmost + rightmost)/2), least_y
 
-    def _datamatrix_sample_points(self, corner, base_vec, side_vec, offset, n=DEFAULT_MATRIX_SIZE):
+    @staticmethod
+    def _datamatrix_sample_points(corner, base_vec, side_vec, offset, n=DEFAULT_MATRIX_SIZE):
         """Get pixel positions corresponding to individual bits in a datamatrix.
 
         This is done based on the position of a datamatrix, passed in as a
@@ -87,10 +89,11 @@ class Reader():
         base_vec = np.asarray(base_vec)
         side_vec = np.asarray(side_vec)
         return (((x, y),
-                 list(map(int, corner + ((2*x+1+offset[0])*(base_vec) + (2*y+1+offset[1])*side_vec)/(2*n))))
-                    for x, y in itertools.product(range(n), range(n)))
+                 list(map(int, corner + ((2*x+1+offset[0])*base_vec + (2*y+1+offset[1])*side_vec)/(2*n))))
+                for x, y in itertools.product(range(n), range(n)))
 
-    def _window_average(self, arr, point, side=3):
+    @staticmethod
+    def _window_average(arr, point, side=3):
         """Return the average brightness over a small region surrounding a point.
         """
         x1, y1 = point[0] - (side // 2), point[1] - (side // 2)
@@ -98,15 +101,16 @@ class Reader():
         brightness = int(np.sum(arr[y1:y2, x1:x2]) / (side * side))
         return brightness
 
-    def _threshold(self, matrix, value):
+    @staticmethod
+    def _threshold(matrix, value):
         """Return a thresholded matrix, with low values corresponding to True.
         """
         value_matrix = np.empty_like(matrix)
         value_matrix.fill(value)
         return matrix < value_matrix
 
-
-    def _border_errors(self, datamatrix_candidate):
+    @staticmethod
+    def _border_errors(datamatrix_candidate):
         """Return the number of border bits not matching datamatrix specification.
         """
         n, m = datamatrix_candidate.shape
@@ -115,20 +119,21 @@ class Reader():
         errors_in_base = datamatrix_candidate[:1, :] != np.ones((1, n))
         errors_in_side = datamatrix_candidate[:, :1] != np.ones((n, 1))
         errors_in_timing = (  # ("Timing pattern".)
-            [[datamatrix_candidate[i, -1:]] != [(i+1) % 2] for i in range(n)]
-            + [[datamatrix_candidate[-1:, i]] != [(i+1) % 2] for i in range(n)])
+            [[datamatrix_candidate[i, -1:]] != [(i+1) % 2] for i in range(n)] +
+            [[datamatrix_candidate[-1:, i]] != [(i+1) % 2] for i in range(n)])
         return sum(map(np.sum, (errors_in_base, errors_in_side, errors_in_timing)))
 
-    def _sanity_check(self, bitArray):
+    @staticmethod
+    def _sanity_check(bit_array):
         """Do some simple checks on the array of datamatrix bits
         to make sure that it looks sensible. This weeds out any patterns
         that are obviously not datamatricies"""
-        width = len(bitArray)
-        height = len(bitArray[0])
+        width = len(bit_array)
+        height = len(bit_array[0])
         num_bits = width * height
         true_bits = 0
-        for row in bitArray:
+        for row in bit_array:
             true_bits = true_bits + sum(bool(x) for x in row)
 
         # We assume that if almost all of the bits are True or False then its not likely to be a valid datamatrix
-        return true_bits < 0.9 * num_bits and true_bits > 0.1 * num_bits
+        return 0.1 * num_bits < true_bits < 0.9 * num_bits

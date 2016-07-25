@@ -22,7 +22,7 @@ class ContourLocator:
         """
         # Perform a fairly generic morphological operation to make it easier to
         # find contours in general and datamatricies in particular.
-        morphed_image = self._do_morph(gray_img.img, blocksize=blocksize, C=C, morphsize=close_size)
+        morphed_image = self._do_morph(gray_img.img, block_size=blocksize, c=C, morph_size=close_size)
 
         # Find a bunch of contours in the image.
         contour_vertex_sets = self._get_contours(morphed_image)
@@ -41,13 +41,12 @@ class ContourLocator:
 
         return fps
 
-    def _do_morph(self, gray, blocksize, C, morphsize):
+    def _do_morph(self, gray, block_size, c, morph_size):
         """Perform a generic morphological operation on an image.
         """
-        thresh = cv2.adaptiveThreshold(gray, 255.0, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, blocksize, C)
-        element = cv2.getStructuringElement(cv2.MORPH_RECT, (morphsize, morphsize))
+        thresh = cv2.adaptiveThreshold(gray, 255.0, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, block_size, c)
+        element = cv2.getStructuringElement(cv2.MORPH_RECT, (morph_size, morph_size))
         return cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, element, iterations=1)
-
 
     def _get_contours(self, arr):
         """Find contours and return them as lists of vertices.
