@@ -4,8 +4,10 @@ import winsound
 import time
 import multiprocessing
 
-from util import Image, Color
+from util import Image
 from scan import Scanner
+
+from .overlay import Overlay
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
@@ -43,8 +45,8 @@ class CameraScanner:
         capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, config)
         scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config)
 
-        capture_pool = multiprocessing.Process(target=capture_worker, args=capture_args)
-        scanner_pool = multiprocessing.Process(target=scanner_worker, args=scanner_args)
+        capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
+        scanner_pool = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
         capture_pool.start()
         scanner_pool.start()
@@ -54,7 +56,7 @@ class CameraScanner:
         self.task_queue.put(None)
 
 
-def capture_worker(task_queue, overlay_queue, kill_queue, config):
+def _capture_worker(task_queue, overlay_queue, kill_queue, config):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
@@ -104,7 +106,7 @@ def capture_worker(task_queue, overlay_queue, kill_queue, config):
     cv2.destroyAllWindows()
 
 
-def scanner_worker(task_queue, overlay_queue, result_queue, options):
+def _scanner_worker(task_queue, overlay_queue, result_queue, options):
     """ Function used as the main loop of a worker process. Scan images for barcodes,
     combining partial scans until a full puck is reached.
 
@@ -188,33 +190,3 @@ def scanner_worker(task_queue, overlay_queue, result_queue, options):
             print('-'*30)
             print("Frame number: {} (Plate frame: {})".format(frame_number, plate_frame_number))
             print("Frame Duration: {0:.3f} secs".format(frame_end_time - frame_start_time))
-
-
-class Overlay:
-    """ Represents an overlay that can be drawn on top of an image. Used to draw the outline of a plate
-    on the continuous scanner camera image to highlight to the user which barcodes on th plate have
-    already been scanned. Also writes status text messages. Has an specified lifetime so that the overlay
-    will only be displayed for a short time.
-    """
-    def __init__(self, plate, options, text=None, lifetime=2):
-        self._plate = plate
-        self._options = options
-        self._text = text
-        self._lifetime = lifetime
-        self._start_time = time.time()
-
-    def draw_on_image(self, image):
-        """ Draw the plate highlight and status message to the image as well as a message that tells the
-        user how to close the continuous scanning window.
-        """
-        cv_image = Image(filename=None, img=image)
-
-        # If the overlay has not expired, draw on the plate highlight and/or the status message
-        if (time.time() - self._start_time) < self._lifetime:
-            if self._plate is not None:
-                self._plate.draw_plate(cv_image, Color.Blue())
-                self._plate.draw_pins(cv_image, self._options)
-
-            if self._text is not None:
-                color_ok = self._options.col_ok()
-                cv_image.draw_text(self._text, cv_image.center(), color_ok, centered=True, scale=4, thickness=3)

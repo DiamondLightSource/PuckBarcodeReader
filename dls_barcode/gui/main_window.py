@@ -1,17 +1,17 @@
-import winsound
 import multiprocessing
+import winsound
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton, QHBoxLayout
 
+from camera import CameraScanner
+from config import BarcodeConfig, BarcodeConfigDialog
 from scan import Scanner
 from util import Image
-from config import BarcodeConfig, BarcodeConfigDialog
-from camera_scanner import CameraScanner
 
-from .record_table import ScanRecordTable
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
+from .record_table import ScanRecordTable
 
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
