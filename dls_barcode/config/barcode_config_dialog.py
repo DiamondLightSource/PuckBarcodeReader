@@ -95,11 +95,20 @@ class CameraConfigControl(ConfigControl):
         btn_camera_test.setFixedWidth(self.BUTTON_WIDTH)
         btn_camera_test.clicked.connect(self._test_camera)
 
+        btn_camera_settings = QPushButton("Camera Settings")
+        btn_camera_settings.setFixedWidth(self.BUTTON_WIDTH)
+        btn_camera_settings.clicked.connect(self._open_camera_controls)
+
+        hbox_buttons = QHBoxLayout()
+        hbox_buttons.addWidget(btn_camera_test)
+        hbox_buttons.addWidget(btn_camera_settings)
+        hbox_buttons.addStretch(1)
+
         vbox = QVBoxLayout()
         vbox.setContentsMargins(0, 0, 0, 0)
         vbox.addLayout(hbox_num)
         vbox.addLayout(hbox_res)
-        vbox.addWidget(btn_camera_test)
+        vbox.addLayout(hbox_buttons)
 
         self.setLayout(vbox)
 
@@ -145,14 +154,28 @@ class CameraConfigControl(ConfigControl):
             return
 
         # Display a preview feed from the camera
+        breaking_frame = False
         while True:
             # Capture the next frame from the camera
             read_ok, frame = cap.read()
+
+            if frame is None:
+                breaking_frame = True
+                break
+            elif cv2.waitKey(1) != -1:
+                break
+
             small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
             cv2.imshow('Camera Preview (Press any key to exit)', small)
 
-            # Exit scanning mode if the exit key is pressed
-            if cv2.waitKey(1) != -1:
-                cap.release()
-                cv2.destroyAllWindows()
-                break
+        cap.release()
+        cv2.destroyAllWindows()
+
+        # Opening the camera controls window stops the camera from working; reopen this window
+        if breaking_frame:
+            self._test_camera()
+
+    def _open_camera_controls(self):
+        camera_num = int(self.txt_number.text())
+        cap = cv2.VideoCapture(camera_num)
+        cap.set(cv2.CAP_PROP_SETTINGS, 1)
