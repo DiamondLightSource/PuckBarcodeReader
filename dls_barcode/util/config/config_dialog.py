@@ -4,7 +4,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, \
     QGroupBox, QWidget, QCheckBox, QComboBox
 
-from .config import *
+from util.config import *
 
 
 class ConfigDialog(QtGui.QDialog):

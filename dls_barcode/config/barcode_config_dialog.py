@@ -1,8 +1,7 @@
 import cv2
-
 from PyQt4.QtGui import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
 
-from dls_barcode.util.config_dialog import ConfigDialog, ConfigControl
+from dls_barcode.util import ConfigDialog, ConfigControl
 
 
 class BarcodeConfigDialog(ConfigDialog):
