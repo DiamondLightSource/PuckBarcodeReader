@@ -4,7 +4,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QLabel, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QWidget, QCheckBox, QComboBox
 
-from util.color import Color
+from util.image import Color
 
 
 class ConfigControl(QWidget):

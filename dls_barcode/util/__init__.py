@@ -1,4 +1,3 @@
-from .image import Image
-from .transform import Transform
+from .image.color import Color
 from .config import *
-from .color import Color
+from .transform import Transform

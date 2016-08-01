@@ -242,8 +242,3 @@ class Image:
             pixmap = pixmap.scaled(scale, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
 
         return pixmap
-
-
-
-
-

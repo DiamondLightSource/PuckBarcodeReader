@@ -1,5 +1,5 @@
+from util.image import Color
 from .config import Config
-from util.color import Color
 
 
 class ConfigItem:
