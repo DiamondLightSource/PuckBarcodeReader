@@ -66,7 +66,7 @@ class CameraConfigControl(ConfigControl):
         self.txt_number = QLineEdit()
         self.txt_number.setFixedWidth(self.RES_TEXT_WIDTH)
         lbl_camera_number = QLabel("Camera Number")
-        lbl_camera_number.setFixedWidth(ConfigDialog.LABEL_WIDTH)
+        lbl_camera_number.setFixedWidth(ConfigControl.LABEL_WIDTH)
 
         hbox_num = QHBoxLayout()
         hbox_num.addWidget(lbl_camera_number)
@@ -75,7 +75,7 @@ class CameraConfigControl(ConfigControl):
 
         # Set Camera Resolution
         lbl = QLabel("Camera Resolution")
-        lbl.setFixedWidth(ConfigDialog.LABEL_WIDTH)
+        lbl.setFixedWidth(ConfigControl.LABEL_WIDTH)
         self.txt_width = QLineEdit()
         self.txt_width.setFixedWidth(self.RES_TEXT_WIDTH)
         self.txt_height = QLineEdit()
