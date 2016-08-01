@@ -12,6 +12,10 @@ else:
 
 
 class CircleDetector:
+    """ Wraps the OpenCV function 'cv2.HoughCircles' which can detect circles in an image.
+    See:
+       http://docs.opencv.org/2.4/modules/imgproc/doc/feature_detection.html?highlight=houghcircles
+    """
     def __init__(self):
         self._canny_thresh = 150
         self._accumulator_thresh = 100
