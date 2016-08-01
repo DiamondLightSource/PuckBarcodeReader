@@ -18,18 +18,18 @@ class UnipuckCalculator:
     center of each slot, the unique orientation and position of the puck can be determined.
     This is possible even if some of the slot locations are not none.
     """
-    def __init__(self, pin_centers):
+    def __init__(self, slot_centers):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
         """
         self._num_slots = UnipuckTemplate.NUM_SLOTS
 
-        self._pin_centers = pin_centers
+        self._slot_centers = slot_centers
         self.error = None
 
     def perform_alignment(self):
         puck = None
-        num_points = len(self._pin_centers)
+        num_points = len(self._slot_centers)
         if num_points > self._num_slots:
             self.error = "Too many pins to perform alignment"
         elif num_points < MIN_POINTS_FOR_ALIGNMENT:
@@ -44,12 +44,12 @@ class UnipuckCalculator:
         centers of some (or all of the pins).
         """
         try:
-            center = self._find_puck_center(self._pin_centers)
-            radius = self._calculate_puck_size(self._pin_centers, center)
+            center = self._find_puck_center(self._slot_centers)
+            radius = self._calculate_puck_size(self._slot_centers, center)
 
             puck = Unipuck(center, radius)
 
-            angle, error = self._determine_puck_orientation(puck, self._pin_centers)
+            angle, error = self._determine_puck_orientation(puck, self._slot_centers)
             puck.set_rotation(angle)
             self.error = error
 
