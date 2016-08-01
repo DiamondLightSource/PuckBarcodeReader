@@ -1,18 +1,7 @@
 from __future__ import division
 import math
 
-
-class UnipuckTemplate:
-    """ Defines the layout of a type of sample holder that is a circular puck
-    that contains concentric circles (layers) of sample pins.
-    """
-    NUM_SLOTS = 16
-    PUCK_RADIUS = 1
-    CENTER_RADIUS = 0.151  # radius of puck center (relative to puck radius)
-    SLOT_RADIUS = 0.197  # radius of a pin slot (relative to puck radius)
-    LAYERS = 2  # number of concentric layers of pin slots
-    N = [5, 11]  # number of pin slots in each concentric layer, starting from center
-    LAYER_RADII = [0.371, 0.788]  # distance of center of a pin of a given concentric layer from center of puck
+from .unipuck_template import UnipuckTemplate as Template
 
 
 class Unipuck:
@@ -41,13 +30,13 @@ class Unipuck:
     def angle(self): return self._rotation
 
     def slot_radius(self):
-        return self._radius * UnipuckTemplate.SLOT_RADIUS
+        return self._radius * Template.SLOT_RADIUS
 
     def center_radius(self):
-        return self._radius * UnipuckTemplate.CENTER_RADIUS
+        return self._radius * Template.CENTER_RADIUS
 
     def num_slots(self):
-        return UnipuckTemplate.NUM_SLOTS
+        return Template.NUM_SLOTS
 
     def is_aligned(self):
         """ True if the puck geometry has been successfully aligned to the image. """
@@ -80,8 +69,8 @@ class Unipuck:
         self._rotation = angle
 
         # Calculate pin slot locations
-        n = UnipuckTemplate.N
-        r = UnipuckTemplate.LAYER_RADII
+        n = Template.N
+        r = Template.LAYER_RADII
 
         center = self._center
 

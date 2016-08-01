@@ -3,7 +3,7 @@ import math
 import numpy as np
 from scipy.optimize import fmin
 
-from .unipuck import Unipuck, UnipuckTemplate
+from plate.geometry import Unipuck, UnipuckTemplate
 
 MIN_POINTS_FOR_ALIGNMENT = 6
 
