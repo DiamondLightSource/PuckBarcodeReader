@@ -1,0 +1,42 @@
+from __future__ import division
+
+import math
+
+
+class Circle:
+    def __init__(self, center, radius):
+        self._center = center
+        self._radius = radius
+
+    def __str__(self):
+        """ String representation of the circle. """
+        return "Circle - center= ({:.2f}, {:.2f}); radius = {:.2f}".format(self.x(), self.y(), self._radius)
+
+    def center(self):
+        return self._center
+
+    def radius(self):
+        return self._radius
+
+    def x(self):
+        return self._center.x
+
+    def y(self):
+        return self._center.y
+
+    def diameter(self):
+        return self._radius * 2
+
+    def circumference(self):
+        return 2 * math.pi * self._radius
+
+    def area(self):
+        return math.pi * (self._radius ** 2)
+
+    def offset(self, point):
+        """ Returns a new circle which is the same size as this one but offset (moved by the specified amount). """
+        return Circle(self._center + point, self._radius)
+
+    def scale(self, factor):
+        """ Returns a new circle which is a scaled version of this one. """
+        return Circle(self._center, self._radius * factor)
