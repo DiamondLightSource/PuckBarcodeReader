@@ -19,6 +19,8 @@ class Unipuck:
     """ Represents the geometry of a Unipuck within an image including the size, position,
     and orientation and the size and position of the puck's sample slots.
     """
+    _SERIAL_DELIM = ":"
+
     def __init__(self, center, radius, rotation=0.0):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
@@ -114,16 +116,18 @@ class Unipuck:
         cvimg.crop_image(self._center, 1.1 * self._radius)
 
     ############################
-    # Factory
+    # Serialization
     ############################
     @staticmethod
-    def from_center_and_pin6(center, pin6_center):
-        x = center[0] - pin6_center[0]
-        y = center[1] - pin6_center[1]
-        length = math.sqrt(x**2+y**2)
-        radius = int(length / UnipuckTemplate.LAYER_RADII[1])
+    def deserialize(string):
+        tokens = string.split(Unipuck._SERIAL_DELIM)
 
-        angle = math.atan2((pin6_center[0] - center[0]), (center[1] - pin6_center[1]))
-        puck = Unipuck(center, radius, angle)
+        center = [int(tokens[0]), int(tokens[1])]
+        radius = int(tokens[2])
+        angle = float(tokens[3])
 
-        return puck
+        return Unipuck(center, radius, angle)
+
+    def serialize(self):
+        tokens = [str(self._center[0]), str(self._center[1]), str(self._radius), str(self._rotation)]
+        return self._SERIAL_DELIM.join(tokens)

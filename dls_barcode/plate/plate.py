@@ -199,8 +199,8 @@ class Plate:
         """
         return [slot.barcode_data() for slot in self._slots]
 
-    def puck_center_and_pin6(self):
-        return self._geometry.center(), self._geometry.slot_center(6)
+    def geometry(self):
+        return self._geometry
 
     #########################
     # STATUS FUNCTIONS

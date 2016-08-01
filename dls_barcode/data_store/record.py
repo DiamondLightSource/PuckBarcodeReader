@@ -19,9 +19,8 @@ class Record:
     IND_IMAGE = 2
     IND_PLATE = 3
     IND_BARCODES = 4
-    IND_PUCK_CENTER = 5
-    IND_PIN6_CENTER = 6
-    NUM_RECORD_ITEMS = 7
+    IND_GEOMETRY = 5
+    NUM_RECORD_ITEMS = 6
 
     # Constants
     ITEM_SEPARATOR = ";"
@@ -30,23 +29,22 @@ class Record:
 
     BAD_SYMBOLS = [EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL, BAD_DATA_SYMBOL]
 
-    def __init__(self, plate_type, barcodes, imagepath, puck_center, pin6_center, timestamp=0, id=0):
+    def __init__(self, plate_type, barcodes, image_path, geometry, timestamp=0.0, id=0):
         """
         :param plate_type: the type of the sample holder plate (string)
         :param barcodes: ordered array of strings giving the barcodes in each slot
             of the plate in order. Empty slots should be denoted by empty strings, and invalid
             barcodes by the BAD_DATA_SYMBOL.
-        :param imagepath: the absolute path of the image.
+        :param image_path: the absolute path of the image.
         :param timestamp: number of seconds since the epoch (use time.time(); generated
             automatically if a value isn't supplied
         :param id: uid for the record; one will be generated if not supplied
         """
         self.timestamp = float(timestamp)
-        self.imagepath = imagepath
+        self.image_path = image_path
         self.plate_type = plate_type
         self.barcodes = barcodes
-        self.puck_center = puck_center
-        self.pin6_center = pin6_center
+        self.geometry = geometry
         self.id = str(id)
 
         self.filtered_barcodes = [bc if (bc not in self.BAD_SYMBOLS) else '' for bc in barcodes]
@@ -67,17 +65,13 @@ class Record:
         self.num_empty_slots = len([b for b in barcodes if b == EMPTY_SLOT_SYMBOL])
         self.num_unread_slots = len([b for b in barcodes if b == NOT_FOUND_SLOT_SYMBOL])
         self.num_invalid_barcodes = len([b for b in barcodes if b == BAD_DATA_SYMBOL])
-        self.num_valid_barcodes = self.num_slots - self.num_unread_slots \
+        self.num_valid_barcodes = self.num_slots - self.num_unread_slots\
                                   - self.num_invalid_barcodes - self.num_empty_slots
 
     @staticmethod
     def from_plate(plate, image_path):
-        points = plate.puck_center_and_pin6()
-        puck_center = points[0]
-        pin6_center = points[1]
-
-        return Record(plate_type=plate.type, barcodes=plate.barcodes(), imagepath=image_path,
-                      puck_center=puck_center, pin6_center=pin6_center)
+        return Record(plate_type=plate.type, barcodes=plate.barcodes(),
+                      image_path=image_path, geometry=plate.geometry())
 
     @staticmethod
     def from_string(string):
@@ -88,13 +82,12 @@ class Record:
         id = items[Record.IND_ID]
         timestamp = float(items[Record.IND_TIMESTAMP])
         image = items[Record.IND_IMAGE]
-        puck_type = items[Record.IND_PLATE]
+        plate_type = items[Record.IND_PLATE]
         barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
-        puck_center = items[Record.IND_PUCK_CENTER].split(Record.BC_SEPARATOR)
-        pin6_center = items[Record.IND_PIN6_CENTER].split(Record.BC_SEPARATOR)
+        geometry = Unipuck.deserialize(items[Record.IND_GEOMETRY])
 
-        return Record(plate_type=puck_type, barcodes=barcodes, timestamp=timestamp, imagepath=image, id=id,
-                      puck_center=puck_center, pin6_center=pin6_center)
+        return Record(plate_type=plate_type, barcodes=barcodes, timestamp=timestamp,
+                      image_path=image, id=id, geometry=geometry)
 
     def to_string(self):
         """ Converts a scan record object into a string that can be stored in a file
@@ -103,11 +96,10 @@ class Record:
         items = [0] * Record.NUM_RECORD_ITEMS
         items[Record.IND_ID] = str(self.id)
         items[Record.IND_TIMESTAMP] = str(self.timestamp)
-        items[Record.IND_IMAGE] = self.imagepath
+        items[Record.IND_IMAGE] = self.image_path
         items[Record.IND_PLATE] = self.plate_type
         items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self.barcodes)
-        items[Record.IND_PUCK_CENTER] = "{}{}{}".format(self.puck_center[0], Record.BC_SEPARATOR, self.puck_center[1])
-        items[Record.IND_PIN6_CENTER] = "{}{}{}".format(self.pin6_center[0], Record.BC_SEPARATOR, self.pin6_center[1])
+        items[Record.IND_GEOMETRY] = self.geometry.serialize()
         return Record.ITEM_SEPARATOR.join(items)
 
     def any_barcode_matches(self, barcodes):
@@ -122,11 +114,11 @@ class Record:
         return False
 
     def image(self):
-        image = Image.from_file(self.imagepath)
+        image = Image.from_file(self.image_path)
         return image
 
     def marked_image(self, options):
-        geo = self.geometry()
+        geo = self.geometry
         image = self.image()
 
         if options.image_puck.value():
@@ -139,12 +131,6 @@ class Record:
             geo.crop_image(image)
 
         return image
-
-    def geometry(self):
-        puck_center = [int(self.puck_center[0]), int(self.puck_center[1])]
-        pin6_center = [int(self.pin6_center[0]), int(self.pin6_center[1])]
-
-        return Unipuck.from_center_and_pin6(puck_center, pin6_center)
 
     def _draw_pins(self, image, geometry, options):
         for i, bc in enumerate(self.barcodes):
@@ -161,3 +147,4 @@ class Record:
         """ Provides a human-readable form of the datetime stamp
         """
         return datetime.datetime.fromtimestamp(self.timestamp).strftime(Record.DATE_FORMAT)
+
