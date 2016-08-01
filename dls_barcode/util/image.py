@@ -95,6 +95,18 @@ class Image:
         else:
             return Image(filename=None, img=self.img)
 
+    def to_color(self):
+        """Convert the image into a 3 channel BGR image
+        """
+        if self.channels == 4:
+            color = cv2.cvtColor(self.img, cv2.COLOR_BGRA2BGR)
+            return Image(filename=None, img=color)
+        elif self.channels == 1:
+            color = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGR)
+            return Image(filename=None, img=color)
+        else:
+            return Image(filename=None, img=self.img)
+
     def to_grayscale(self):
         """Convert the image to a grey image.
         """
