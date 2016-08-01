@@ -66,7 +66,7 @@ class SquareLocator:
         thresh = cv2.adaptiveThreshold(image, 255.0,
                                        cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, block_size, c)
 
-        return Image(None, thresh)
+        return Image(thresh)
 
     def _minimise_integer_grid(self, binary_image, center, side_length):
         """ Attempt to locate the square area (of the specified size, centered on the specified

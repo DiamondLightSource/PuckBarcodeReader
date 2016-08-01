@@ -20,7 +20,7 @@ class Overlay:
         """ Draw the plate highlight and status message to the image as well as a message that tells the
         user how to close the continuous scanning window.
         """
-        cv_image = Image(filename=None, img=image)
+        cv_image = Image(image)
 
         # If the overlay has not expired, draw on the plate highlight and/or the status message
         if (time.time() - self._start_time) < self._lifetime:

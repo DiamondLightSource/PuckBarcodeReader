@@ -57,7 +57,7 @@ def run_tests():
         total += len(expected_codes)
 
         filename = TEST_IMG_DIR + file
-        cv_image = Image(filename)
+        cv_image = Image.from_file(filename)
         gray_image = cv_image.to_grayscale()
         plate = Scanner(OPTIONS).scan_next_frame(gray_image, is_single_image=True)
         store_scan(plate, cv_image)

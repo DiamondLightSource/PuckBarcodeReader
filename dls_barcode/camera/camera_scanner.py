@@ -135,7 +135,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
         frame_start_time = time.time()
 
         # Make grayscale version of image
-        cv_image = Image(None, frame)
+        cv_image = Image(frame)
         gray_image = cv_image.to_grayscale()
 
         # If we have an existing partial plate, merge the new plate with it and only try to read the

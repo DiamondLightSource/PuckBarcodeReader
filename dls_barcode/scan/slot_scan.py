@@ -133,7 +133,7 @@ class SlotScanner:
         else:
             result = "_FAIL"
 
-        slot_img = Image(None, barcode._image).to_alpha()
+        slot_img = Image(barcode._image).to_alpha()
 
         self._DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length - 1)
 

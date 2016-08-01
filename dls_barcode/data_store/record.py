@@ -122,7 +122,7 @@ class Record:
         return False
 
     def image(self):
-        image = Image(self.imagepath)
+        image = Image.from_file(self.imagepath)
         return image
 
     def marked_image(self, options):

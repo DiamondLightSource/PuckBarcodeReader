@@ -154,7 +154,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         """
         filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
         if filepath:
-            cv_image = Image(filepath)
+            cv_image = Image.from_file(filepath)
             gray_image = cv_image.to_grayscale()
 
             # Scan the image for barcodes
