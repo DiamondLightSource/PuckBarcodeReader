@@ -1,6 +1,6 @@
 import numpy as np
 
-from dls_barcode.plate import Unipuck
+from dls_barcode.plate import UnipuckCalculator
 from dls_barcode.util import Transform
 
 
@@ -8,19 +8,21 @@ class GeometryAdjuster:
     def adjust(self, plate, barcodes):
         # TODO: document this method
 
+        geometry_calc = UnipuckCalculator()
+
         # If we don't have 2 common barcodes, we can't realign, so return a blank geometry (which
         # will cause this frame to be skipped).
         valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
         if len(valid_barcodes) < 2:
             print("ALIGNMENT ADJUSTMENT FAIL")  # DEBUG
-            return Unipuck.from_pin_centers([])
+            return geometry_calc.from_pin_centers([])
 
         print("ALIGNMENT ADJUSTMENT")  # DEBUG
 
         line_transform = self._determine_old_to_new_transformation(plate, valid_barcodes)
         transformed_centers = self._transform_barcode_centers(plate, line_transform)
         new_centers = self._get_transformed_barcode_centers_list(barcodes, transformed_centers)
-        geometry = Unipuck.from_pin_centers(new_centers)
+        geometry = geometry_calc.from_pin_centers(new_centers)
 
         return geometry
 
