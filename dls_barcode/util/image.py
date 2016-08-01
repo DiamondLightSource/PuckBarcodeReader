@@ -233,28 +233,16 @@ class Image:
 
     def to_qt_pixmap(self, scale=None):
         bytes_per_line = 3 * self.width
-        rgb = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
+        img = self.to_color().img
+        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         q_img = QImage(rgb.data, self.width, self.height, bytes_per_line, QImage.Format_RGB888)
         pixmap = QPixmap.fromImage(q_img)
-
 
         if scale is not None:
             pixmap = pixmap.scaled(scale, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
 
         return pixmap
 
-    @staticmethod
-    def find_circle(img, minradius, maxradius):
-        circle = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1.2,
-            minDist=10000000, minRadius=int(minradius), maxRadius=int(maxradius))
-
-        if circle is not None:
-            circle = circle[0][0]
-            center = [int(circle[0]), int(circle[1])]
-            radius = int(circle[2])
-            return [center, radius]
-        else:
-            return None
 
 
 
