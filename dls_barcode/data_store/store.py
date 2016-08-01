@@ -84,8 +84,8 @@ class Store:
         """
         for record in records:
             self.records.remove(record)
-            if os.path.isfile(record.imagepath):
-                os.remove(record.imagepath)
+            if os.path.isfile(record.image_path):
+                os.remove(record.image_path)
         self._process_change()
 
     def _truncate_record_list(self):
