@@ -1,7 +1,7 @@
 from __future__ import division
 
 from dls_barcode.datamatrix import DataMatrix
-from dls_barcode.plate.geometry_unipuck import Unipuck
+from dls_barcode.plate import UnipuckCalculator
 from dls_barcode.plate.plate import Plate, Slot
 from .geometry_adjuster import GeometryAdjuster
 from .slot_scan import SlotScanner
@@ -76,7 +76,9 @@ class Scanner:
 
     def _create_geometry_from_barcodes(self):
         bc_centers = [bc.center() for bc in self._barcodes]
-        return Unipuck.from_pin_centers(bc_centers)
+        calculator = UnipuckCalculator(bc_centers)
+        puck = calculator.perform_alignment()
+        return puck
 
     def _initialize_plate_from_barcodes(self):
         for bc in self._barcodes:
@@ -96,7 +98,7 @@ class Scanner:
         self.plate.merge_new_frame(self._geometry, self._barcodes, slot_scanner)
 
     def _is_geometry_aligned(self):
-        return self._geometry.is_aligned()
+        return self._geometry is not None and self._geometry.is_aligned()
 
     def _any_valid_barcodes(self):
         return any([bc.is_read() and bc.is_valid() for bc in self._barcodes])
@@ -146,7 +148,7 @@ class Scanner:
 
     def _make_slotted_barcodes_list(self, barcodes, geometry):
         # Make a list of the unread barcodes with associated slot numbers - from this frame's geometry
-        slotted_bcs = [None] * geometry.num_slots
+        slotted_bcs = [None] * geometry.num_slots()
         for bc in barcodes:
             slot_num = geometry.containing_slot(bc.center())
             slotted_bcs[slot_num - 1] = bc

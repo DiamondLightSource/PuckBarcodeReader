@@ -91,7 +91,7 @@ class Plate:
                 self._slot_scan(slot, slot_scanner)
 
         self._geometry = geometry
-        self.error = geometry.error
+        # self.error = geometry.error
 
     def merge_new_frame(self, geometry, new_barcodes, slot_scanner):
         """ Merge the set of barcodes from a new scan into this plate. The new set comes from a new image
@@ -144,7 +144,7 @@ class Plate:
             self._slot_scan(slot, slot_scanner)
 
         self._geometry = geometry
-        self.error = geometry.error
+        # self.error = geometry.error
 
     def _slot_scan(self, slot, slot_scanner):
 
@@ -200,7 +200,7 @@ class Plate:
         return [slot.barcode_data() for slot in self._slots]
 
     def puck_center_and_pin6(self):
-        return self._geometry._puck_center, self._geometry._template_centers[5]
+        return self._geometry.center(), self._geometry.slot_center(6)
 
     #########################
     # STATUS FUNCTIONS

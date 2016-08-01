@@ -3,26 +3,13 @@ import math
 import numpy as np
 from scipy.optimize import fmin
 
+from .unipuck import Unipuck, UnipuckTemplate
+
 MIN_POINTS_FOR_ALIGNMENT = 6
 
 
-class UnipuckTemplate:
-    """ Defines the layout of a type of sample holder that is a circular puck
-    that contains concentric circles (layers) of sample pins.
-    """
-    def __init__(self):
-        self.slots = 16
-        self.puck_radius = 1
-        self.center_radius = 0.151  # radius of puck center (relative to puck radius)
-        self.slot_radius = 0.197  # radius of a pin slot (relative to puck radius)
-        self.layers = 2  # number of concentric layers of pin slots
-        self.n = [5, 11]  # number of pin slots in each concentric layer, starting from center
-        self.layer_radii = [0.371, 0.788]  # distance of center of a pin of a given concentric layer from center of puck
-
-
-class Unipuck:
-    """ Represents the geometry of a Unipuck within an image including the size, position,
-    and orientation and the size and position of the puck's sample slots. This is all
+class UnipuckCalculator:
+    """ Creates a Unipuck object, determining its size, position, and orientation. This is all
     calculated from knowledge of the positions of the datamatrix barcodes within the image,
     since each barcode is assumed to be printed on the top of a sample pin and will be
     positioned roughly in the center of a puck slot.
@@ -31,120 +18,46 @@ class Unipuck:
     center of each slot, the unique orientation and position of the puck can be determined.
     This is possible even if some of the slot locations are not none.
     """
-    def __init__(self):
+    def __init__(self, pin_centers):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
         """
-        self._pin_centers = None
-        self._template = UnipuckTemplate()
-        self.num_slots = self._template.slots
+        self._num_slots = UnipuckTemplate.NUM_SLOTS
 
-        self._slot_radius = None
-        self._puck_center = None
-        self._center_radius = None
-        self._rotation = None
-        self._template_centers = None
-        self._scale = None
-
-        self._aligned = False
+        self._pin_centers = pin_centers
         self.error = None
 
-    @staticmethod
-    def from_pin_centers(pin_centers):
-        puck = Unipuck()
-        puck.align_from_pin_centers(pin_centers)
-        return puck
-
-    @staticmethod
-    def from_center_and_pin6(puck_center, pin6_center):
-        puck = Unipuck()
-
-        length = distance(puck_center, pin6_center)
-        puck_radius = int(length / puck._template.layer_radii[1])
-        center_radius = puck_radius * puck._template.center_radius
-        slot_radius = puck_radius * puck._template.slot_radius
-
-        puck._puck_center = puck_center
-        puck._puck_radius = puck_radius
-        puck._scale = puck_radius
-        puck._center_radius = center_radius
-        puck._slot_radius = slot_radius
-
-        angle = math.atan2((pin6_center[0]-puck_center[0]), (puck_center[1]-pin6_center[1]))
-        puck._set_rotation(angle)
-
-        return puck
-
-    def align_from_pin_centers(self, pin_centers):
-        self._pin_centers = pin_centers
-
-        num_points = len(pin_centers)
-        if num_points > self.num_slots:
+    def perform_alignment(self):
+        puck = None
+        num_points = len(self._pin_centers)
+        if num_points > self._num_slots:
             self.error = "Too many pins to perform alignment"
         elif num_points < MIN_POINTS_FOR_ALIGNMENT:
             self.error = "Not enough pins to perform alignment"
         else:
-            self._perform_alignment()
+            puck = self._calculate_puck_alignment()
 
-    def is_aligned(self):
-        """ True if the puck geometry has been successfully aligned to the image.
-        """
-        return self._aligned
+        return puck
 
-    def slot_bounds(self, slot_num):
-        center = self._template_centers[slot_num-1]
-        return center, self._slot_radius
-
-    def containing_slot(self, point):
-        """ Returns the number of the slot which contains the specified point or 0 otherwise.
-        """
-        slot_sq = self._slot_radius * self._slot_radius
-        for i, center in enumerate(self._template_centers):
-            # slots are non-overlapping so if its in the slot radius, it must be the closest
-            if distance_sq(center, point) < slot_sq:
-                return i+1
-
-        return None
-
-    def draw_plate(self, cvimg, color):
-        """ Draws an outline of the puck on the supplied image including the locations of the slots.
-        """
-        cvimg.draw_dot(self._puck_center, color)
-        cvimg.draw_circle(self._puck_center, self._puck_radius, color, thickness=int(0.05*self._puck_radius))
-        cvimg.draw_circle(self._puck_center, self._center_radius, color)
-        for center in self._template_centers:
-            cvimg.draw_dot(center, color)
-            cvimg.draw_circle(center, self._slot_radius, color)
-
-    def draw_pin_highlight(self, cvimg, color, pin_number):
-        """ Draws a highlight circle and slot number for the specified slot on the image.
-        """
-        center = self._template_centers[pin_number - 1]
-        cvimg.draw_circle(center, self._slot_radius, color, thickness=int(self._slot_radius * 0.2))
-        cvimg.draw_text(str(pin_number), center, color, centered=True)
-
-    def crop_image(self, cvimg):
-        """ Crops the image to the area which contains the puck.
-        """
-        cvimg.crop_image(self._puck_center, 1.1 * self._puck_radius)
-
-    def _perform_alignment(self):
+    def _calculate_puck_alignment(self):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
         """
         try:
-            self._puck_center = Unipuck._find_puck_center(self._pin_centers)
-            self._puck_radius = Unipuck._calculate_puck_size(self._pin_centers, self._puck_center, self._template)
-            self._template_centers = []
-            self._rotation = 0
+            center = self._find_puck_center(self._pin_centers)
+            radius = self._calculate_puck_size(self._pin_centers, center)
 
-            self._scale = self._puck_radius
-            self._center_radius = self._scale * self._template.center_radius
-            self._slot_radius = self._scale * self._template.slot_radius
+            puck = Unipuck(center, radius)
 
-            self._determine_puck_orientation()
+            angle, error = self._determine_puck_orientation(puck, self._pin_centers)
+            puck.set_rotation(angle)
+            self.error = error
+
+            return puck
+
         except Exception as ex:
-            self.error = ex.message
+            self.error = ex.message()
+            return None
 
     @staticmethod
     def _find_puck_center(pin_centers):
@@ -177,7 +90,7 @@ class Unipuck:
         return center
 
     @staticmethod
-    def _calculate_puck_size(pin_centers, puck_center, template):
+    def _calculate_puck_size(pin_centers, puck_center):
         """ Calculate the radius of the puck in image pixels. First determine the average distance
         from the puck center to each layer, then infer the puck size from this through knowledge
         of the puck's geometry.
@@ -189,10 +102,11 @@ class Unipuck:
 
         # Determine the puck radius based on the average second layer radius in the image
         second_layer_radius = np.median(np.array(second_layer))
-        puck_radius = int(second_layer_radius / template.layer_radii[1])
+        puck_radius = int(second_layer_radius / UnipuckTemplate.LAYER_RADII[1])
         return puck_radius
 
-    def _determine_puck_orientation(self):
+    @staticmethod
+    def _determine_puck_orientation(puck, pin_centers):
         """ Using the known size and position of the puck in the image, determine the correct
         orientation of puck. Try the template at a set of incremental rotations and determine
         which is the best orientation by looking at sum of squared errors. This algorithm can
@@ -203,53 +117,41 @@ class Unipuck:
         errors = []
         best_sse = 10000000
         best_angle = 0
+        original_angle = puck.angle()
+        error_msg = None
 
         # For each angular increment, calculate the sum of squared errors in slot center position
         for a in range(0, 360, 2):
             angle = a / (180 / math.pi)
-            self._set_rotation(angle)
+            puck.set_rotation(angle)
             sse = 0
-            for p in self._pin_centers:
-                sse += self._shortest_sq_distance(p)
+            for p in pin_centers:
+                sse += UnipuckCalculator._shortest_sq_distance(puck, p)
             if sse < best_sse:
                 best_sse = sse
                 best_angle = angle
             errors.append([angle, sse])
 
-        average_error = best_sse / self._puck_radius ** 2 / len(self._pin_centers)
+        average_error = best_sse / puck.radius() ** 2 / len(pin_centers)
         if average_error < 0.003:
-            self._aligned = True
+            puck.set_aligned(True)
         else:
-            self._aligned = False
-            self.error = "Failed to align puck"
+            puck.set_aligned(False)
+            error_msg = "Failed to align puck"
 
-        self._set_rotation(best_angle)
+        puck.set_rotation(original_angle)
 
-    def _set_rotation(self, angle):
-        """ Set the orientation of the puck template to the specified angle. Recalculate the
-        positions of the slots.
-        """
-        self._rotation = angle
+        return best_angle, error_msg
 
-        # Calculate pin slot locations
-        n = self._template.n
-        r = self._template.layer_radii
-        center = self._puck_center
-        self._template_centers = []
-        for i, num in enumerate(n):
-            radius = r[i] * self._scale
-            for j in range(num):
-                angle = (2.0 * math.pi * -j / num) - (math.pi / 2.0) + self._rotation
-                point = tuple([int(center[0] + radius * math.cos(angle)),  int(center[1] + radius * math.sin(angle))])
-                self._template_centers.append(point)
-
-    def _shortest_sq_distance(self, point):
-        """ Returns the distance from the specified point to the closest slot in the template
-        """
+    @staticmethod
+    def _shortest_sq_distance(puck, point):
+        """ Returns the distance from the specified point to the closest slot in the puck. """
         low_l_sq = 100000000
-        slot_sq = self._slot_radius * self._slot_radius
-        for c in self._template_centers:
-            length_sq = distance_sq(c, point)
+        slot_sq = puck.slot_radius()**2
+
+        for num in range(puck.num_slots()):
+            center = puck.slot_center(num+1)
+            length_sq = distance_sq(center, point)
             if length_sq < low_l_sq:
                 low_l_sq = length_sq
                 # Slots are non-overlapping so if its in the slot radius, it must be the closest
