@@ -48,11 +48,19 @@ class Point:
 
     def length(self):
         """ Distance from the origin to the point. """
-        return math.sqrt(self.x**2 + self.y**2)
+        return math.sqrt(self.length_sq())
+
+    def length_sq(self):
+        """ Square of the distance from the origin to the point. """
+        return self.x**2 + self.y**2
 
     def distance_to(self, p):
         """ Distance between the two points. """
         return (self - p).length()
+
+    def distance_to_sq(self, p):
+        """ Square of the distance between the two points. """
+        return (self - p).length_sq()
 
     def scale(self, factor):
         """ Returns a scaled version of the Point (from the origin). """

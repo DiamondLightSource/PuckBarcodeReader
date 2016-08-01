@@ -10,7 +10,7 @@ class Circle:
 
     def __str__(self):
         """ String representation of the circle. """
-        return "Circle - center= ({:.2f}, {:.2f}); radius = {:.2f}".format(self.x(), self.y(), self._radius)
+        return "Circle - center = ({:.2f}, {:.2f}); radius = {:.2f}".format(self.x(), self.y(), self._radius)
 
     def center(self):
         return self._center
@@ -40,3 +40,9 @@ class Circle:
     def scale(self, factor):
         """ Returns a new circle which is a scaled version of this one. """
         return Circle(self._center, self._radius * factor)
+
+    def contains_point(self, point):
+        """ Returns true if the specified point is within the Circle's radius"""
+        radius_sq = self._radius ** 2
+        distance_sq = point.distance_to_sq(self._center)
+        return distance_sq < radius_sq
