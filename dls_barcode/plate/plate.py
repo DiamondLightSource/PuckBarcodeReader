@@ -88,10 +88,10 @@ class Plate:
     #########################
     # DRAWING FUNCTIONS
     #########################
-    def draw_barcodes(self, cvimg, ok_color, bad_color):
+    def draw_barcodes(self, cvimg, color):
         for slot in self._slots:
-            if slot.contains_barcode():
-                slot._barcode.draw(cvimg, ok_color, bad_color)
+            if slot.state() == slot.VALID:
+                slot.barcode().draw(cvimg, color)
 
     def draw_plate(self, cvimg, color):
         self._geometry.draw_plate(cvimg, color)
@@ -99,9 +99,7 @@ class Plate:
     def draw_pins(self, cvimg, options):
         for i, slot in enumerate(self._slots):
             state = slot.state()
-            if state == Slot.UNREADABLE:
-                color = options.col_bad()
-            elif state == Slot.VALID:
+            if state == Slot.VALID:
                 color = options.col_ok()
             elif state == Slot.EMPTY:
                 color = options.col_empty()

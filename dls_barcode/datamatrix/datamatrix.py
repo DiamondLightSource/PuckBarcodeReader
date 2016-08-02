@@ -9,9 +9,6 @@ from .reedsolo import ReedSolomonError
 # and try again.
 wiggle_offsets = [[0, 0]]
 
-# Data value that is returned if the barcode cannot be read for whatever reason
-BAD_DATA_SYMBOL = "-CANT-READ-"
-
 
 class BarcodeReadNotPerformedException(Exception):
     pass
@@ -71,8 +68,6 @@ class DataMatrix:
 
         if self._read_ok:
             return self._data
-        elif self._damaged_symbol:
-            return BAD_DATA_SYMBOL
         else:
             return ''
 
@@ -116,10 +111,9 @@ class DataMatrix:
 
         self._damaged_symbol = not self._read_ok
 
-    def draw(self, cvimg, ok_color, bad_color):
+    def draw(self, cvimg, color):
         """ Draw the lines of the finder pattern on the specified image. """
         fp = self._finder_pattern
-        color = bad_color if self.is_unreadable() else ok_color
         cvimg.draw_line(fp.c1, fp.c2, color)
         cvimg.draw_line(fp.c1, fp.c3, color)
 

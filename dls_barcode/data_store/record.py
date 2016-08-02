@@ -3,7 +3,6 @@ import time
 import datetime
 
 from dls_barcode.plate import Unipuck, NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
-from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 from dls_barcode.util import Image, Color
 
 
@@ -27,14 +26,13 @@ class Record:
     BC_SEPARATOR = ","
     DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    BAD_SYMBOLS = [EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL, BAD_DATA_SYMBOL]
+    BAD_SYMBOLS = [EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL]
 
     def __init__(self, plate_type, barcodes, image_path, geometry, timestamp=0.0, id=0):
         """
         :param plate_type: the type of the sample holder plate (string)
         :param barcodes: ordered array of strings giving the barcodes in each slot
-            of the plate in order. Empty slots should be denoted by empty strings, and invalid
-            barcodes by the BAD_DATA_SYMBOL.
+            of the plate in order. Empty slots should be denoted by empty strings.
         :param image_path: the absolute path of the image.
         :param timestamp: number of seconds since the epoch (use time.time(); generated
             automatically if a value isn't supplied
@@ -46,8 +44,6 @@ class Record:
         self.barcodes = barcodes
         self.geometry = geometry
         self.id = str(id)
-
-        self.filtered_barcodes = [bc if (bc not in self.BAD_SYMBOLS) else '' for bc in barcodes]
 
         # Generate timestamp and uid if none are supplied
         if timestamp == 0:
@@ -64,9 +60,7 @@ class Record:
         self.num_slots = len(barcodes)
         self.num_empty_slots = len([b for b in barcodes if b == EMPTY_SLOT_SYMBOL])
         self.num_unread_slots = len([b for b in barcodes if b == NOT_FOUND_SLOT_SYMBOL])
-        self.num_invalid_barcodes = len([b for b in barcodes if b == BAD_DATA_SYMBOL])
-        self.num_valid_barcodes = self.num_slots - self.num_unread_slots\
-                                  - self.num_invalid_barcodes - self.num_empty_slots
+        self.num_valid_barcodes = self.num_slots - self.num_unread_slots - self.num_empty_slots
 
     @staticmethod
     def from_plate(plate, image_path):
@@ -134,7 +128,7 @@ class Record:
 
     def _draw_pins(self, image, geometry, options):
         for i, bc in enumerate(self.barcodes):
-            if bc == NOT_FOUND_SLOT_SYMBOL or bc == BAD_DATA_SYMBOL:
+            if bc == NOT_FOUND_SLOT_SYMBOL:
                 color = options.col_bad()
             elif bc == EMPTY_SLOT_SYMBOL:
                 color = options.col_empty()

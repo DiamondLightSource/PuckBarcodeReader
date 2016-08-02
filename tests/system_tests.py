@@ -64,7 +64,7 @@ def run_tests():
 
         pass_count = 0
         slots = [plate.slot(i) for i in range(16)]
-        num_found = len([s for s in slots if s.contains_barcode()])
+        num_found = len([s for s in slots if s.state() == s.VALID])
         for expected_code in expected_codes:
             text = expected_code[0]
             slot = expected_code[1]

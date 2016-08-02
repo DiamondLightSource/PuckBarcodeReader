@@ -7,15 +7,14 @@ class Slot:
     """
     NO_RESULT = 0
     EMPTY = 1
-    UNREADABLE = 2
-    VALID = 3
+    VALID = 2
 
     def __init__(self, number):
         self._number = number
         self._bounds = None
         self._barcode_position = None
         self._barcode = None
-        self._empty = False
+        self._state = self.NO_RESULT
 
         self._total_frames = 0
         self._barcode_set_this_frame = False
@@ -33,6 +32,12 @@ class Slot:
         """ Get the bounds ((x,y), radius) of the slot (as determined by the geometry). """
         return self._bounds
 
+    def barcode(self):
+        return self._barcode
+
+    def state(self):
+        return self._state
+
     def barcode_position(self):
         """ Get the position (x,y) of the center of the barcode (not exactly the same as the
         bounds center as predicted by the geometry. """
@@ -49,40 +54,26 @@ class Slot:
         self._barcode_position = coord
 
     def set_barcode(self, barcode):
-        self._barcode = barcode
-        if barcode is not None:
-            self._empty = False
+        if barcode and barcode.is_valid():
+            self._barcode = barcode
+            self._state = self.VALID
             self._barcode_set_this_frame = True
 
     def set_empty(self):
         self._barcode = None
-        self._empty = True
+        self._state = self.EMPTY
 
     def set_no_result(self):
         self._barcode = None
-        self._empty = False
-
-    def state(self):
-        if self._empty:
-            return Slot.EMPTY
-        elif self._barcode and self._barcode.is_unreadable():
-            return Slot.UNREADABLE
-        elif self._barcode and self._barcode.is_valid():
-            return Slot.VALID
-        else:
-            return Slot.NO_RESULT
-
-    def contains_barcode(self):
-        state = self.state()
-        return state == Slot.UNREADABLE or state == Slot.VALID
+        self._state = self.NO_RESULT
 
     def barcode_data(self):
         """ Gets a string representation of the barcode data; returns an empty
         string if slot is empty
         """
-        if self._empty:
+        if self._state == self.EMPTY:
             return EMPTY_SLOT_SYMBOL
-        elif self._barcode is not None:
+        elif self._state == self.VALID:
             return self._barcode.data()
         else:
             return NOT_FOUND_SLOT_SYMBOL

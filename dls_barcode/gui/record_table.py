@@ -85,7 +85,7 @@ class ScanRecordTable(QGroupBox):
 
         for n, record in enumerate(self._store.records):
             items = [record.date, record.time, record.plate_type, record.num_valid_barcodes,
-                     record.num_invalid_barcodes+record.num_unread_slots, record.num_empty_slots]
+                     record.num_unread_slots, record.num_empty_slots]
 
             if (record.num_valid_barcodes + record.num_empty_slots) == record.num_slots:
                 color = self._options.col_ok()

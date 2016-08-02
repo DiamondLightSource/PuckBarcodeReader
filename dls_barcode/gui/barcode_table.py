@@ -7,7 +7,6 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 
-from dls_barcode.datamatrix import BAD_DATA_SYMBOL
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 
 
@@ -66,9 +65,7 @@ class BarcodeTable(QGroupBox):
 
         for index, barcode in enumerate(barcodes):
             # Select appropriate background color
-            if barcode == BAD_DATA_SYMBOL:
-                color = self._options.col_bad()
-            elif barcode == NOT_FOUND_SLOT_SYMBOL:
+            if barcode == NOT_FOUND_SLOT_SYMBOL:
                 color = self._options.col_bad()
             elif barcode == EMPTY_SLOT_SYMBOL:
                 color = self._options.col_empty()
@@ -85,7 +82,7 @@ class BarcodeTable(QGroupBox):
 
         self._barcodes = barcodes[:]
         for i, barcode in enumerate(self._barcodes):
-            if barcode in [BAD_DATA_SYMBOL, NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL]:
+            if barcode in [NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL]:
                 self._barcodes[i] = ""
 
         self._update_button_state()
