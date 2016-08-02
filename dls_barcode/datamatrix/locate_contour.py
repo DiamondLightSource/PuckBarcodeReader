@@ -5,6 +5,7 @@ from operator import add
 import cv2
 import numpy as np
 
+from util.shape import Point
 from .finder_pattern import FinderPattern
 
 OPENCV_MAJOR = cv2.__version__[0]
@@ -146,6 +147,9 @@ class ContourLocator:
         else:
             vec_base, vec_side = vec_d, vec_c
 
+        x_corner = Point(x_corner[0], x_corner[1]).intify()
+        vec_base = Point(vec_base[0], vec_base[1]).intify()
+        vec_side = Point(vec_side[0], vec_side[1]).intify()
         return FinderPattern(x_corner, vec_base, vec_side)
 
     def _get_shared_vertex(self, edge_a, edge_b):

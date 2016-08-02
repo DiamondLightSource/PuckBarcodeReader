@@ -117,8 +117,7 @@ class SlotScanner:
 
     def _image_contains_point(self, point, radius=0):
         h, w = self.image.img.shape
-        x, y = point
-        return (radius <= x <= w - radius - 1) and (radius <= y <= h - radius - 1)
+        return (radius <= point.x <= w - radius - 1) and (radius <= point.y <= h - radius - 1)
 
     def _is_debug_images_on(self):
         return self._options.slot_images.value()

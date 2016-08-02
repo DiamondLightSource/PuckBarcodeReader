@@ -40,7 +40,7 @@ class Store:
                     record = Record.from_string(line)
                     self.records.append(record)
                 except Exception:
-                    pass
+                    print("Failed to parse store Record: {}".format(line))
 
         self._truncate_record_list()
 

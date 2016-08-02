@@ -6,6 +6,7 @@ import numpy as np
 
 from .finder_pattern import FinderPattern
 from dls_barcode.util import Transform, Image, Color
+from dls_barcode.util.shape import Point
 
 
 class SquareLocator:
@@ -77,7 +78,7 @@ class SquareLocator:
         """
         done = False
 
-        initial_transform = Transform(int(center[0]), int(center[1]), 0, 1)
+        initial_transform = Transform(int(center.x), int(center.y), 0, 1)
         best_val = 1000000000000000
         best_trs = initial_transform
 
@@ -162,11 +163,11 @@ class SquareLocator:
         area being the datamatrix.
         """
         cx, cy = transform.x, transform.y
-        center = (cx, cy)
+        center = Point(cx, cy)
         angle = transform.rot
 
         # Create cache key
-        key = (angle, center)
+        key = (angle, (cx, cy))
 
         # If this x,y,angle combination has been seen before, retrieve the previous cached result
         if key in self.metric_cache:
@@ -231,7 +232,7 @@ class SquareLocator:
         cx, cy = transform.x, transform.y
         angle = transform.rot
 
-        rotated = image.rotate(angle, (cx, cy))
+        rotated = image.rotate(angle, Point(cx, cy))
 
         sx1, sy1 = cx-radius, cy-radius
         sx2, sy2 = cx+radius, cy+radius
@@ -280,7 +281,7 @@ class SquareLocator:
         cx, cy = transform.x, transform.y
         angle = transform.rot
 
-        rotated = image.rotate(angle, (cx, cy))
+        rotated = image.rotate(angle, Point(cx, cy))
 
         sx1, sy1 = cx-radius, cy-radius
         sx2, sy2 = cx+radius, cy+radius
@@ -327,15 +328,15 @@ class SquareLocator:
             return None
 
         # rotate points around center of square
-        center = (cx, cy)
-        c1 = _rotate_around_point(c1, angle, center)
-        c2 = _rotate_around_point(c2, angle, center)
-        c3 = _rotate_around_point(c3, angle, center)
+        center = Point(cx, cy)
+        c1 = _rotate_around_point(Point.from_array(c1), angle, center)
+        c2 = _rotate_around_point(Point.from_array(c2), angle, center)
+        c3 = _rotate_around_point(Point.from_array(c3), angle, center)
 
         # Create finder pattern
-        c1 = (int(c1[0]), int(c1[1]))
-        side1 = (int(c2[0]-c1[0]), int(c2[1]-c1[1]))
-        side2 = (int(c3[0]-c1[0]), int(c3[1]-c1[1]))
+        c1 = c1.intify()
+        side1 = (c2 - c1).intify()
+        side2 = (c3 - c1).intify()
         fp = FinderPattern(c1, side1, side2)
 
         return fp
@@ -343,21 +344,21 @@ class SquareLocator:
 
 def _rotate_around_point(point, angle, center):
     """ Rotate the point about the center position """
-    x = point[0] - center[0]
-    y = point[1] - center[1]
+    x = point.x - center.x
+    y = point.y - center.y
     cos = math.cos(angle)
     sin = math.sin(angle)
     x_ = x * cos - y * sin
     y_ = x * sin + y * cos
-    return x_+center[0], y_+center[1]
+    return Point(x_, y_) + center
 
 
 def _draw_square(image, transform, size):
     radius = size/2
-    center = (transform.x, transform.y)
+    center = Point(transform.x, transform.y)
     rotated = image.rotate(transform.rot, center)
 
-    x1, y1 = center[0]-radius, center[1]-radius
+    x1, y1 = center.x-radius, center.y-radius
     x2, y2 = x1 + size, y1 + size
 
     roi = (x1, y1, x2, y2)
@@ -390,7 +391,7 @@ def _draw_square_and_writing(image, transform, size):
 
 
 def _draw_finder_pattern(image, transform, fp):
-    center = (transform.x, transform.y)
+    center = Point(transform.x, transform.y)
     angle = transform.rot
     rotated = image.rotate(transform.rot, center)
 

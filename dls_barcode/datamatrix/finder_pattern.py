@@ -1,6 +1,5 @@
-import math
-
-from dls_barcode.util import Color
+from dls_barcode.util.image import Color
+from dls_barcode.util.shape import Circle
 
 
 class FinderPattern:
@@ -8,34 +7,33 @@ class FinderPattern:
     in an image. All points and lengths are in units of Pixels"""
 
     def __init__(self, corner, vec_base, vec_side):
-        self.corner = [int(round(corner[0])), int(round(corner[1]))]
-        self.baseVector = [int(round(vec_base[0])), int(round(vec_base[1]))]
-        self.sideVector = [int(round(vec_side[0])), int(round(vec_side[1]))]
+        self.corner = corner
+        self.baseVector = vec_base
+        self.sideVector = vec_side
 
         # Lengths of the two arms
-        self.baseLength = math.sqrt(vec_base[0]**2 + vec_base[1]**2)
-        self.sideLength = math.sqrt(vec_side[0]**2 + vec_side[1]**2)
+        self.baseLength = vec_base.length()
+        self.sideLength = vec_side.length()
 
         # positions of the three corners
-        self.c1 = (corner[0], corner[1])
-        self.c2 = (corner[0]+vec_base[0], corner[1]+vec_base[1])
-        self.c3 = (corner[0]+vec_side[0], corner[1]+vec_side[1])
+        self.c1 = corner
+        self.c2 = corner + vec_base
+        self.c3 = corner + vec_side
 
         # Position of center of the datamatrix in image pixels
-        self.center = (int(round(corner[0] + (vec_base[0] + vec_side[0]) / 2)),
-                       int(round(corner[1] + (vec_base[1] + vec_side[1]) / 2)))
+        self.center = (corner + ((vec_base + vec_side) / 2.0)).intify()
 
         # Radius of datamatrix (distance from center to a corner) in pixels
-        self.radius = int(math.sqrt((vec_base[0]*vec_base[0] + vec_base[1]*vec_base[1])/2))
+        self.radius = corner.distance_to(self.center)
 
     def pack(self):
-        return tuple([self.corner, self.baseVector, self.sideVector])
+        return tuple([self.corner.tuple(), self.baseVector.tuple(), self.sideVector.tuple()])
 
     def point_in_radius(self, point):
-        return (point[0] - self.center[0])**2 + (point[1] - self.center[1])**2 < self.radius
+        return self.bounds().contains_point(point)
 
     def bounds(self):
-        return self.center, self.radius
+        return Circle(self.center, self.radius)
 
     def draw_to_image(self, image, color=None):
         if color is None:
@@ -50,10 +48,10 @@ class FinderPattern:
         if abs(self.baseLength - expected_length) < abs(self.sideLength - expected_length):
             factor = self.baseLength / self.sideLength
             new_base_vec = self.baseVector
-            new_side_vec = [self.sideVector[0]*factor, self.sideVector[1]*factor]
+            new_side_vec = self.sideVector * factor
         else:
             factor = self.sideLength / self.baseLength
-            new_base_vec = [self.baseVector[0]*factor, self.baseVector[1]*factor]
+            new_base_vec = self.baseVector * factor
             new_side_vec = self.sideVector
 
         return FinderPattern(self.corner, new_base_vec, new_side_vec)

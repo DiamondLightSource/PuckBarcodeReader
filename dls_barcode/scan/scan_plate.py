@@ -49,7 +49,7 @@ class PlateScanner:
 
         # Update the barcode position - use the actual position of the barcode if available,
         # otherwise use the slot center position (from geometry) as an approximation
-        position = barcode.center() if barcode else bounds[0]
+        position = barcode.center() if barcode else bounds.center()
         slot.set_barcode_position(position)
 
         # If we haven't already found this barcode data, try to read it from the new barcode
@@ -62,14 +62,9 @@ class PlateScanner:
 
     @staticmethod
     def _find_matching_barcode(slot_bounds, barcodes):
-        slot_center, slot_radius = slot_bounds
-        slot_sq = slot_radius * slot_radius
         for bc in barcodes:
-            barcode_center = bc.bounds()[0]
-            distance_sq = (slot_center[0] - barcode_center[0])**2 + (slot_center[1] - barcode_center[1])**2
-            if distance_sq < slot_sq:
+            if slot_bounds.contains_point(bc.center()):
                 return bc
-
         return None
 
     def _slot_scan(self, slot, slot_scanner):

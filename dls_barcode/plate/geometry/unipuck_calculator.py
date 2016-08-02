@@ -3,6 +3,7 @@ import math
 import numpy as np
 from scipy.optimize import fmin
 
+from util.shape import Point
 from plate.geometry import Unipuck, UnipuckTemplate
 
 MIN_POINTS_FOR_ALIGNMENT = 6
@@ -56,7 +57,8 @@ class UnipuckCalculator:
             return puck
 
         except Exception as ex:
-            self.error = ex.message()
+            print("Puck Alignment failed")
+            #self.error = ex.message()
             return None
 
     @staticmethod
@@ -75,17 +77,17 @@ class UnipuckCalculator:
         centroid = calculate_centroid(pin_centers)
 
         # Calculate distance from center to each pin-center
-        distances = [[p, distance(p, centroid)] for p in pin_centers]
+        distances = [[point, point.distance_to(centroid)] for point in pin_centers]
         distances = sorted(distances, key=lambda distance: distance[1])
 
         # Sort the points into two layers based on their distance from the centroid
         layer_break = _partition([d for p, d in distances])
-        first_layer = [[x, y] for (x, y), d in distances[:layer_break]]
-        second_layer = [[x, y] for (x, y), d in distances[layer_break:]]
+        first_layer = [p for p, d in distances[:layer_break]]
+        second_layer = [p for p, d in distances[layer_break:]]
 
         # Optimise for the puck center by finding the point that is equidistant from every point in each layer
-        center = fmin(func=_center_minimiser, x0=centroid, args=tuple([[first_layer, second_layer]]), xtol=1, disp=False)
-        center = tuple([int(center[0]), int(center[1])])
+        center = fmin(func=_center_minimiser, x0=centroid.tuple(), args=tuple([[first_layer, second_layer]]), xtol=1, disp=False)
+        center = Point(center[0], center[1]).intify()
 
         return center
 
@@ -96,7 +98,7 @@ class UnipuckCalculator:
         of the puck's geometry.
         """
         # Calculate distance from center to each pin-center
-        distances = [distance(p, puck_center) for p in pin_centers]
+        distances = [p.distance_to(puck_center) for p in pin_centers]
         layer_break = _partition(distances)
         second_layer = distances[layer_break:]
 
@@ -151,7 +153,7 @@ class UnipuckCalculator:
 
         for num in range(puck.num_slots()):
             center = puck.slot_center(num+1)
-            length_sq = distance_sq(center, point)
+            length_sq = point.distance_to_sq(center)
             if length_sq < low_l_sq:
                 low_l_sq = length_sq
                 # Slots are non-overlapping so if its in the slot radius, it must be the closest
@@ -161,29 +163,12 @@ class UnipuckCalculator:
         return low_l_sq
 
 
-def distance(a, b):
-    """ Calculates the distance between a and b. This operation is relatively expensive as it
-    contains a square root. If comparing distances, use distance_sq instead as its cheaper.
-    """
-    x = a[0]-b[0]
-    y = a[1]-b[1]
-    return int(math.sqrt(x**2+y**2))
-
-
-def distance_sq(a, b):
-    """ Calculates the square of the distance from a to b.
-    """
-    x = a[0]-b[0]
-    y = a[1]-b[1]
-    return x**2+y**2
-
-
 def calculate_centroid(points):
     """ Calculates the centroid (average center position) of the specified points.
     """
-    x = [p[0] for p in points]
-    y = [p[1] for p in points]
-    return int(sum(x) / len(points)), int(sum(y) / len(points))
+    x = [p.x for p in points]
+    y = [p.y for p in points]
+    return Point((sum(x) / len(points)), (sum(y) / len(points))).intify()
 
 
 def _center_minimiser(center, layers):
@@ -193,8 +178,9 @@ def _center_minimiser(center, layers):
     of the distance of each slot from the mean distance of all the slots in the layer.
     """
     errors = []
+    center = Point.from_array(center)
     for layer in layers:
-        distances = [distance_sq(p, center) for p in layer]
+        distances = [p.distance_to_sq(center) for p in layer]
 
         mean = np.mean(distances)
         layer_errors = [(d-mean)**2 for d in distances]

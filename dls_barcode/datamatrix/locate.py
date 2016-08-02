@@ -92,10 +92,10 @@ class Locator:
         """Return true if the finder pattern isn't right along on of the edges of the image.
         This is needed because the algorithm sometimes detects the edge of the image as being a finder pattern"""
         width, height = self._image.width, self._image.height
-        if fp.c1[0] <= 1 or fp.c1[1] <= 1:
+        if fp.c1.x <= 1 or fp.c1.y <= 1:
             return False
 
-        if fp.c1[0] >= width-2 or fp.c1[1] >= height-2:
+        if fp.c1.x >= width-2 or fp.c1.y >= height-2:
             return False
 
         return True

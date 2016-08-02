@@ -1,6 +1,7 @@
 from __future__ import division
 import math
 
+from util.shape import Point, Circle
 from .unipuck_template import UnipuckTemplate as Template
 
 
@@ -18,7 +19,7 @@ class Unipuck:
         self._radius = radius
         self._rotation = rotation
 
-        self._slot_centers = []
+        self._slot_bounds = []
         self.set_rotation(rotation)
 
         self._aligned = False
@@ -29,11 +30,19 @@ class Unipuck:
 
     def angle(self): return self._rotation
 
+    def bounds(self): return Circle(self._center, self._radius)
+
     def slot_radius(self):
         return self._radius * Template.SLOT_RADIUS
 
+    def slot_bounds(self, slot_num):
+        return self._slot_bounds[slot_num - 1]
+
     def center_radius(self):
         return self._radius * Template.CENTER_RADIUS
+
+    def center_bounds(self):
+        return Circle(self._center, self.center_radius())
 
     def num_slots(self):
         return Template.NUM_SLOTS
@@ -45,19 +54,12 @@ class Unipuck:
     def set_aligned(self, value): self._aligned = value
 
     def slot_center(self, slot_num):
-        return self._slot_centers[slot_num - 1]
-
-    def slot_bounds(self, slot_num):
-        center = self.slot_center(slot_num)
-        return center, self.slot_radius()
+        return self._slot_bounds[slot_num - 1].center()
 
     def containing_slot(self, point):
-        """ Returns the number of the slot which contains the specified point or 0 otherwise. """
-        slot_sq = self.slot_radius() ** 2
-        for i, center in enumerate(self._slot_centers):
-            # slots are non-overlapping so if its in the slot radius, it must be the closest
-            distance_sq = (center[0] - point[0]) ** 2 + (center[1] - point[1]) ** 2
-            if distance_sq < slot_sq:
+        """ Returns the number of the slot which contains the specified point or None otherwise. """
+        for i, bounds in enumerate(self._slot_bounds):
+            if bounds.contains_point(point):
                 return i + 1
 
         return None
@@ -69,40 +71,44 @@ class Unipuck:
         self._rotation = angle
 
         # Calculate pin slot locations
-        n = Template.N
-        r = Template.LAYER_RADII
+        layer_counts = Template.N
+        layer_radii = Template.LAYER_RADII
 
         center = self._center
 
-        self._slot_centers = []
-        for i, num in enumerate(n):
-            radius = r[i] * self._radius
-            for j in range(num):
-                angle = (2.0 * math.pi * -j / num) - (math.pi / 2.0) + self._rotation
-                point = tuple([int(center[0] + radius * math.cos(angle)), int(center[1] + radius * math.sin(angle))])
-                self._slot_centers.append(point)
+        self._slot_bounds = []
+        for i, layer_count in enumerate(layer_counts):
+            layer_radius = layer_radii[i] * self._radius
+
+            for j in range(layer_count):
+                angle = (2.0 * math.pi * -j / layer_count) - (math.pi / 2.0) + self._rotation
+                x = int(center.x + layer_radius * math.cos(angle))
+                y = int(center.y + layer_radius * math.sin(angle))
+                slot_center = Point(x, y)
+                bounds = Circle(slot_center, self.slot_radius())
+                self._slot_bounds.append(bounds)
 
     ############################
     # Drawing Functions
     ############################
-    def draw_plate(self, cvimg, color):
+    def draw_plate(self, img, color):
         """ Draws an outline of the puck on the supplied image including the locations of the slots. """
-        cvimg.draw_dot(self._center, color)
-        cvimg.draw_circle(self._center, self._radius, color, thickness=int(0.05 * self._radius))
-        cvimg.draw_circle(self._center, self.center_radius(), color)
-        for center in self._slot_centers:
-            cvimg.draw_dot(center, color)
-            cvimg.draw_circle(center, self.slot_radius(), color)
+        img.draw_dot(self._center, color)
+        img.draw_circle(self.bounds(), color, thickness=int(0.05 * self._radius))
+        img.draw_circle(self.center_bounds(), color)
+        for bounds in self._slot_bounds:
+            img.draw_dot(bounds.center(), color)
+            img.draw_circle(bounds, color)
 
-    def draw_pin_highlight(self, cvimg, color, pin_number):
+    def draw_pin_highlight(self, img, color, pin_number):
         """ Draws a highlight circle and slot number for the specified slot on the image. """
-        center = self._slot_centers[pin_number - 1]
-        cvimg.draw_circle(center, self.slot_radius(), color, thickness=int(self.slot_radius() * 0.2))
-        cvimg.draw_text(str(pin_number), center, color, centered=True)
+        bounds = self._slot_bounds[pin_number - 1]
+        img.draw_circle(bounds, color, thickness=int(bounds.radius() * 0.2))
+        img.draw_text(str(pin_number), bounds.center(), color, centered=True)
 
-    def crop_image(self, cvimg):
+    def crop_image(self, img):
         """ Crops the image to the area which contains the puck. """
-        cvimg.crop_image(self._center, 1.1 * self._radius)
+        img.crop_image(self._center, 1.1 * self._radius)
 
     ############################
     # Serialization
@@ -111,12 +117,12 @@ class Unipuck:
     def deserialize(string):
         tokens = string.split(Unipuck._SERIAL_DELIM)
 
-        center = [int(tokens[0]), int(tokens[1])]
+        center = Point(int(tokens[0]), int(tokens[1]))
         radius = int(tokens[2])
         angle = float(tokens[3])
 
         return Unipuck(center, radius, angle)
 
     def serialize(self):
-        tokens = [str(self._center[0]), str(self._center[1]), str(self._radius), str(self._rotation)]
+        tokens = [str(self._center.x), str(self._center.y), str(self._radius), str(self._rotation)]
         return self._SERIAL_DELIM.join(tokens)

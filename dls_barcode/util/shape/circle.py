@@ -46,3 +46,9 @@ class Circle:
         radius_sq = self._radius ** 2
         distance_sq = point.distance_to_sq(self._center)
         return distance_sq < radius_sq
+
+    def intersects(self, circle):
+        """ Returns true if the two circles intersect. """
+        center_sep_sq = self._center.distance_to_sq(circle.center())
+        radius_sum_sq = (self.radius() + circle.radius()) ** 2
+        return center_sep_sq < radius_sum_sq
