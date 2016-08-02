@@ -1,11 +1,10 @@
 from __future__ import division
 
 from dls_barcode.datamatrix import DataMatrix
+from dls_barcode.plate import Plate, Slot, GeometryAdjuster
 from dls_barcode.plate import UnipuckCalculator
-from dls_barcode.plate import Plate, Slot
-from .geometry_adjuster import GeometryAdjuster
-from .scan_slot import SlotScanner
 from .scan_plate import PlateScanner
+from .scan_slot import SlotScanner
 
 
 class AlignmentException(Exception):

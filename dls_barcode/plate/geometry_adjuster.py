@@ -5,8 +5,19 @@ from dls_barcode.util import Transform
 
 
 class GeometryAdjuster:
+    """ Occasionally the situation arises that results of the unipuck geometry calculation are different
+     for two consecutive frames. This means that in at least one of these frames, the orientation has
+     not been calculated correctly (due to uncertainty in the observed slot positions).
+
+    In this case, the set of already known barcodes will not map properly between the correct slot numbers.
+    We therefore make an adjustment to the geometry to map the positions of the barcodes in the old frame to
+    those in the new one.
+
+    An incorrectly calculated geometry is unusual so will likely not last for more than a frame or two before
+    the correct geometry is found again.
+    """
     def adjust(self, plate, barcodes):
-        # TODO: document this method
+        # TODO: refactor and document this method
 
         geometry_calc = UnipuckCalculator()
 
