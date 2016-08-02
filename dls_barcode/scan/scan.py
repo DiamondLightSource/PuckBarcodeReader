@@ -90,16 +90,15 @@ class Scanner:
         if self._any_valid_barcodes():
             slot_scanner = self._create_slot_scanner()
             self.plate = Plate(self.plate_type, self.num_slots)
-            self._plate_scan = PlateScanner(self.plate)
-            self._plate_scan.initialize_from_barcodes(self._geometry, self._barcodes,
-                                                      slot_scanner, self._is_single_image)
+            self._plate_scan = PlateScanner(self.plate, self._is_single_image)
+            self._plate_scan.new_frame(self._geometry, self._barcodes, slot_scanner)
 
     def _merge_frame_into_plate(self):
         # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
         # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
         # previous plate over to their slot in the new plate. Then read any that we haven't already read.
         slot_scanner = self._create_slot_scanner()
-        self._plate_scan.merge_new_frame(self._geometry, self._barcodes, slot_scanner)
+        self._plate_scan.new_frame(self._geometry, self._barcodes, slot_scanner)
 
     def _is_geometry_aligned(self):
         return self._geometry is not None and self._geometry.is_aligned()

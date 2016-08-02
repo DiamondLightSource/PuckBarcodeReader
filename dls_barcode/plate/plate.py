@@ -23,6 +23,9 @@ class Plate:
         """ Get the numbered slot on this sample plate."""
         return self._slots[i - 1]
 
+    def slots(self):
+        return self._slots[:]
+
     def barcodes(self):
         """ Returns a list of barcode strings. Empty slots are represented by the empty string.
         """
@@ -33,6 +36,12 @@ class Plate:
 
     def set_geometry(self, geometry):
         self._geometry = geometry
+        for slot in self._slots:
+            bounds = geometry.slot_bounds(slot.number())
+            slot.set_bounds(bounds)
+
+    def invalid_slots(self):
+        return [s for s in self._slots if s.state() != Slot.VALID]
 
     #########################
     # STATUS FUNCTIONS
