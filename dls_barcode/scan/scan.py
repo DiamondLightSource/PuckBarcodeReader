@@ -5,6 +5,7 @@ from dls_barcode.plate import Plate, Slot, GeometryAdjuster
 from dls_barcode.plate import UnipuckCalculator
 from .scan_plate import PlateScanner
 from .scan_slot import SlotScanner
+from .empty_detector import EmptySlotDetector
 
 
 class AlignmentException(Exception):
@@ -77,8 +78,15 @@ class Scanner:
         return DataMatrix.LocateAllBarcodesInImage(frame_img)
 
     def _create_geometry_from_barcodes(self):
-        bc_centers = [bc.center() for bc in self._barcodes]
-        calculator = UnipuckCalculator(bc_centers)
+        slot_centers = [bc.center() for bc in self._barcodes]
+
+        # Use empty slots as points if not enough barcodes
+        if len(self._barcodes) < 10:
+            empty_circles = EmptySlotDetector.detect(self._frame_img, self._barcodes)
+            empty_centers = [c.center() for c in empty_circles]
+            slot_centers.extend(empty_centers)
+
+        calculator = UnipuckCalculator(slot_centers)
         puck = calculator.perform_alignment()
         return puck
 

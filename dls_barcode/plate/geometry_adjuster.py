@@ -1,6 +1,6 @@
 import numpy as np
 
-from dls_barcode.plate import UnipuckCalculator
+from .geometry import UnipuckCalculator
 from dls_barcode.util import Transform
 
 
