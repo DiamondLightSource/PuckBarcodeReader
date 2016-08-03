@@ -118,3 +118,7 @@ class Unipuck:
     def serialize(self):
         tokens = [str(self._center.x), str(self._center.y), str(self._radius), str(self._rotation)]
         return self._SERIAL_DELIM.join(tokens)
+
+    def to_string(self):
+        return "center: ({}, {}); radius: {}; rotation: {:.3f}".format(
+            self._center.x, self._center.y, self._radius, self._rotation)

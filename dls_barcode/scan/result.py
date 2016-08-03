@@ -80,5 +80,31 @@ class ScanResult:
         return self.is_full_valid() and not self.any_new_barcodes()
 
     def print_summary(self):
-        print('----- Frame {} -----'.format(self._frame_number))
-        print("Frame Duration: {0:.3f} secs".format(self.scan_time()))
+        print('\n------- Frame {} -------'.format(self._frame_number))
+        print("Scan Duration: {0:.3f} secs".format(self.scan_time()))
+
+        if self.any_finder_patterns():
+            print("Barcodes Located: {}".format(len(self._barcodes)))
+
+        if self.is_aligned():
+            print("Geometry - {}".format(self._geometry.to_string()))
+
+        if self._plate:
+            plate = self._plate
+            print("Plate:")
+
+            status = "(new plate)" if self.is_new_plate() else ""
+            print("* Plate ID: {} {}".format(plate.id, status))
+
+            print("* Slots: {} read; {} empty; {} unread".format(
+                plate.num_valid_barcodes(), plate.num_empty_slots(), plate.num_unread_barcodes()))
+
+            new_reads = self._plate.num_valid_barcodes()
+            if not self.is_new_plate():
+                new_reads -= self._previous_plate_count
+            print("* New Barcodes: {}".format(new_reads))
+
+            print("* Scan Complete: {}".format(str(self.is_full_valid())))
+
+        if not self.success():
+            print("Error: {}".format(self._error))
