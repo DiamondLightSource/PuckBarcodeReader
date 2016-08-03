@@ -11,7 +11,6 @@ class PlateScanner:
     FRAMES_BEFORE_DEEP = 3
 
     def __init__(self, plate, single_frame=False):
-        self.error = None
         self._plate = plate
 
         self._frame_num = -1
@@ -37,8 +36,6 @@ class PlateScanner:
         # Fill each slot with the correct barcodes
         for slot in self._plate.slots():
             self._new_slot_frame(barcodes, slot, slot_scanner)
-
-        # self.error = geometry.error
 
     def _new_slot_frame(self, barcodes, slot, slot_scanner):
         slot.new_frame()

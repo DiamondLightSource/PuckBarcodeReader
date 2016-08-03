@@ -26,15 +26,14 @@ class UnipuckCalculator:
         self._num_slots = UnipuckTemplate.NUM_SLOTS
 
         self._slot_centers = slot_centers
-        self.error = None
 
     def perform_alignment(self):
         puck = None
         num_points = len(self._slot_centers)
         if num_points > self._num_slots:
-            self.error = "Too many pins to perform alignment"
+            print("Too many points to perform alignment", num_points)
         elif num_points < MIN_POINTS_FOR_ALIGNMENT:
-            self.error = "Not enough pins to perform alignment"
+            if num_points > 0: print("Not enough pins to perform alignment", num_points)
         else:
             puck = self._calculate_puck_alignment()
 
@@ -50,15 +49,13 @@ class UnipuckCalculator:
 
             puck = Unipuck(center, radius)
 
-            angle, error = self._determine_puck_orientation(puck, self._slot_centers)
+            angle = self._determine_puck_orientation(puck, self._slot_centers)
             puck.set_rotation(angle)
-            self.error = error
 
             return puck
 
         except Exception as ex:
             print("Puck Alignment failed")
-            #self.error = ex.message()
             return None
 
     @staticmethod
@@ -120,7 +117,6 @@ class UnipuckCalculator:
         best_sse = 10000000
         best_angle = 0
         original_angle = puck.angle()
-        error_msg = None
 
         # For each angular increment, calculate the sum of squared errors in slot center position
         for a in range(0, 360, 2):
@@ -139,11 +135,11 @@ class UnipuckCalculator:
             puck.set_aligned(True)
         else:
             puck.set_aligned(False)
-            error_msg = "Failed to align puck"
+            print("Failed to align puck")
 
         puck.set_rotation(original_angle)
 
-        return best_angle, error_msg
+        return best_angle
 
     @staticmethod
     def _shortest_sq_distance(puck, point):

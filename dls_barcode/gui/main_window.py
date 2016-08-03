@@ -165,7 +165,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 self.recordTable.add_record(plate, cv_image)
             else:
                 QtGui.QMessageBox.warning(self, "Scanning Error",
-                                          "There was a problem scanning the image.\n" + plate.error)
+                                          "There was a problem scanning the image.")
 
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
