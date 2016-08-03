@@ -29,7 +29,7 @@ class SlotScanner:
         center = slot.barcode_position()
 
         # If we cant see the slot in the current frame, skip it
-        slot_in_frame = self._image_contains_point(center, self.radius_avg/2)
+        slot_in_frame = self._image_contains_point(center, self.radius_avg / 2)
         if not slot_in_frame:
             return False
 
@@ -65,16 +65,19 @@ class SlotScanner:
         img = self._slot_image(slot)
         fp = Locator().locate_square(img, self.side_avg)
 
-        self._DEBUG_SQUARE_LOCATOR(img, fp, slot.number())
+        barcode = None
+        if fp is not None:
+            self._DEBUG_SQUARE_LOCATOR(img, fp, slot.number())
+            barcode = DataMatrix(fp, img)
 
-        return DataMatrix(fp, img)
+        return barcode
 
     def _is_slot_worth_scanning(self, slot):
         state = slot.state()
         center = slot.barcode_position()
 
         # If we cant see the slot in the current frame, skip it
-        slot_in_frame = self._image_contains_point(center, self.radius_avg/2)
+        slot_in_frame = self._image_contains_point(center, self.radius_avg / 2)
         if not slot_in_frame:
             return False
 
@@ -166,6 +169,5 @@ class SlotScanner:
         dir = self._options.slot_image_directory.value() + prefix + "/"
         if not os.path.exists(dir):
             os.makedirs(dir)
-        filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum+1) + ".png"
+        filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum + 1) + ".png"
         image.save_as(filename)
-
