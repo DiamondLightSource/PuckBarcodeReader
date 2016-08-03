@@ -38,15 +38,10 @@ class CircleDetector:
     def set_maximum_radius(self, value): self._max_radius = value
 
     def find_circles(self, mono_img):
-        import time
-        start = time.time()
-
         raw_circles = cv2.HoughCircles(image=mono_img.img, method=self._method, dp=self._dp,
                                        minDist=self._min_dist, param1=self._canny_thresh,
                                        param2=self._accumulator_thresh, minRadius=int(self._min_radius),
                                        maxRadius=int(self._max_radius))
-
-        print("time: {:.3f}".format(time.time() - start))
 
         circles = self._sanitize_circles(raw_circles)
         return circles
