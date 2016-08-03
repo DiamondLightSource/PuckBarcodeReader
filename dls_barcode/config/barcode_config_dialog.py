@@ -44,7 +44,6 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.store_capacity)
 
         self.start_group("Debug")
-        add(cfg.console_barcodes)
         add(cfg.console_frame)
         add(cfg.slot_images)
         add(cfg.slot_image_directory)

@@ -11,10 +11,8 @@ from scan import Scanner
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
 Q_LIMIT = 1
-SCANNED_TAG = "Already Scanned"
-NO_ALIGN_TAG = "Could Not Align To Puck"
-NO_BARCODES_TAG = "No Barcodes Detected"
-NO_PUCK_TIME = 5
+SCANNED_TAG = "Scan Complete"
+NO_PUCK_TIME = 2
 
 EXIT_KEY = 'q'
 
@@ -118,13 +116,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
     this previous plates so that we don't have to re-read any of the previously captured barcodes
     (because this is a relatively expensive operation).
     """
-    last_plate = None
-    last_full_plate = None
     last_plate_time = time.time()
-
-    frame_number = 0
-    barcode_counter = 0
-    plate_frame_number = 0
 
     scanner = Scanner(options)
 
@@ -134,9 +126,6 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
         if frame is None:
             break
 
-        frame_number += 1
-        frame_start_time = time.time()
-
         # Make grayscale version of image
         image = Image(frame)
         gray_image = image.to_grayscale()
@@ -144,57 +133,37 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
         # If we have an existing partial plate, merge the new plate with it and only try to read the
         # barcodes which haven't already been read. This significantly increases efficiency because
         # barcode read is expensive.
-        plate = scanner.scan_next_frame(gray_image)
-        diagnostic = scanner.get_frame_diagnostic()
+        scan_result = scanner.scan_next_frame(gray_image)
 
-        if last_plate and plate.id == last_plate.id:
-            plate_frame_number += 1
-        else:
-            plate_frame_number = 1
-
-        # If the plate is aligned, display overlay results ( + sound + save results)
-        if diagnostic.is_aligned and plate:
+        if scan_result.success():
             # Record the time so we can see how long its been since we last saw a plate
             last_plate_time = time.time()
 
-            # If the plate matches the last successfully scanned plate, ignore it
-            if last_full_plate and last_full_plate.has_slots_in_common(plate):
+            plate = scan_result.plate()
+
+            if scan_result.already_scanned():
                 overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
 
-            # If the plate has the required number of barcodes, store it
-            elif plate.is_full_valid():
+            elif scan_result.is_full_valid():
                 result_queue.put((plate, image))
-                last_full_plate = plate
 
-            # If there were any barcodes in the frame, make a beep sound
-            elif diagnostic.has_barcodes:
-                if options.scan_beep.value():
-                    _plate_beep(plate)
+            elif scan_result.any_valid_barcodes():
                 overlay_queue.put(PlateOverlay(plate, options))
 
-                # If we scanned any new barcodes this frame, update the result
-                if plate == last_plate and plate.num_valid_barcodes() > barcode_counter:
+                if scan_result.any_new_barcodes():
                     result_queue.put((plate, image))
 
-            last_plate = plate
-            barcode_counter = plate.num_valid_barcodes()
+                if options.scan_beep.value():
+                    _plate_beep(plate)
 
         else:
-            # Display a message if we haven't detected a puck for a while
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
-                if diagnostic.num_finder_patterns == 0:
-                    message = NO_BARCODES_TAG
-                else:
-                    message = NO_ALIGN_TAG
-                overlay_queue.put(TextOverlay(message, Color.Red()))
+                overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
 
         # Diagnostics
         if options.console_frame.value():
-            frame_end_time = time.time()
-            print('-'*30)
-            print("Frame number: {} (Plate frame: {})".format(frame_number, plate_frame_number))
-            print("Frame Duration: {0:.3f} secs".format(frame_end_time - frame_start_time))
+            scan_result.print_summary()
 
 
 def _plate_beep(plate):

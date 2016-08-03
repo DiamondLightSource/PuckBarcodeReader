@@ -22,8 +22,6 @@ class Unipuck:
         self._slot_bounds = []
         self.set_rotation(rotation)
 
-        self._aligned = False
-
     def center(self): return self._center
 
     def radius(self): return self._radius
@@ -46,12 +44,6 @@ class Unipuck:
 
     def num_slots(self):
         return Template.NUM_SLOTS
-
-    def is_aligned(self):
-        """ True if the puck geometry has been successfully aligned to the image. """
-        return self._aligned
-
-    def set_aligned(self, value): self._aligned = value
 
     def slot_center(self, slot_num):
         return self._slot_bounds[slot_num - 1].center()

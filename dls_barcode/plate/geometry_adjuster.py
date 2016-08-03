@@ -4,6 +4,10 @@ from .geometry import UnipuckCalculator
 from dls_barcode.util import Transform
 
 
+class GeometryAdjustmentError(Exception):
+    pass
+
+
 class GeometryAdjuster:
     """ Occasionally the situation arises that results of the unipuck geometry calculation are different
      for two consecutive frames. This means that in at least one of these frames, the orientation has
@@ -23,8 +27,7 @@ class GeometryAdjuster:
         # will cause this frame to be skipped).
         valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
         if len(valid_barcodes) < 2:
-            print("ALIGNMENT ADJUSTMENT FAIL")  # DEBUG
-            return None
+            raise GeometryAdjustmentError("Geometry adjustment failed.")
 
         print("ALIGNMENT ADJUSTMENT")  # DEBUG
 
@@ -82,7 +85,7 @@ class GeometryAdjuster:
 
     def _does_barcode_overlap_point(self, bc, old_center, radius_sq):
         new_center = bc.center()
-        distance = (new_center[0] - old_center[0]) ** 2 + (new_center[1] - old_center[1]) ** 2
+        distance = new_center.distance_to_sq(old_center)
         does_overlap = distance < radius_sq
         return does_overlap
 

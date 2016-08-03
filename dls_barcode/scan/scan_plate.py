@@ -27,9 +27,6 @@ class PlateScanner:
         position is likely to be similar to, but not exactly the same as, the bound's center. This info
         is retained as it allows us to properly calculate the geometry for future frames.
         """
-        if not geometry.is_aligned:
-            raise BadGeometryException("Could not assign barcodes to slots as geometry not aligned.")
-
         self._frame_num += 1
         self._plate.set_geometry(geometry)
 

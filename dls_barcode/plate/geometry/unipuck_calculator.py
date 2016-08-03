@@ -9,6 +9,10 @@ from plate.geometry import Unipuck, UnipuckTemplate
 MIN_POINTS_FOR_ALIGNMENT = 6
 
 
+class UnipuckAlignmentError(Exception):
+    pass
+
+
 class UnipuckCalculator:
     """ Creates a Unipuck object, determining its size, position, and orientation. This is all
     calculated from knowledge of the positions of the datamatrix barcodes within the image,
@@ -24,19 +28,18 @@ class UnipuckCalculator:
         centers of some (or all of the pins).
         """
         self._num_slots = UnipuckTemplate.NUM_SLOTS
-
         self._slot_centers = slot_centers
 
     def perform_alignment(self):
-        puck = None
         num_points = len(self._slot_centers)
-        if num_points > self._num_slots:
-            print("Too many points to perform alignment", num_points)
-        elif num_points < MIN_POINTS_FOR_ALIGNMENT:
-            if num_points > 0: print("Not enough pins to perform alignment", num_points)
-        else:
-            puck = self._calculate_puck_alignment()
 
+        if num_points > self._num_slots:
+            raise UnipuckAlignmentError("Too many points to perform alignment")
+
+        elif num_points < MIN_POINTS_FOR_ALIGNMENT:
+            raise UnipuckAlignmentError("Not enough points to perform alignment")
+
+        puck = self._calculate_puck_alignment()
         return puck
 
     def _calculate_puck_alignment(self):
@@ -55,8 +58,7 @@ class UnipuckCalculator:
             return puck
 
         except Exception as ex:
-            print("Puck Alignment failed")
-            return None
+            raise UnipuckAlignmentError("Puck Alignment failed")
 
     @staticmethod
     def _find_puck_center(pin_centers):
@@ -130,14 +132,12 @@ class UnipuckCalculator:
                 best_angle = angle
             errors.append([angle, sse])
 
-        average_error = best_sse / puck.radius() ** 2 / len(pin_centers)
-        if average_error < 0.003:
-            puck.set_aligned(True)
-        else:
-            puck.set_aligned(False)
-            print("Failed to align puck")
-
+        # Set the puck back to its original angle
         puck.set_rotation(original_angle)
+
+        average_error = best_sse / puck.radius() ** 2 / len(pin_centers)
+        if average_error > 0.003:
+            raise UnipuckAlignmentError("Unable to determine Puck orientation")
 
         return best_angle
 

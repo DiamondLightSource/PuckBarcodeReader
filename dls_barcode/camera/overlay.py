@@ -37,7 +37,7 @@ class TextOverlay(Overlay):
         # If the overlay has not expired, draw on the plate highlight and/or the status message
         if not self.has_expired():
             image.draw_text(self._text, image.center(), self._color,
-                            centered=True, scale=4, thickness=3)
+                            centered=True, scale=2, thickness=3)
 
 
 class PlateOverlay(Overlay):
