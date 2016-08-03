@@ -1,3 +1,4 @@
+from __future__ import division
 import cv2
 
 import winsound
@@ -7,7 +8,7 @@ import multiprocessing
 from util import Image
 from scan import Scanner
 
-from .overlay import Overlay
+from .overlay import PlateOverlay, TextOverlay, Overlay
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
@@ -72,7 +73,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, config):
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera_height.value())
 
     # Store the latest image overlay which highlights the puck
-    latest_overlay = Overlay(None, config)
+    latest_overlay = Overlay(0)
     last_time = time.time()
 
     while kill_queue.empty():
@@ -135,8 +136,8 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
         frame_start_time = time.time()
 
         # Make grayscale version of image
-        cv_image = Image(frame)
-        gray_image = cv_image.to_grayscale()
+        image = Image(frame)
+        gray_image = image.to_grayscale()
 
         # If we have an existing partial plate, merge the new plate with it and only try to read the
         # barcodes which haven't already been read. This significantly increases efficiency because
@@ -156,23 +157,22 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
 
             # If the plate matches the last successfully scanned plate, ignore it
             if last_full_plate and last_full_plate.has_slots_in_common(plate):
-                overlay_queue.put(Overlay(None, options, SCANNED_TAG))
+                overlay_queue.put(TextOverlay(SCANNED_TAG, options))
 
             # If the plate has the required number of barcodes, store it
             elif plate.is_full_valid():
-                result_queue.put((plate, cv_image))
+                result_queue.put((plate, image))
                 last_full_plate = plate
 
             # If there were any barcodes in the frame, make a beep sound
             elif diagnostic.has_barcodes:
                 if options.scan_beep.value():
-                    frequency = int(10000 * ((plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots)) + 37
-                    winsound.Beep(frequency, 200)
-                overlay = Overlay(plate, options)
-                overlay_queue.put(overlay)
+                    _plate_beep(plate)
+                overlay_queue.put(PlateOverlay(plate, options))
 
+                # If we scanned any new barcodes this frame, update the result
                 if plate == last_plate and plate.num_valid_barcodes() > barcode_counter:
-                    result_queue.put((plate, cv_image))
+                    result_queue.put((plate, image))
 
             last_plate = plate
             barcode_counter = plate.num_valid_barcodes()
@@ -181,8 +181,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
             # Display a message if we haven't detected a puck for a while
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
-                overlay = Overlay(None, options, NO_PUCK_TAG)
-                overlay_queue.put(overlay)
+                overlay_queue.put(TextOverlay(NO_PUCK_TAG, options))
 
         # Diagnostics
         if options.console_frame.value():
@@ -190,3 +189,10 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
             print('-'*30)
             print("Frame number: {} (Plate frame: {})".format(frame_number, plate_frame_number))
             print("Frame Duration: {0:.3f} secs".format(frame_end_time - frame_start_time))
+
+
+def _plate_beep(plate):
+    empty_fraction = (plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots
+    frequency = int(10000 * empty_fraction + 37)
+    duration = 200
+    winsound.Beep(frequency, duration)
