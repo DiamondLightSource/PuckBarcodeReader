@@ -24,7 +24,7 @@ class Scanner:
         self.plate_type = "Unipuck"
         self.num_slots = 16
 
-        self.plate = None
+        self._plate = None
         self._plate_scan = None
 
         self._options = options
@@ -64,9 +64,9 @@ class Scanner:
             self._merge_frame_into_plate()
 
         if self._options.console_barcodes.value():
-            print(self.plate.barcodes())
+            print(self._plate.barcodes())
 
-        return self.plate
+        return self._plate
 
     def _reset_for_new_frame(self):
         self._frame_img = None
@@ -81,7 +81,7 @@ class Scanner:
         slot_centers = [bc.center() for bc in self._barcodes]
 
         # Use empty slots as points if not enough barcodes
-        if len(self._barcodes) < 10:
+        if len(self._barcodes) < 8:
             empty_circles = EmptySlotDetector.detect(self._frame_img, self._barcodes)
             empty_centers = [c.center() for c in empty_circles]
             slot_centers.extend(empty_centers)
@@ -96,8 +96,8 @@ class Scanner:
 
         if self._any_valid_barcodes():
             slot_scanner = self._create_slot_scanner()
-            self.plate = Plate(self.plate_type, self.num_slots)
-            self._plate_scan = PlateScanner(self.plate, self._is_single_image)
+            self._plate = Plate(self.plate_type, self.num_slots)
+            self._plate_scan = PlateScanner(self._plate, self._is_single_image)
             self._plate_scan.new_frame(self._geometry, self._barcodes, slot_scanner)
 
     def _merge_frame_into_plate(self):
@@ -125,14 +125,14 @@ class Scanner:
         num_common_barcodes = 0
 
         # If no plate, don't bother to look for common barcodes
-        if self.plate is None:
+        if self._plate is None:
             return has_common_barcodes, has_common_geometry
 
         slotted_barcodes = self._make_slotted_barcodes_list(barcodes, geometry)
 
         # Determine if the previous plate scan has any barcodes in common with this one.
-        for i in range(self.plate.num_slots):
-            old_slot = self.plate.slot(i)
+        for i in range(self._plate.num_slots):
+            old_slot = self._plate.slot(i)
             new_bc = slotted_barcodes[i-1]
 
             # Only interested in reading barcodes that might match existing ones
@@ -147,7 +147,7 @@ class Scanner:
 
             num_common_barcodes += 1
             has_common_geometry = new_bc.data() == old_slot.barcode_data()
-            has_common_barcodes = has_common_geometry or self.plate.contains_barcode(new_bc.data())
+            has_common_barcodes = has_common_geometry or self._plate.contains_barcode(new_bc.data())
 
             # If the geometry of this and the previous frame line up, then we are done. Otherwise we
             # need to read at least 2 barcodes so we can perform a realignment.
@@ -170,5 +170,5 @@ class Scanner:
         # at least one of the frames wasn't properly aligned - so we adjust the geometry to match the
         # frames together
         adjuster = GeometryAdjuster()
-        geometry = adjuster.adjust(self.plate, barcodes)
+        geometry = adjuster.adjust(self._plate, barcodes)
         return geometry
