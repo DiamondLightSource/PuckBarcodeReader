@@ -77,7 +77,7 @@ class Scanner:
             self._initialize_plate_from_barcodes()
 
         # Merge if same plate
-        if has_common_barcodes:
+        if has_common_barcodes and not self._plate.is_full_valid():
             self._merge_frame_into_plate()
 
     def _locate_all_barcodes_in_image(self):
