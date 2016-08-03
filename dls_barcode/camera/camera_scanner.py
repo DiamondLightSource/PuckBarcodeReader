@@ -5,15 +5,17 @@ import winsound
 import time
 import multiprocessing
 
-from util import Image
+from util.image import Image, Color
 from scan import Scanner
 
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
 Q_LIMIT = 1
 SCANNED_TAG = "Already Scanned"
+NO_ALIGN_TAG = "Could Not Align To Puck"
+NO_BARCODES_TAG = "No Barcodes Detected"
 NO_PUCK_TIME = 5
-NO_PUCK_TAG = "No Puck Detected"
+
 EXIT_KEY = 'q'
 
 # Maximum frame rate to sample at (rate will be further limited by speed at which frames can be processed)
@@ -151,13 +153,13 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
             plate_frame_number = 1
 
         # If the plate is aligned, display overlay results ( + sound + save results)
-        if diagnostic.is_aligned:
+        if diagnostic.is_aligned and plate:
             # Record the time so we can see how long its been since we last saw a plate
             last_plate_time = time.time()
 
             # If the plate matches the last successfully scanned plate, ignore it
             if last_full_plate and last_full_plate.has_slots_in_common(plate):
-                overlay_queue.put(TextOverlay(SCANNED_TAG, options))
+                overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
 
             # If the plate has the required number of barcodes, store it
             elif plate.is_full_valid():
@@ -181,7 +183,11 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
             # Display a message if we haven't detected a puck for a while
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
-                overlay_queue.put(TextOverlay(NO_PUCK_TAG, options))
+                if diagnostic.num_finder_patterns == 0:
+                    message = NO_BARCODES_TAG
+                else:
+                    message = NO_ALIGN_TAG
+                overlay_queue.put(TextOverlay(message, Color.Red()))
 
         # Diagnostics
         if options.console_frame.value():

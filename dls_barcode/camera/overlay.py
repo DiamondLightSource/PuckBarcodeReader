@@ -11,7 +11,7 @@ class Overlay:
         self._lifetime = lifetime
         self._start_time = time.time()
 
-    def draw_on_image(self, image):
+    def draw_on_image(self, img):
         pass
 
     def has_expired(self):
@@ -21,23 +21,23 @@ class Overlay:
 class TextOverlay(Overlay):
     """ Represents an overlay that can be drawn on top of an image. Used to write status text messages.
     """
-    def __init__(self, text, options, lifetime=2):
+    def __init__(self, text, color, lifetime=2):
         Overlay.__init__(self, lifetime)
 
         self._text = text
-        self._options = options
+        self._color = color
         self._lifetime = lifetime
         self._start_time = time.time()
 
-    def draw_on_image(self, image):
+    def draw_on_image(self, img):
         """ Draw the status message to the image.
         """
-        cv_image = Image(image)
+        image = Image(img)
 
         # If the overlay has not expired, draw on the plate highlight and/or the status message
         if not self.has_expired():
-            color_ok = self._options.col_ok()
-            cv_image.draw_text(self._text, cv_image.center(), color_ok, centered=True, scale=4, thickness=3)
+            image.draw_text(self._text, image.center(), self._color,
+                            centered=True, scale=4, thickness=3)
 
 
 class PlateOverlay(Overlay):
@@ -51,13 +51,13 @@ class PlateOverlay(Overlay):
         self._lifetime = lifetime
         self._start_time = time.time()
 
-    def draw_on_image(self, image):
+    def draw_on_image(self, img):
         """ Draw the plate highlight  to the image.
         """
-        cv_image = Image(image)
+        image = Image(img)
 
         # If the overlay has not expired, draw on the plate highlight and/or the status message
         if not self.has_expired():
-            self._plate.draw_plate(cv_image, Color.Blue())
-            self._plate.draw_pins(cv_image, self._options)
+            self._plate.draw_plate(image, Color.Blue())
+            self._plate.draw_pins(image, self._options)
 
