@@ -70,14 +70,17 @@ class Scanner:
         # Determine if the previous plate scan has any barcodes in common with this one.
         has_common_barcodes, is_same_align = self._find_common_barcode(self._geometry, self._barcodes)
 
-        if has_common_barcodes and not is_same_align:
-            self._geometry = self._adjust_geometry(self._barcodes)
+        if has_common_barcodes and self._plate.is_full_valid():
+            return
 
         elif not has_common_barcodes:
             self._initialize_plate_from_barcodes()
 
-        # Merge if same plate
-        if has_common_barcodes and not self._plate.is_full_valid():
+        elif has_common_barcodes and not is_same_align:
+            self._geometry = self._adjust_geometry(self._barcodes)
+
+        # Merge with old plate
+        if has_common_barcodes:
             self._merge_frame_into_plate()
 
     def _locate_all_barcodes_in_image(self):
