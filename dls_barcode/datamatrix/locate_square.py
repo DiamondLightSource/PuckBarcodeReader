@@ -78,7 +78,7 @@ class SquareLocator:
         """
         done = False
 
-        initial_transform = Transform(int(center.x), int(center.y), 0, 1)
+        initial_transform = Transform(center.intify(), 0, 1)
         best_val = 1000000000000000
         best_trs = initial_transform
 
@@ -148,7 +148,8 @@ class SquareLocator:
             for y in grid_points:
                 for degrees in angle_points:
                     radians = degrees * math.pi / 180
-                    trs = transform.by_offset(x, y)
+                    offset = Point(x, y)
+                    trs = transform.by_offset(offset)
                     trs = trs.by_rotation(radians)
                     transforms.append(trs)
 
@@ -162,12 +163,11 @@ class SquareLocator:
         so a lower average brightness corresponds to a greater likelihood of the
         area being the datamatrix.
         """
-        cx, cy = transform.x, transform.y
-        center = Point(cx, cy)
+        center = transform.trans
         angle = transform.rot
 
         # Create cache key
-        key = (angle, (cx, cy))
+        key = (angle, (center.x, center.y))
 
         # If this x,y,angle combination has been seen before, retrieve the previous cached result
         if key in self.metric_cache:
@@ -188,8 +188,7 @@ class SquareLocator:
         and below that barcode that contain a text version of the information contained in the barcode.
         This may do a better job of correctly fitting the square in certain circumstances, but may also
         get trapped if there are dark/shadow regions around the edge of the image. """
-        cx, cy = transform.x, transform.y
-        center = (cx, cy)
+        center = transform.trans
         angle = transform.rot
 
         rotated = binary_image.rotate(angle, center)
@@ -199,8 +198,8 @@ class SquareLocator:
         txt_width = self.TXT_WIDTH * size
         area = txt_width * txt_height
 
-        rect1_center = (cx, cy + self.TXT_OFFSET*size)
-        rect2_center = (cx, cy - self.TXT_OFFSET*size)
+        rect1_center = center + Point(0, self.TXT_OFFSET*size)
+        rect2_center = center - Point(0, self.TXT_OFFSET*size)
 
         brightness += rotated.calculate_brightness(rect1_center, txt_width, txt_height) * area
         brightness += rotated.calculate_brightness(rect2_center, txt_width, txt_height) * area
@@ -229,13 +228,13 @@ class SquareLocator:
         """
         self.count += 1
         radius = int(round(size/2))
-        cx, cy = transform.x, transform.y
+        center = transform.trans
         angle = transform.rot
 
-        rotated = image.rotate(angle, Point(cx, cy))
+        rotated = image.rotate(angle, center)
 
-        sx1, sy1 = cx-radius, cy-radius
-        sx2, sy2 = cx+radius, cy+radius
+        sx1, sy1 = center.x - radius, center.y - radius
+        sx2, sy2 = center.x + radius, center.y + radius
         thick = int(round(size / 14))
 
         # Top
@@ -278,13 +277,13 @@ class SquareLocator:
         up the finder pattern.
         """
         radius = int(round(size/2))
-        cx, cy = transform.x, transform.y
+        center = transform.trans
         angle = transform.rot
 
-        rotated = image.rotate(angle, Point(cx, cy))
+        rotated = image.rotate(angle, center)
 
-        sx1, sy1 = cx-radius, cy-radius
-        sx2, sy2 = cx+radius, cy+radius
+        sx1, sy1 = center.x-radius, center.y-radius
+        sx2, sy2 = center.x+radius, center.y+radius
         thick = int(round(size / 14))
 
         # Top
@@ -328,7 +327,6 @@ class SquareLocator:
             return None
 
         # rotate points around center of square
-        center = Point(cx, cy)
         c1 = _rotate_around_point(Point.from_array(c1), angle, center)
         c2 = _rotate_around_point(Point.from_array(c2), angle, center)
         c3 = _rotate_around_point(Point.from_array(c3), angle, center)
@@ -374,16 +372,16 @@ def _draw_square_and_writing(image, transform, size):
     txt_height = SquareLocator.TXT_HEIGHT * size
     txt_width = SquareLocator.TXT_WIDTH * size
 
-    center = (transform.x, transform.y)
-    x1 = center[0]-txt_width/2
+    center = transform.trans
+    x1 = center.x - txt_width/2
     x2 = x1 + txt_width
     y_offset = SquareLocator.TXT_OFFSET*size
 
-    y1 = center[1] + y_offset - txt_height/2
+    y1 = center.y + y_offset - txt_height/2
     y2 = y1 + txt_height
     marked_img.draw_rectangle((x1, y1, x2, y2), Color.Green(), 1)
 
-    y1 = center[1] - y_offset - txt_height/2
+    y1 = center.y - y_offset - txt_height/2
     y2 = y1 + txt_height
     marked_img.draw_rectangle((x1, y1, x2, y2), Color.Green(), 1)
 
