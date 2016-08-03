@@ -135,6 +135,9 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
         # barcode read is expensive.
         scan_result = scanner.scan_next_frame(gray_image)
 
+        if options.console_frame.value():
+            scan_result.print_summary()
+
         if scan_result.success():
             # Record the time so we can see how long its been since we last saw a plate
             last_plate_time = time.time()
@@ -149,24 +152,21 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
 
             elif scan_result.any_valid_barcodes():
                 overlay_queue.put(PlateOverlay(plate, options))
+                _plate_beep(plate, options)
 
-                if scan_result.any_new_barcodes():
-                    result_queue.put((plate, image))
-
-                if options.scan_beep.value():
-                    _plate_beep(plate)
+            if scan_result.any_new_barcodes():
+                result_queue.put((plate, image))
 
         else:
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
                 overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
 
-        # Diagnostics
-        if options.console_frame.value():
-            scan_result.print_summary()
 
+def _plate_beep(plate, options):
+    if not options.scan_beep.value():
+        return
 
-def _plate_beep(plate):
     empty_fraction = (plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots
     frequency = int(10000 * empty_fraction + 37)
     duration = 200
