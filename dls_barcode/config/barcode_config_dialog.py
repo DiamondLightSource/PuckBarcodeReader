@@ -22,6 +22,9 @@ class BarcodeConfigDialog(ConfigDialog):
 
         camera = CameraConfigControl(cfg.camera_number, cfg.camera_width, cfg.camera_height)
 
+        self.start_group("Sample Plate")
+        add(cfg.plate_type)
+
         self.start_group("Colors")
         add(cfg.color_ok)
         add(cfg.color_unreadable)

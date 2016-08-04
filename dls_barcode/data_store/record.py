@@ -2,7 +2,8 @@ import uuid
 import time
 import datetime
 
-from dls_barcode.plate import Unipuck, NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
+from dls_barcode.plate.geometry import Geometry
+from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 from dls_barcode.util import Image, Color
 
 
@@ -78,7 +79,9 @@ class Record:
         image = items[Record.IND_IMAGE]
         plate_type = items[Record.IND_PLATE]
         barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
-        geometry = Unipuck.deserialize(items[Record.IND_GEOMETRY])
+
+        geo_class = Geometry.get_class(plate_type)
+        geometry = geo_class.deserialize(items[Record.IND_GEOMETRY])
 
         return Record(plate_type=plate_type, barcodes=barcodes, timestamp=timestamp,
                       image_path=image, id=id, geometry=geometry)

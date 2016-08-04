@@ -11,6 +11,9 @@ class Unipuck:
     """
     _SERIAL_DELIM = ":"
 
+    TYPE_NAME = "Unipuck"
+    NUM_SLOTS = Template.NUM_SLOTS
+
     def __init__(self, center, radius, rotation=0.0):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
@@ -43,7 +46,7 @@ class Unipuck:
         return Circle(self._center, self.center_radius())
 
     def num_slots(self):
-        return Template.NUM_SLOTS
+        return Unipuck.NUM_SLOTS
 
     def slot_center(self, slot_num):
         return self._slot_bounds[slot_num - 1].center()

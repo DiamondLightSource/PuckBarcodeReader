@@ -1,16 +1,17 @@
 import uuid
 
+from .geometry import Geometry
 from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
 
 
 class Plate:
     """ Represents a sample holder plate.
     """
-    def __init__(self, plate_type="Unipuck", num_slots=16):
+    def __init__(self, geometry_name):
         self.id = str(uuid.uuid1())
 
-        self.num_slots = num_slots
-        self.type = plate_type
+        self.num_slots = Geometry.get_num_slots(geometry_name)
+        self.type = geometry_name
         self._geometry = None
 
         # Initialize slots

@@ -4,13 +4,11 @@ import numpy as np
 from scipy.optimize import fmin
 
 from util.shape import Point
-from plate.geometry import Unipuck, UnipuckTemplate
+from .exception import GeometryAlignmentError
+from .unipuck import Unipuck
+from .unipuck_template import UnipuckTemplate
 
 MIN_POINTS_FOR_ALIGNMENT = 6
-
-
-class UnipuckAlignmentError(Exception):
-    pass
 
 
 class UnipuckCalculator:
@@ -34,10 +32,10 @@ class UnipuckCalculator:
         num_points = len(self._slot_centers)
 
         if num_points > self._num_slots:
-            raise UnipuckAlignmentError("Too many points to perform alignment")
+            raise GeometryAlignmentError("Too many points to perform Unipuck alignment")
 
         elif num_points < MIN_POINTS_FOR_ALIGNMENT:
-            raise UnipuckAlignmentError("Not enough points to perform alignment")
+            raise GeometryAlignmentError("Not enough points to perform Unipuck alignment")
 
         puck = self._calculate_puck_alignment()
         return puck
@@ -58,7 +56,7 @@ class UnipuckCalculator:
             return puck
 
         except Exception as ex:
-            raise UnipuckAlignmentError("Puck Alignment failed")
+            raise GeometryAlignmentError("Unipuck Alignment failed")
 
     @staticmethod
     def _find_puck_center(pin_centers):
@@ -137,7 +135,7 @@ class UnipuckCalculator:
 
         average_error = best_sse / puck.radius() ** 2 / len(pin_centers)
         if average_error > 0.003:
-            raise UnipuckAlignmentError("Unable to determine Puck orientation")
+            raise GeometryAlignmentError("Unable to determine Unipuck orientation")
 
         return best_angle
 

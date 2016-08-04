@@ -1,7 +1,10 @@
 import sys
 
 from dls_barcode.util import Color
-from dls_barcode.util import Config, DirectoryConfigItem, ColorConfigItem, IntConfigItem, BoolConfigItem
+from dls_barcode.util import Config, DirectoryConfigItem, ColorConfigItem, \
+    IntConfigItem, BoolConfigItem, EnumConfigItem
+
+from dls_barcode.plate import Geometry
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
 
@@ -27,6 +30,8 @@ class BarcodeConfig(Config):
         self.camera_number = add(IntConfigItem, "Camera Number", default=0)
         self.camera_width = add(IntConfigItem, "Camera Width", default=1920)
         self.camera_height = add(IntConfigItem, "Camera Height", default=1080)
+
+        self.plate_type = add(EnumConfigItem, "Sample Plate Type", default=Geometry.UNIPUCK, extra_arg=Geometry.TYPES)
 
         self.scan_beep = add(BoolConfigItem, "Beep While Scanning", default=True)
         self.scan_clipboard = add(BoolConfigItem, "Results to Clipboard", default=True)

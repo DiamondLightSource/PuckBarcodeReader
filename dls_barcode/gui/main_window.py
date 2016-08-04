@@ -158,7 +158,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             gray_image = cv_image.to_grayscale()
 
             # Scan the image for barcodes
-            plate = Scanner(self._config).scan_next_frame(gray_image, is_single_image=True)
+            plate_type = self._config.plate_type.value()
+            scan_result = Scanner(plate_type, self._config).scan_next_frame(gray_image, is_single_image=True)
+            plate = scan_result.plate()
 
             # If the scan was successful, store the results
             if plate is not None:

@@ -118,7 +118,8 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
     """
     last_plate_time = time.time()
 
-    scanner = Scanner(options)
+    plate_type = options.plate_type.value()
+    scanner = Scanner(plate_type, options)
 
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)

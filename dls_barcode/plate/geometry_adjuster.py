@@ -1,6 +1,6 @@
 import numpy as np
 
-from .geometry import UnipuckCalculator
+from .geometry.unipuck_calculator import UnipuckCalculator
 from dls_barcode.util import Transform
 
 
@@ -8,7 +8,7 @@ class GeometryAdjustmentError(Exception):
     pass
 
 
-class GeometryAdjuster:
+class UnipuckGeometryAdjuster:
     """ Occasionally the situation arises that results of the unipuck geometry calculation are different
      for two consecutive frames. This means that in at least one of these frames, the orientation has
      not been calculated correctly (due to uncertainty in the observed slot positions).
