@@ -16,9 +16,8 @@ class NoBarcodesError(Exception):
 
 
 class Scanner:
-    def __init__(self, plate_type, options):
+    def __init__(self, plate_type):
         self.plate_type = plate_type
-        self._options = options
 
         self._frame_number = 0
         self._plate = None
@@ -121,7 +120,7 @@ class Scanner:
         return any([bc.is_read() and bc.is_valid() for bc in self._barcodes])
 
     def _create_slot_scanner(self):
-        slot_scanner = SlotScanner(self._frame_img, self._barcodes, self._options)
+        slot_scanner = SlotScanner(self._frame_img, self._barcodes)
         return slot_scanner
 
     def _find_common_barcode(self, geometry, barcodes):

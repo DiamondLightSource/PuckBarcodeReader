@@ -6,7 +6,7 @@ from PyQt4.QtGui import QPushButton, QHBoxLayout
 
 from camera import CameraScanner
 from config import BarcodeConfig, BarcodeConfigDialog
-from scan import Scanner
+from scan import Scanner, SlotScanner
 from util import Image
 
 from .barcode_table import BarcodeTable
@@ -159,7 +159,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
             # Scan the image for barcodes
             plate_type = self._config.plate_type.value()
-            scan_result = Scanner(plate_type, self._config).scan_next_frame(gray_image, is_single_image=True)
+            SlotScanner.DEBUG = self._config.slot_images.value()
+            SlotScanner.DEBUG_DIR = self._config.slot_image_directory.value()
+
+            scan_result = Scanner(plate_type).scan_next_frame(gray_image, is_single_image=True)
             plate = scan_result.plate()
 
             # If the scan was successful, store the results

@@ -7,6 +7,7 @@ import multiprocessing
 
 from util.image import Image, Color
 from scan import Scanner
+from scan.scan_slot import SlotScanner
 
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
@@ -118,8 +119,11 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
     """
     last_plate_time = time.time()
 
+    SlotScanner.DEBUG = options.slot_images.value()
+    SlotScanner.DEBUG_DIR = options.slot_image_directory.value()
+
     plate_type = options.plate_type.value()
-    scanner = Scanner(plate_type, options)
+    scanner = Scanner(plate_type)
 
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)

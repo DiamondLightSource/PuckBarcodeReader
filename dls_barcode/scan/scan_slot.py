@@ -12,11 +12,12 @@ from dls_barcode.util import Image, Color
 
 class SlotScanner:
     BRIGHTNESS_RATIO = 5
+    DEBUG = False
+    DEBUG_DIR = "./debug"
 
-    def __init__(self, image, barcodes, options):
+    def __init__(self, image, barcodes):
         self.image = image
         self.barcodes = barcodes
-        self._options = options
 
         self.radius_avg = self._calculate_average_radius()
         self.side_avg = self.radius_avg * (2 / math.sqrt(2))
@@ -122,11 +123,8 @@ class SlotScanner:
         h, w = self.image.img.shape
         return (radius <= point.x <= w - radius - 1) and (radius <= point.y <= h - radius - 1)
 
-    def _is_debug_images_on(self):
-        return self._options.slot_images.value()
-
     def _DEBUG_WIGGLES_READ(self, barcode, locate_type, side_length):
-        if not self._is_debug_images_on():
+        if not self.DEBUG:
             return
 
         if barcode.is_valid():
@@ -145,7 +143,7 @@ class SlotScanner:
         self._DEBUG_SAVE_IMAGE(slot_img, locate_type + result, side_length - 1)
 
     def _DEBUG_MULTI_FP_IMAGE(self, slot_img, fps, slot_num):
-        if not self._is_debug_images_on():
+        if not self.DEBUG:
             return
 
         if len(fps) > 1:
@@ -155,7 +153,7 @@ class SlotScanner:
             self._DEBUG_SAVE_IMAGE(color, "DEEP CONTOUR_ALL FPS", slot_num)
 
     def _DEBUG_SQUARE_LOCATOR(self, slot_img, fp, slot_num):
-        if not self._is_debug_images_on():
+        if not self.DEBUG:
             return
 
         color = slot_img.to_alpha()
@@ -163,10 +161,10 @@ class SlotScanner:
         self._DEBUG_SAVE_IMAGE(color, "SQUARE_FP", slot_num)
 
     def _DEBUG_SAVE_IMAGE(self, image, prefix, slotnum):
-        if not self._is_debug_images_on():
+        if not self.DEBUG:
             return
 
-        dir = self._options.slot_image_directory.value() + prefix + "/"
+        dir = self.DEBUG_DIR + prefix + "/"
         if not os.path.exists(dir):
             os.makedirs(dir)
         filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum + 1) + ".png"

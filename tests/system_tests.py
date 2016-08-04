@@ -59,7 +59,7 @@ def run_tests():
         filename = TEST_IMG_DIR + file
         cv_image = Image.from_file(filename)
         gray_image = cv_image.to_grayscale()
-        results = Scanner("Unipuck", OPTIONS).scan_next_frame(gray_image, is_single_image=True)
+        results = Scanner("Unipuck").scan_next_frame(gray_image, is_single_image=True)
         plate = results.plate()
         store_scan(plate, cv_image)
 
