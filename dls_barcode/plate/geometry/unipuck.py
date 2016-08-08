@@ -59,29 +59,44 @@ class Unipuck:
 
         return None
 
+    def set_center(self, center):
+        self._center = center
+        self._reset_slot_bounds()
+
+    def set_radius(self, radius):
+        self._radius = radius
+        self._reset_slot_bounds()
+
     def set_rotation(self, angle):
         """ Set the orientation of the puck to the specified angle. Recalculate the
         positions of the slots.
         """
         self._rotation = angle
+        self._reset_slot_bounds()
 
+    def _reset_slot_bounds(self):
+        self._slot_bounds = self.calculate_slot_bounds(self._center, self._radius, self._rotation)
+
+    @staticmethod
+    def calculate_slot_bounds(center, radius, rotation):
         # Calculate pin slot locations
         layer_counts = Template.N
         layer_radii = Template.LAYER_RADII
+        slot_radius = radius * Template.SLOT_RADIUS
 
-        center = self._center
-
-        self._slot_bounds = []
+        slot_bounds = []
         for i, layer_count in enumerate(layer_counts):
-            layer_radius = layer_radii[i] * self._radius
+            layer_radius = layer_radii[i] * radius
 
             for j in range(layer_count):
-                angle = (2.0 * math.pi * -j / layer_count) - (math.pi / 2.0) + self._rotation
+                angle = (2.0 * math.pi * -j / layer_count) - (math.pi / 2.0) + rotation
                 x = int(center.x + layer_radius * math.cos(angle))
                 y = int(center.y + layer_radius * math.sin(angle))
                 slot_center = Point(x, y)
-                bounds = Circle(slot_center, self.slot_radius())
-                self._slot_bounds.append(bounds)
+                bounds = Circle(slot_center, slot_radius)
+                slot_bounds.append(bounds)
+
+        return slot_bounds
 
     ############################
     # Drawing Functions
