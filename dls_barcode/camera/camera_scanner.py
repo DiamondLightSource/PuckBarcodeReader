@@ -152,9 +152,6 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
             if scan_result.already_scanned():
                 overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
 
-            elif scan_result.is_full_valid():
-                result_queue.put((plate, image))
-
             elif scan_result.any_valid_barcodes():
                 overlay_queue.put(PlateOverlay(plate, options))
                 _plate_beep(plate, options)
