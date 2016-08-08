@@ -23,7 +23,7 @@ class EmptySlotDetector:
             if not any(contains):
                 empty_circles.append(circle)
 
-        DEBUG = True
+        DEBUG = False
         if DEBUG:
             copy_image = image.to_color().copy()
             EmptySlotDetector.draw_circles(copy_image, empty_circles, avg_radius)
