@@ -1,10 +1,11 @@
 from __future__ import division
 
 import math
+
 import numpy as np
 
-from .locate_square import SquareLocator
 from .locate_contour import ContourLocator
+from .locate_square import SquareLocator
 
 
 class Locator:

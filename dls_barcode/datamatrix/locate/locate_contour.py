@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from util.shape import Point
-from .finder_pattern import FinderPattern
+from datamatrix.finder_pattern import FinderPattern
 
 OPENCV_MAJOR = cv2.__version__[0]
 
