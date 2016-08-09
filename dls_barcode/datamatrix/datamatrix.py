@@ -1,7 +1,6 @@
+from .read.decode import DatamatrixDecoder, ReedSolomonError
 from .locate import Locator
-from .read import Reader
-from .decode import Decoder
-from .reedsolo import ReedSolomonError
+from .read import DatamatrixReader
 
 # We predict the location of the center of each square (pixel/bit) in the datamatrix based on the
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
@@ -87,8 +86,8 @@ class DataMatrix:
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
-        reader = Reader()
-        decoder = Decoder()
+        reader = DatamatrixReader()
+        decoder = DatamatrixDecoder()
 
         # Try a few different small offsets for the sample positions until we find one that works
         for offset in offsets:

@@ -7,15 +7,16 @@ that is encoded by the barcode
 It is based on a similar component in the Java zxing library (see http://git.io/vlaFO)
 """
 from functools import partial
+
 import numpy as np
 
-from .reedsolo import ReedSolomonDecoder
+from datamatrix.read.reedsolo import ReedSolomonDecoder
 
 # The number of bytes in the data matrix that encode data (the remaining bytes are for error correction)
 NUM_DATA_BYTES = 8
 
 
-class Decoder:
+class DatamatrixDecoder:
     """Class for decoding a datamatrix from an array of bits
     """
     def read_datamatrix(self, bit_array, num_data_bytes=NUM_DATA_BYTES):

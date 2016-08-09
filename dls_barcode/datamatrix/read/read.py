@@ -6,7 +6,7 @@ import itertools
 DEFAULT_MATRIX_SIZE = 14
 
 
-class Reader:
+class DatamatrixReader:
     """ Contains functionality to read the bit pattern that encodes a barcode from an image
     """
 

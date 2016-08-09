@@ -1,6 +1,6 @@
 import unittest
-from dls_barcode.datamatrix.decode import Decoder
 
+from datamatrix.read import DatamatrixDecoder
 
 cases = [
     ([85, 102, 116, 117, 129], "Test"),
@@ -12,7 +12,7 @@ cases = [
 
 class TestDecode(unittest.TestCase):
     def test_datamatrix_decode(self):
-        decoder = Decoder()
+        decoder = DatamatrixDecoder()
 
         for bytes, message in cases:
             dec = decoder._interpret_bytes(bytes)

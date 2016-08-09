@@ -147,12 +147,12 @@ class ReedSolomonDecoder:
                 adj = self.gf.mul(adj, x)
             msg[pos[i]] ^= adj
 
-    def encode(self, msg_in, num_symbols):
-        if len(msg_in) + num_symbols > 255:
+    def encode(self, msg_in, num_ecc_symbols):
+        if len(msg_in) + num_ecc_symbols > 255:
             raise ValueError("message too long")
 
-        gen = self._generator_poly(num_symbols)
-        msg_out = bytearray(len(msg_in) + num_symbols)
+        gen = self._generator_poly(num_ecc_symbols)
+        msg_out = bytearray(len(msg_in) + num_ecc_symbols)
         msg_out[:len(msg_in)] = msg_in
         for i in range(0, len(msg_in)):
             coef = msg_out[i]
@@ -225,17 +225,3 @@ class GaloisField:
         for i in range(1, len(p)):
             y = self.mul(y, x) ^ p[i]
         return y
-
-
-
-
-
-
-
-
-
-
-
-
-
-

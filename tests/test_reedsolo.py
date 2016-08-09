@@ -1,6 +1,6 @@
 import unittest
 
-from dls_barcode.datamatrix.reedsolo import ReedSolomonDecoder, ReedSolomonError
+from datamatrix.read import ReedSolomonDecoder, ReedSolomonError
 
 
 """
