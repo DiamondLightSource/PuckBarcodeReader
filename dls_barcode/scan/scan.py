@@ -91,11 +91,12 @@ class Scanner:
         slot_centers = [bc.center() for bc in self._barcodes]
 
         # Use empty slots as points if not enough barcodes
-        use_emptys = len(self._barcodes) < 8
-        if use_emptys:
-            empty_circles = EmptySlotDetector.detect(self._frame_img, self._barcodes)
-            empty_centers = [c.center() for c in empty_circles]
-            slot_centers.extend(empty_centers)
+        if self.plate_type == Geometry.UNIPUCK:
+            use_emptys = len(self._barcodes) < 8
+            if use_emptys:
+                empty_circles = EmptySlotDetector.detect(self._frame_img, self._barcodes)
+                empty_centers = [c.center() for c in empty_circles]
+                slot_centers.extend(empty_centers)
 
         geometry = Geometry.calculate_geometry(self.plate_type, slot_centers)
         return geometry
