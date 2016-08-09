@@ -1,4 +1,5 @@
-from .read.decode import DatamatrixDecoder, ReedSolomonError
+from .read import DatamatrixDecoder
+from .read import ReedSolomonError
 from .locate import Locator
 from .read import DatamatrixReader
 
@@ -104,9 +105,9 @@ class DataMatrix:
                 self._read_ok = True
                 self._error_message = ""
                 break
-            except (ReedSolomonError, Exception) as ex:
+            except ReedSolomonError as ex:
                 self._read_ok = False
-                self._error_message = ex.message
+                self._error_message = str(ex)
 
         self._damaged_symbol = not self._read_ok
 

@@ -10,7 +10,7 @@ from functools import partial
 
 import numpy as np
 
-from datamatrix.read.reedsolo import ReedSolomonDecoder
+from .reedsolo import ReedSolomonDecoder
 
 # The number of bytes in the data matrix that encode data (the remaining bytes are for error correction)
 NUM_DATA_BYTES = 8

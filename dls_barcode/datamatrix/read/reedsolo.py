@@ -31,20 +31,12 @@ The following is the header from the original author:
 --------------------------------------------------------------------------------------------------------
 
 """
-
-# Values specific to encoding used for datamatrix.
-DATAMATRIX_PRIMITIVE = 0x12d
-DATAMATRIX_GEN_BASE = 1
-
-
-class ReedSolomonError(Exception):
-    def __init__(self, message):
-        self.message = message
+from .exception import ReedSolomonError
 
 
 class ReedSolomonDecoder:
     def __init__(self):
-        self.gf = GaloisField()
+        self.gf = GaloisField(GaloisField.DATAMATRIX)
 
     def decode(self, encoded_msg, num_data_bytes):
         return self._correct_msg(encoded_msg, num_data_bytes)
@@ -83,7 +75,7 @@ class ReedSolomonDecoder:
         return msg_out[:-num_symbols]
 
     def _calculate_syndromes(self, msg, num_symbols):
-        return [self.gf.poly_eval(msg, self.gf.exp(i + DATAMATRIX_GEN_BASE)) for i in range(num_symbols)]
+        return [self.gf.poly_eval(msg, self.gf.exp(i + self.gf.base())) for i in range(num_symbols)]
 
     def _forney_syndromes(self, syndromes, erase_positions, nmess):
         fsynd = list(syndromes)  # make a copy
@@ -143,7 +135,7 @@ class ReedSolomonDecoder:
             z = self.gf.poly_eval(q, self.gf.mul(x, x))
 
             adj = self.gf.div(y, self.gf.mul(x, z))
-            if DATAMATRIX_GEN_BASE != 0:
+            if self.gf.base() != 0:
                 adj = self.gf.mul(adj, x)
             msg[pos[i]] ^= adj
 
@@ -165,27 +157,50 @@ class ReedSolomonDecoder:
     def _generator_poly(self, num_symbols):
         g = [1]
         for i in range(0, num_symbols):
-            g = self.gf.poly_mul(g, [1, self.gf.exp(i + DATAMATRIX_GEN_BASE)])
+            g = self.gf.poly_mul(g, [1, self.gf.exp(i + self.gf.base())])
         return g
 
 
 class GaloisField:
-    def __init__(self):
+    DATAMATRIX = "datamatrix"
+    QR_CODE = "qr code"
+
+    DATAMATRIX_PRIMITIVE = 0x12d
+    DATAMATRIX_GEN_BASE = 1
+
+    QR_CODE_PRIMITIVE = 0x11d
+    QR_CODE_GEN_BASE = 0
+
+    def __init__(self, field_type):
+        if field_type == self.DATAMATRIX:
+            self._primitive = self.DATAMATRIX_PRIMITIVE
+            self._generator_base = self.DATAMATRIX_GEN_BASE
+        elif field_type == self.QR_CODE:
+            self._primitive = self.QR_CODE_PRIMITIVE
+            self._generator_base = self.QR_CODE_GEN_BASE
+        else:
+            raise ReedSolomonError("Unknown Galois Field type")
+
         # Generate the exponential and logarithm tables
         self._exp = [1] * 512
         self._log = [0] * 256
+        self._generate_tables()
 
+    def _generate_tables(self):
         x = 1
         for i in range(1, 255):
             x <<= 1
             if x & 0x100:
-                x ^= DATAMATRIX_PRIMITIVE
+                x ^= self._primitive
 
             self._exp[i] = x
             self._log[x] = i
 
         for i in range(255, 512):
             self._exp[i] = self._exp[i - 255]
+
+    def base(self):
+        return self._generator_base
 
     def exp(self, i):
         return self._exp[i]
