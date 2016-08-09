@@ -1,37 +1,37 @@
-"""
-Decode
-======
-This module is used to decode Data Matrix bit arrays, retrieving the data
-that is encoded by the barcode
-
-It is based on a similar component in the Java zxing library (see http://git.io/vlaFO)
-"""
 from functools import partial
 
 import numpy as np
 
+from .exception import ReedSolomonError, DatamatrixDecoderError
 from .reedsolo import ReedSolomonDecoder
-
-# The number of bytes in the data matrix that encode data (the remaining bytes are for error correction)
-NUM_DATA_BYTES = 8
 
 
 class DatamatrixDecoder:
-    """Class for decoding a datamatrix from an array of bits
+    """Class for decoding a datamatrix from an array of bits retrieving the data that is
+    encoded by the barcode.
     """
-    def read_datamatrix(self, bit_array, num_data_bytes=NUM_DATA_BYTES):
+    def __init__(self, num_data_bytes):
+        self._num_data_bytes = num_data_bytes
+        self._rs_decoder = ReedSolomonDecoder()
+
+    def set_num_data_bytes(self, num_bytes):
+        """ Set the number of bytes in the data matrix that encode data (the remaining  bytes
+        are for error correction).
+        """
+        self._num_data_bytes = num_bytes
+
+    def read_datamatrix(self, bit_array):
         """ Returns the string encoded by a data matrix bit array
         """
         encoded_bytes = self._extract_bytes(bit_array)
-        decoded_bytes = self._correct_bytes(encoded_bytes, num_data_bytes)
+        decoded_bytes = self._correct_bytes(encoded_bytes)
         data = self._interpret_bytes(decoded_bytes)
         return data
 
     @staticmethod
     def _extract_bytes(bits):
-        """Convert the array of bits into a set of raw bytes according to
-        the datamatrix standard. The bytes require further processing
-        before the actual message is retrieved.
+        """Convert the array of bits into a set of raw bytes according to the datamatrix standard.
+        The bytes require further processing before the actual message is retrieved.
         """
         n, m = bits.shape
         i, j = 4, 0
@@ -70,13 +70,14 @@ class DatamatrixDecoder:
                 break
         return data_bytes
 
-    @staticmethod
-    def _correct_bytes(encoded_bytes, num_data_bytes):
+    def _correct_bytes(self, encoded_bytes):
         """Apply Reed-Solomon error correction to the set of raw bytes
         """
-        # Note - can throw an exception - should be caught further up
-        rs_decode = ReedSolomonDecoder()
-        decoded = rs_decode.decode(encoded_bytes, num_data_bytes)
+        try:
+            decoded = self._rs_decoder.decode(encoded_bytes, self._num_data_bytes)
+        except ReedSolomonError as ex:
+            raise DatamatrixDecoderError("Unable to correct encoding errors: {}".format(str(ex)))
+
         return decoded
 
     @staticmethod
@@ -157,6 +158,7 @@ corner_case_4 = lambda n, m: [
     (  3, m-1),
 ]
 
+
 def read_shape(shape, i, j, bits, read, n, m):
     return sum(1 << s
                for s, b
@@ -171,6 +173,7 @@ read_corner_case_1 = partial(read_shape, corner_case_1, 0, 0)
 read_corner_case_2 = partial(read_shape, corner_case_2, 0, 0)
 read_corner_case_3 = partial(read_shape, corner_case_3, 0, 0)
 read_corner_case_4 = partial(read_shape, corner_case_4, 0, 0)
+
 
 def read_bit(i, j, bits, read, n, m):
     if i < 0:

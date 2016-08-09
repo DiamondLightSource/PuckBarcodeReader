@@ -26,9 +26,6 @@ class FinderPattern:
         # Radius of datamatrix (distance from center to a corner) in pixels
         self.radius = corner.distance_to(self.center)
 
-    def pack(self):
-        return tuple([self.corner.tuple(), self.baseVector.tuple(), self.sideVector.tuple()])
-
     def point_in_radius(self, point):
         return self.bounds().contains_point(point)
 

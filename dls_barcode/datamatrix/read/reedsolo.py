@@ -43,7 +43,7 @@ class ReedSolomonDecoder:
 
     def _correct_msg(self, msg_in, num_symbols):
         if len(msg_in) > 255:
-            raise ValueError("message too long")
+            raise ReedSolomonError("Message too long")
 
         msg_out = list(msg_in)  # copy of message
 
@@ -141,7 +141,7 @@ class ReedSolomonDecoder:
 
     def encode(self, msg_in, num_ecc_symbols):
         if len(msg_in) + num_ecc_symbols > 255:
-            raise ValueError("message too long")
+            raise ReedSolomonError("Message too long")
 
         gen = self._generator_poly(num_ecc_symbols)
         msg_out = bytearray(len(msg_in) + num_ecc_symbols)

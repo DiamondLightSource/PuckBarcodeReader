@@ -1,5 +1,5 @@
 from .read import DatamatrixDecoder
-from .read import ReedSolomonError
+from .read import DatamatrixDecoderError, DatamatrixReaderError
 from .locate import Locator
 from .read import DatamatrixReader
 
@@ -21,17 +21,34 @@ class BarcodeReadAlreadyPerformedException(Exception):
 class DataMatrix:
     """ Representation of a DataMatrix and its location in an image.
     """
+    DEFAULT_SIZE = 14
+    DEFAULT_MESSAGE_LENGTH = 8
+
     def __init__(self, finder_pattern, image):
         """ Initialize the DataMatrix object with its finder pattern location in an image. To actually
         interpret the DataMatrix, the perform_read() function must be called, which will attempt to read
-        the DM from the supplied image."""
+        the DM from the supplied image.
+
+        The matrix size is the width/height (in modules) of the Data matrix (including +2 for the edges).
+        The message length is the number of data bytes in the encoded message (i.e. not including the
+        error correction bytes).
+        """
         self._finder_pattern = finder_pattern
         self._image = image.img
+        self._matrix_size = self.DEFAULT_SIZE
+        self._message_length = self.DEFAULT_MESSAGE_LENGTH
+
         self._data = None
         self._error_message = ""
         self._read_ok = False
         self._damaged_symbol = False
         self._is_read_performed = False
+
+    def set_matrix_size(self, matrix_size):
+        self._matrix_size = matrix_size
+
+    def set_message_length(self, message_length):
+        self._message_length = message_length
 
     def perform_read(self, offsets=wiggle_offsets, force_read=False):
         """ Attempt to read the DataMatrix from the image supplied in the constructor at the position
@@ -87,25 +104,20 @@ class DataMatrix:
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
-        reader = DatamatrixReader()
-        decoder = DatamatrixDecoder()
+        reader = DatamatrixReader(self._matrix_size)
+        decoder = DatamatrixDecoder(self._message_length)
 
         # Try a few different small offsets for the sample positions until we find one that works
         for offset in offsets:
             # Read the bit array at the target location (with offset)
-            bit_array = reader.read_bitarray(self._finder_pattern, offset, gray_image)
-
-            # Todo: empty detection?
-            if bit_array is None:
-                continue
-
             # If the bit array is valid, decode it and create a datamatrix object
             try:
+                bit_array = reader.read_bitarray(self._finder_pattern, offset, gray_image)
                 self._data = decoder.read_datamatrix(bit_array)
                 self._read_ok = True
                 self._error_message = ""
                 break
-            except ReedSolomonError as ex:
+            except (DatamatrixDecoderError, DatamatrixReaderError) as ex:
                 self._read_ok = False
                 self._error_message = str(ex)
 
