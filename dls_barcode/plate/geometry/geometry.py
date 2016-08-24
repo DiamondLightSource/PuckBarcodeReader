@@ -1,10 +1,11 @@
 from .exception import GeometryException
+from .blank import BlankGeometry
 from .unipuck import Unipuck
 from .unipuck_calculator import UnipuckCalculator
 
 
 class Geometry:
-    NO_GEOMETRY = "None"
+    NO_GEOMETRY = BlankGeometry.TYPE_NAME
     UNIPUCK = Unipuck.TYPE_NAME
 
     TYPES = [NO_GEOMETRY, UNIPUCK]
@@ -24,7 +25,7 @@ class Geometry:
     @staticmethod
     def calculate_geometry(geo_name, slot_centers):
         if geo_name == Geometry.NO_GEOMETRY:
-            Geometry._raise_not_implemented(geo_name)
+            return BlankGeometry(slot_centers)
         elif geo_name == Geometry.UNIPUCK:
             calculator = UnipuckCalculator(slot_centers)
             geometry = calculator.perform_alignment()
