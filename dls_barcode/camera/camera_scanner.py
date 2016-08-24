@@ -1,14 +1,13 @@
 from __future__ import division
+
+import multiprocessing
+import time
+import winsound
+
 import cv2
 
-import winsound
-import time
-import multiprocessing
-
+from scan import Scanner, SlotScanner
 from util.image import Image, Color
-from scan import Scanner
-from scan.scan_slot import SlotScanner
-
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
 Q_LIMIT = 1
