@@ -1,14 +1,13 @@
 from .exception import GeometryException
 from .unipuck import Unipuck
 from .unipuck_calculator import UnipuckCalculator
-from .blank import BlankGeometry
 
 
 class Geometry:
-    NO_GEOMETRY = BlankGeometry.TYPE_NAME
+    NO_GEOMETRY = "None"
     UNIPUCK = Unipuck.TYPE_NAME
 
-    TYPES = [UNIPUCK]
+    TYPES = [NO_GEOMETRY, UNIPUCK]
 
     _MSG_NOT_IMPLEMENTED = "Geometry Type '{}' not implemented"
     _MSG_UNKNOWN = "Unknown Geometry Type: '{}'"
