@@ -1,7 +1,7 @@
 import time
 
 
-class GeometryScanResult:
+class ScanResult:
     def __init__(self, frame_number):
         self._frame_number = frame_number
 

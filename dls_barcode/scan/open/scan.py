@@ -1,7 +1,7 @@
 from dls_barcode.datamatrix import DataMatrix, Locator
 
 
-from .result import OpenScanResult
+from ..result import ScanResult
 
 
 class NoBarcodesError(Exception):
@@ -10,11 +10,13 @@ class NoBarcodesError(Exception):
 
 class OpenScanner:
     def __init__(self):
+        self._frame_number = 0
         self._frame_img = None
 
     def scan_frame(self, frame_img):
         self._frame_img = frame_img
-        result = OpenScanResult()
+        self._frame_number += 1
+        result = ScanResult(self._frame_number)
         result.start_timer()
 
         try:
