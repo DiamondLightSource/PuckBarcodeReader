@@ -1,6 +1,7 @@
 from dls_barcode.datamatrix import DataMatrix, Locator
 
-
+from dls_barcode.plate import Plate, Slot
+from dls_barcode.plate import Geometry
 from .result import OpenScanResult
 
 
@@ -10,6 +11,7 @@ class NoBarcodesError(Exception):
 
 class OpenScanner:
     def __init__(self):
+        self.plate_type = Geometry.NO_GEOMETRY
         self._frame_number = 0
         self._frame_img = None
 
@@ -22,12 +24,26 @@ class OpenScanner:
         result.set_old_barcode_data(self._old_barcode_data)
         result.start_timer()
 
+        # Read all the barcodes in the image
         try:
             barcodes = self._perform_frame_scan()
             result.set_barcodes(barcodes)
 
         except NoBarcodesError as ex:
             result.set_error(str(ex))
+
+        # Create a 'blank' geometry object to store the barcode locations
+        new_barcodes = result.new_barcodes()
+        num_barcodes = len(new_barcodes)
+        geometry = self._create_geometry(new_barcodes)
+
+        # Create the plate
+        if any(new_barcodes):
+            plate = Plate(self.plate_type, num_slots=num_barcodes)
+            plate.set_geometry(geometry)
+            for s, barcode in enumerate(new_barcodes):
+                plate.slot(s).set_barcode(barcode)
+            result.set_plate(plate)
 
         result.end_timer()
         return result
@@ -44,7 +60,13 @@ class OpenScanner:
 
         return barcodes
 
+    def _create_geometry(self, barcodes):
+        """ Create the blank geometry object which just stores the locations of all the barcodes. """
+        geometry = Geometry.calculate_geometry(self.plate_type, barcodes)
+        return geometry
+
     def _locate_all_barcodes_in_image(self):
+        """ Perform a deep scan to find all the datamatrix barcodes in the image (but don't read them). """
         # todo: use deep contour locator
         barcodes = DataMatrix.LocateAllBarcodesInImage(self._frame_img)
         if len(barcodes) == 0:

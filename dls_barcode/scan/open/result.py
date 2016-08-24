@@ -7,9 +7,6 @@ class OpenScanResult(ScanResult):
 
         self._old_barcode_data = []
 
-    def success(self):
-        return self._error is None
-
     def new_barcodes(self):
         new = []
         for barcode in self._barcodes:
