@@ -39,9 +39,7 @@ class SlotScanner:
         return brightness < self.brightness_threshold
 
     def wiggles_read(self, barcode, locate_type="NORMAL"):
-        w = 0.25
-        wiggle_offsets = [[0, 0], [w, w], [-w, -w], [w, -w], [-w, w]]
-        barcode.perform_read(wiggle_offsets)
+        barcode.perform_read(DataMatrix.DIAG_WIGGLES)
 
         self._DEBUG_WIGGLES_READ(barcode, locate_type, self.side_avg)
 

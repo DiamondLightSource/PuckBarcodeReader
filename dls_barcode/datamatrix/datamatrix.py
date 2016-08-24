@@ -24,6 +24,9 @@ class DataMatrix:
     DEFAULT_SIZE = 14
     DEFAULT_MESSAGE_LENGTH = 8
 
+    _w = 0.25
+    DIAG_WIGGLES = [[0, 0], [_w, _w], [-_w, -_w], [_w, -_w], [-_w, _w]]
+
     def __init__(self, finder_pattern, image):
         """ Initialize the DataMatrix object with its finder pattern location in an image. To actually
         interpret the DataMatrix, the perform_read() function must be called, which will attempt to read
