@@ -15,7 +15,7 @@ class NoBarcodesError(Exception):
     pass
 
 
-class Scanner:
+class GeometryScanner:
     def __init__(self, plate_type):
         self.plate_type = plate_type
 

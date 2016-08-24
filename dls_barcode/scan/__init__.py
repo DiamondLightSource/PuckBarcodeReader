@@ -1,1 +1,1 @@
-from .with_geometry import Scanner, SlotScanner
+from .with_geometry import GeometryScanner, SlotScanner

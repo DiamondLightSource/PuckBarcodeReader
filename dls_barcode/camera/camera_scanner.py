@@ -6,7 +6,7 @@ import winsound
 
 import cv2
 
-from scan import Scanner, SlotScanner
+from scan import GeometryScanner, SlotScanner
 from util.image import Image, Color
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
@@ -47,7 +47,7 @@ class CameraScanner:
         scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config)
 
         capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
-        scanner_pool = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
+        scanner_pool = multiprocessing.Process(target=_scanner_geometry_worker, args=scanner_args)
 
         capture_pool.start()
         scanner_pool.start()
@@ -107,7 +107,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, config):
     cv2.destroyAllWindows()
 
 
-def _scanner_worker(task_queue, overlay_queue, result_queue, options):
+def _scanner_geometry_worker(task_queue, overlay_queue, result_queue, options):
     """ Function used as the main loop of a worker process. Scan images for barcodes,
     combining partial scans until a full puck is reached.
 
@@ -122,7 +122,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
     SlotScanner.DEBUG_DIR = options.slot_image_directory.value()
 
     plate_type = options.plate_type.value()
-    scanner = Scanner(plate_type)
+    scanner = GeometryScanner(plate_type)
 
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)

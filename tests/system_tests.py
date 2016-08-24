@@ -1,7 +1,7 @@
 import time
 
 from config.barcode_config import BarcodeConfig
-from dls_barcode.scan import Scanner
+from dls_barcode.scan import GeometryScanner
 from dls_barcode.util import Image
 from data_store import Store
 
@@ -59,7 +59,7 @@ def run_tests():
         filename = TEST_IMG_DIR + file
         cv_image = Image.from_file(filename)
         gray_image = cv_image.to_grayscale()
-        results = Scanner("Unipuck").scan_next_frame(gray_image, is_single_image=True)
+        results = GeometryScanner("Unipuck").scan_next_frame(gray_image, is_single_image=True)
         plate = results.plate()
         store_scan(plate, cv_image)
 
