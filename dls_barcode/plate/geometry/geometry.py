@@ -16,7 +16,7 @@ class Geometry:
     @staticmethod
     def get_class(geo_name):
         if geo_name == Geometry.NO_GEOMETRY:
-            Geometry._raise_not_implemented(geo_name)
+            return BlankGeometry
         elif geo_name == Geometry.UNIPUCK:
             return Unipuck
         else:
