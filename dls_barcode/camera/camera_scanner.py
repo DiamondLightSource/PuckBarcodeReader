@@ -197,18 +197,15 @@ def _scanner_open_worker(task_queue, overlay_queue, result_queue, options):
             # Record the time so we can see how long its been since we last saw a plate
             last_plate_time = time.time()
 
-            new_barcodes = scan_result.new_barcodes()
-            for barcode in new_barcodes:
-                print(barcode.data())
+            plate = scan_result.plate()
 
-            # if scan_result.any_new_barcodes():
-            #     result_queue.put((plate, image))
+            if scan_result.any_new_barcodes():
+                result_queue.put((plate, image))
 
         else:
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
                 overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
-
 
 
 def _plate_beep(plate, options):
