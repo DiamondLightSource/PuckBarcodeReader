@@ -5,7 +5,7 @@ from dls_barcode.plate import Plate, Slot
 from dls_barcode.plate.geometry_adjuster import UnipuckGeometryAdjuster, GeometryAdjustmentError
 from dls_barcode.plate.geometry import Geometry, GeometryException
 
-from .result import ScanResult
+from .result import GeometryScanResult
 from .scan_plate import PlateScanner
 from .scan_slot import SlotScanner
 from .empty_detector import EmptySlotDetector
@@ -53,7 +53,7 @@ class GeometryScanner:
 
         self._frame_number += 1
 
-        self._frame_result = ScanResult(self._frame_number)
+        self._frame_result = GeometryScanResult(self._frame_number)
         self._frame_result.set_previous_plate(self._plate)
         self._frame_result.start_timer()
 
