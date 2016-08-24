@@ -6,7 +6,7 @@ import winsound
 
 import cv2
 
-from scan import GeometryScanner, SlotScanner
+from scan import GeometryScanner, SlotScanner, OpenScanner
 from util.image import Image, Color
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
@@ -46,8 +46,13 @@ class CameraScanner:
         capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, config)
         scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config)
 
+        if config.plate_type.value() == "None":
+            scanner_worker = _scanner_open_worker
+        else:
+            scanner_worker = _scanner_geometry_worker
+
         capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
-        scanner_pool = multiprocessing.Process(target=_scanner_geometry_worker, args=scanner_args)
+        scanner_pool = multiprocessing.Process(target=scanner_worker, args=scanner_args)
 
         capture_pool.start()
         scanner_pool.start()
@@ -162,6 +167,48 @@ def _scanner_geometry_worker(task_queue, overlay_queue, result_queue, options):
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
                 overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
+
+
+def _scanner_open_worker(task_queue, overlay_queue, result_queue, options):
+    """ Function used as the main loop of a worker process. Scan images for barcodes.
+    Unlike the _scanner_geometry_worker, it does not attempt to combine the results of
+    partially successful frames, instead it treats every frame as separate.
+    """
+    last_plate_time = time.time()
+
+    scanner = OpenScanner()
+
+    while True:
+        # Get next image from queue (terminate if a queue contains a 'None' sentinel)
+        frame = task_queue.get(True)
+        if frame is None:
+            break
+
+        # Make grayscale version of image
+        image = Image(frame)
+        gray_image = image.to_grayscale()
+
+        scan_result = scanner.scan_frame(gray_image)
+
+        if options.console_frame.value():
+            scan_result.print_summary()
+
+        if scan_result.success():
+            # Record the time so we can see how long its been since we last saw a plate
+            last_plate_time = time.time()
+
+            new_barcodes = scan_result.new_barcodes()
+            for barcode in new_barcodes:
+                print(barcode.data())
+
+            # if scan_result.any_new_barcodes():
+            #     result_queue.put((plate, image))
+
+        else:
+            time_since_plate = time.time() - last_plate_time
+            if time_since_plate > NO_PUCK_TIME:
+                overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
+
 
 
 def _plate_beep(plate, options):
