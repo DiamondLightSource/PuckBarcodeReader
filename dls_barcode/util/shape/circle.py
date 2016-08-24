@@ -1,6 +1,7 @@
 from __future__ import division
 
 import math
+from .point import Point
 
 
 class Circle:
@@ -52,3 +53,15 @@ class Circle:
         center_sep_sq = self._center.distance_to_sq(circle.center())
         radius_sum_sq = (self.radius() + circle.radius()) ** 2
         return center_sep_sq < radius_sum_sq
+
+    def serialize(self):
+        return "{}:{}:{}".format(self.x(), self.y(), self._radius)
+
+    @staticmethod
+    def deserialize(string):
+        tokens = string.split(":")
+        x = float(tokens[0])
+        y = float(tokens[1])
+        r = float(tokens[2])
+        center = Point(x, y)
+        return Circle(center, r)
