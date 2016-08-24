@@ -7,10 +7,14 @@ from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
 class Plate:
     """ Represents a sample holder plate.
     """
-    def __init__(self, geometry_name):
+    def __init__(self, geometry_name, num_slots=-1):
         self.id = str(uuid.uuid1())
 
-        self.num_slots = Geometry.get_num_slots(geometry_name)
+        if num_slots == -1:
+            self.num_slots = Geometry.get_num_slots(geometry_name)
+        else:
+            self.num_slots = num_slots
+
         self.type = geometry_name
         self._geometry = None
 
