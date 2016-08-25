@@ -10,3 +10,4 @@ Contents
 * [Data Matrix](docs/datamatrix.md)
 * [Data Matrix Locator Algorithms](docs/datamatrix-locator.md)
 * [Data Matrix Reading](docs/datamatrix-reader.md)
+* [Unipuck Geometry Calculation](docs/unipuck.md)
