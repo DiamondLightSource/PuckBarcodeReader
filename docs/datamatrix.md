@@ -36,7 +36,7 @@ Data Matrix makes use of [Reed-Solomon](https://en.wikipedia.org/wiki/Reed%E2%80
 
 Under RS coding, a mathematical operation is run on the message (the series of `n` bytes) to be encoded. This generates another set of `t` ECC bytes which are appended to the original data bytes. The encoded message is then `n + t` bytes in size.
 
-When decoding the encoding message, the reverse mathematical operation automatically discovers if any of the bytes have been corrupted or lost, and can regenerate the complete original message.  The maximum number of bytes that can be recovered if lost or corrupted is equal to `t/2`. Note that while this can recover from a substantial amount of damage done to the data area; if the L-shaped finder pattern is damaged, a barcode scanner may not be able to locate the barcode at all and therefore wont be able to read it.
+When decoding the encoded message, the reverse mathematical operation automatically discovers if any of the bytes have been corrupted or lost, and can regenerate the complete original message.  The maximum number of bytes that can be recovered if lost or corrupted is equal to `t/2`. Note that while this can recover from a substantial amount of damage done to the data area; if the L-shaped finder pattern is damaged, a barcode scanner may not be able to locate the barcode at all and therefore wont be able to read it.
 
 When the data matrix barcodes are created, the message is encoded using Reed-Solomon codes, and then the encoded message (data + ECC bytes) is translated into a barcode symbol.
 

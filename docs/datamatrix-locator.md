@@ -6,7 +6,7 @@ In this application, we split the job of reading data matrix barcodes into two p
 
 This application implements two different locator methods. The first (contours) is very fast, whereas the second (squares) is slower but can often locate barcodes that the first method misses.
 
-The output of a locator procedure is a Finder Pattern object which stores the position and orientation of a barcode, allowing it to be read at some later point.
+The output of a locator procedure is a `FinderPattern` object which stores the position and orientation of a barcode, allowing it to be read at some later point.
 
 When scanning an image, the contour locator algorithm is run first over the whole image. The geometry algorithm then uses the locations of the finder patterns that have been found to infer the geometry of the sample holder and thus the locations of all the slots in the sample holder. This means that if the contour locator misses any barcodes, we will still know roughly where they should be. We then run a more detailed version of the contour locator algorithm and/or the square finding algorithm on the small area around the slot in an effort to actually find (and then read) the barcode. 
 
@@ -16,7 +16,7 @@ The contour locator is quick to run but can occasionally have difficulty locatin
 
 During the first stages of scanning a new image, the contour locator is run over the whole image. This will locate most of the barcodes in the image. These locations can then be used to determine the geometry of the sample holder and therefore which number slot each barcode likely occupies.
 
-Here, the contour locator algorithm will be demonstrated with a small image containing a single barcode. The first sep is to convert the image to grayscale:
+Here, the contour locator algorithm will be demonstrated with a small image containing a single barcode. The first step is to convert the image to grayscale:
 
 ![Locator - Color Image](img/locator/1-color.jpg) ![Locator - Grayscale Image](img/locator/2-gray.jpg)
 

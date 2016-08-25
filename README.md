@@ -8,4 +8,4 @@ Contents
 * [Using the Source Code](docs/code.md)
 * [Background and Description of Problem](docs/problem.md)
 * [Data Matrix](docs/datamatrix.md)
-* [Data Matrix Locator Algorithms](docs/locator.md)
+* [Data Matrix Locator Algorithms](docs/datamatrix-locator.md)

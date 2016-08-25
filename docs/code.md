@@ -2,7 +2,7 @@ Using the Source Code - Windows
 ===============================
 This application is written in Python (v3.5) and was developed under Windows but should be portable to other platforms.
 
-The following steps will help you prepare an appropriate Python environment to run this program. These instructions assume that you will use the 32-bit version on Python 3.5.1, but the barcode scanner should also run correctly under other versions of Python (e.g. 2.7, 3.4, 64bit).
+The following steps will help you prepare an appropriate Python environment to run this program. These instructions assume that you will use the 32-bit version of Python 3.5.1, but the barcode scanner should also run correctly under other versions of Python (e.g. 2.7, 3.4, 64bit).
 
 * Install the appropriate version of Python by downloading the Windows binary installer from <https://www.python.org/downloads/release/python-351/>
     * You want the one labelled 'Windows x86 MSI installer'
@@ -39,7 +39,7 @@ A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used t
 
 Install PyInstaller with `pip install pyinstaller`. Make sure that the correct version of Python is referenced in your system path.
 
-To create the executable file, run the `build.bat` file. This will create the fiel `bin\barcode.exe`. This will be fairly large (~40 MB). If everything has worked correctly, this single file will be all that is needed to run the barcode scanner application.
+To create the executable file, run the `build.bat` file. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). If everything has worked correctly, this single file will be all that is needed to run the barcode scanner application.
 
 
 
