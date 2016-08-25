@@ -9,3 +9,4 @@ Contents
 * [Background and Description of Problem](docs/problem.md)
 * [Data Matrix](docs/datamatrix.md)
 * [Data Matrix Locator Algorithms](docs/datamatrix-locator.md)
+* [Data Matrix Reading](docs/datamatrix-reader.md)

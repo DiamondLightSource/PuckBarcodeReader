@@ -4,7 +4,7 @@ Before we can read barcodes from an image, i.e., convert the matrix of black and
 
 In this application, we split the job of reading data matrix barcodes into two parts: 1) locating the barcodes in the image; and 2) reading the barcodes that we have found. The main reason for doing this is that the actual reading of the barcode is relatively expensive computationally. Splitting the functionality allows us to be selective about which barcodes we want to read, which is important in continuous scanning mode where it is likely that we will have read many of the barcodes already and so would waste considerable time if we re-read every barcode.
 
-This application implements two different locator methods. The first (contours) is very fast, whereas the second (squares) is slower but can often locate barcodes that the first method misses.
+This application implements two different locator methods. The first (contours) is very fast, whereas the second (squares) is slower but can often locate barcodes that the first method misses. The code implementing these algorithms is found in `datamatrix\locate\`
 
 The output of a locator procedure is a `FinderPattern` object which stores the position and orientation of a barcode, allowing it to be read at some later point.
 
