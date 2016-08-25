@@ -3,6 +3,7 @@ from functools import partial
 import numpy as np
 
 from .exception import ReedSolomonError, DatamatrixDecoderError
+from .interpret import DatamatrixByteInterpreter
 from .reedsolo import ReedSolomonDecoder
 
 
@@ -25,7 +26,7 @@ class DatamatrixDecoder:
         """
         encoded_bytes = self._extract_bytes(bit_array)
         decoded_bytes = self._correct_bytes(encoded_bytes)
-        data = self._interpret_bytes(decoded_bytes)
+        data = DatamatrixByteInterpreter.interpret_bytes(decoded_bytes)
         return data
 
     @staticmethod
@@ -79,28 +80,6 @@ class DatamatrixDecoder:
             raise DatamatrixDecoderError("Unable to correct encoding errors: {}".format(str(ex)))
 
         return decoded
-
-    @staticmethod
-    def _interpret_bytes(data_bytes):
-        """Converts the (corrected) raw set of bytes from the datamatrix into an
-        ASCII message
-        """
-        message = []
-        for byte in data_bytes:
-            if 1 <= byte < 129:  # ASCII.
-                message.append(chr(byte - 1))
-            elif byte == 129:  # EOM byte.
-                break
-            elif 130 <= byte < 230:  # Digit pairs 00-99.
-                message.append(
-                    str(byte - 130) if byte >= 140 else '0'+str(byte - 130))
-            elif 230 <= byte < 242:
-                # Other parts of the Data Matrix spec., not supported.
-                pass
-            elif 242 <= byte < 256 or byte == 0:  # Unused parts of message space.
-                pass
-
-        return ''.join(m for m in message)
 
 
 utah = lambda _, __: [  # (i, j), msb to lsb
