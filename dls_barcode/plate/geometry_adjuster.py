@@ -1,7 +1,7 @@
 import numpy as np
 
-from .geometry.unipuck_calculator import UnipuckCalculator
 from dls_barcode.util import Transform
+from dls_barcode.geometry.unipuck_calculator import UnipuckCalculator
 
 
 class GeometryAdjustmentError(Exception):

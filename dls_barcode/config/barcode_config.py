@@ -4,7 +4,7 @@ from dls_barcode.util import Color
 from dls_barcode.util import Config, DirectoryConfigItem, ColorConfigItem, \
     IntConfigItem, BoolConfigItem, EnumConfigItem
 
-from dls_barcode.plate import Geometry
+from dls_barcode.geometry import Geometry
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
 

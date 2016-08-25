@@ -1,6 +1,6 @@
 import uuid
 
-from .geometry import Geometry
+from dls_barcode.geometry import Geometry
 from .slot import Slot, EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
 
 

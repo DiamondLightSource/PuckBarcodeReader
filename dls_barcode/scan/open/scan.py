@@ -1,7 +1,7 @@
 from dls_barcode.datamatrix import DataMatrix, Locator
 
 from dls_barcode.plate import Plate, Slot
-from dls_barcode.plate import Geometry
+from dls_barcode.geometry import Geometry
 from .result import OpenScanResult
 
 
