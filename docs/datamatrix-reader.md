@@ -18,7 +18,7 @@ This routine is implemented in `datamatrix\read\read.py`
  
 Recovering the Message
 ----------------------
-As explained in the [encoding section](docs/datamatrix.md#encoding), of the datamatrix document, the datamatrix symbol is divided into a series of shapes (called 'Utahs'), each of which contains 8 pixels and thus encodes a single byte.
+As explained in the encoding section of the [datamatrix](docs/datamatrix.md) document, the datamatrix symbol is divided into a series of shapes (called 'Utahs'), each of which contains 8 pixels and thus encodes a single byte.
 
 The next step is to run an algorithm (`datamatrix\read\decode.py`) that extracts these shapes from bit array, thereby converting the array into a series of bytes. Each of these bytes is just a number between 0 and 255.
 
