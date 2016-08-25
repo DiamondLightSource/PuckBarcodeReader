@@ -1,4 +1,6 @@
-from .exception import DatamatrixDecoderError, DatamatrixReaderError
-from .reedsolo import ReedSolomonDecoder
-from .decode import DatamatrixDecoder
-from .read import DatamatrixReader
+from .bits import DatamatrixBitReader, DatamatrixReaderError
+from .extract import DatamatrixByteExtractor
+from .reedsolo import ReedSolomonDecoder, ReedSolomonError
+from .interpret import DatamatrixByteInterpreter
+
+

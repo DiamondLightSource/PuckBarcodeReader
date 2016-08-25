@@ -29,9 +29,11 @@ The following is the header from the original author:
 |    ``RSCodec`` class will split longer messages into chunks and encode/decode them separately;
 |    it shouldn't make a difference from an API perspective.
 --------------------------------------------------------------------------------------------------------
-
 """
-from .exception import ReedSolomonError
+
+
+class ReedSolomonError(Exception):
+    pass
 
 
 class ReedSolomonDecoder:
@@ -39,7 +41,12 @@ class ReedSolomonDecoder:
         self.gf = GaloisField(GaloisField.DATAMATRIX)
 
     def decode(self, encoded_msg, num_data_bytes):
-        return self._correct_msg(encoded_msg, num_data_bytes)
+        try:
+            decoded = self._correct_msg(encoded_msg, num_data_bytes)
+        except ReedSolomonError as ex:
+            raise ReedSolomonError("Unable to correct encoding errors: {}".format(str(ex)))
+
+        return decoded
 
     def _correct_msg(self, msg_in, num_symbols):
         if len(msg_in) > 255:

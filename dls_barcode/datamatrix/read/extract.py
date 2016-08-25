@@ -2,35 +2,13 @@ from functools import partial
 
 import numpy as np
 
-from .exception import ReedSolomonError, DatamatrixDecoderError
-from .interpret import DatamatrixByteInterpreter
-from .reedsolo import ReedSolomonDecoder
 
-
-class DatamatrixDecoder:
+class DatamatrixByteExtractor:
     """Class for decoding a datamatrix from an array of bits retrieving the data that is
     encoded by the barcode.
     """
-    def __init__(self, num_data_bytes):
-        self._num_data_bytes = num_data_bytes
-        self._rs_decoder = ReedSolomonDecoder()
-
-    def set_num_data_bytes(self, num_bytes):
-        """ Set the number of bytes in the data matrix that encode data (the remaining  bytes
-        are for error correction).
-        """
-        self._num_data_bytes = num_bytes
-
-    def read_datamatrix(self, bit_array):
-        """ Returns the string encoded by a data matrix bit array
-        """
-        encoded_bytes = self._extract_bytes(bit_array)
-        decoded_bytes = self._correct_bytes(encoded_bytes)
-        data = DatamatrixByteInterpreter.interpret_bytes(decoded_bytes)
-        return data
-
     @staticmethod
-    def _extract_bytes(bits):
+    def extract_bytes(bits):
         """Convert the array of bits into a set of raw bytes according to the datamatrix standard.
         The bytes require further processing before the actual message is retrieved.
         """
@@ -70,16 +48,6 @@ class DatamatrixDecoder:
             if not(i < n or j < m):
                 break
         return data_bytes
-
-    def _correct_bytes(self, encoded_bytes):
-        """Apply Reed-Solomon error correction to the set of raw bytes
-        """
-        try:
-            decoded = self._rs_decoder.decode(encoded_bytes, self._num_data_bytes)
-        except ReedSolomonError as ex:
-            raise DatamatrixDecoderError("Unable to correct encoding errors: {}".format(str(ex)))
-
-        return decoded
 
 
 utah = lambda _, __: [  # (i, j), msb to lsb

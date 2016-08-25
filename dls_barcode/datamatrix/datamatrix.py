@@ -1,7 +1,10 @@
-from .read import DatamatrixDecoder
-from .read import DatamatrixDecoderError, DatamatrixReaderError
 from .locate import Locator
-from .read import DatamatrixReader
+from .read import DatamatrixReaderError, ReedSolomonError
+from .read import DatamatrixBitReader
+from .read import DatamatrixByteExtractor
+from .read import ReedSolomonDecoder
+from .read import DatamatrixByteInterpreter
+
 
 # We predict the location of the center of each square (pixel/bit) in the datamatrix based on the
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
@@ -107,20 +110,26 @@ class DataMatrix:
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
-        reader = DatamatrixReader(self._matrix_size)
-        decoder = DatamatrixDecoder(self._message_length)
+        bit_reader = DatamatrixBitReader(self._matrix_size)
+        extractor = DatamatrixByteExtractor()
+        decoder = ReedSolomonDecoder()
+        interpreter = DatamatrixByteInterpreter()
 
         # Try a few different small offsets for the sample positions until we find one that works
         for offset in offsets:
             # Read the bit array at the target location (with offset)
             # If the bit array is valid, decode it and create a datamatrix object
             try:
-                bit_array = reader.read_bitarray(self._finder_pattern, offset, gray_image)
-                self._data = decoder.read_datamatrix(bit_array)
+                bit_array = bit_reader.read_bit_array(self._finder_pattern, offset, gray_image)
+                encoded_bytes = extractor.extract_bytes(bit_array)
+                decoded_bytes = decoder.decode(encoded_bytes, self._message_length)
+                data = interpreter.interpret_bytes(decoded_bytes)
+
+                self._data = data
                 self._read_ok = True
                 self._error_message = ""
                 break
-            except (DatamatrixDecoderError, DatamatrixReaderError) as ex:
+            except (DatamatrixReaderError, ReedSolomonError) as ex:
                 self._read_ok = False
                 self._error_message = str(ex)
 

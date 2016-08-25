@@ -3,17 +3,19 @@ from __future__ import division
 import numpy as np
 import itertools
 
-from .exception import DatamatrixReaderError
+
+class DatamatrixReaderError(Exception):
+    pass
 
 
-class DatamatrixReader:
+class DatamatrixBitReader:
     """ Contains functionality to read the bit pattern that encodes a barcode from an image
     """
 
     def __init__(self, matrix_size):
         self._matrix_size = matrix_size
 
-    def read_bitarray(self, finder_pattern, offset, cv_img):
+    def read_bit_array(self, finder_pattern, offset, cv_img):
         """ Return a datamatrix boolean array by sampling points in the image array.
 
         After extracting the samples, this function performs a threshold on each ([0, 255] -> [0, 1])

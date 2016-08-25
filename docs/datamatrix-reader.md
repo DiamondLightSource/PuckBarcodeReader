@@ -14,13 +14,13 @@ For each cell, we then calculate its the brightness by looking at the pixels in 
 
 The end result of this process is a square array of bits (0s and 1s). We ignore the cells that make up the border since they do not encode any data.
 
-This routine is implemented in `datamatrix\read\read.py`
+This routine is implemented in `datamatrix\read\bits.py`
  
 Recovering the Message
 ----------------------
 As explained in the encoding section of the [datamatrix](docs/datamatrix.md) document, the datamatrix symbol is divided into a series of shapes (called 'Utahs'), each of which contains 8 pixels and thus encodes a single byte.
 
-The next step is to run an algorithm (`datamatrix\read\decode.py`) that extracts these shapes from bit array, thereby converting the array into a series of bytes. Each of these bytes is just a number between 0 and 255.
+The next step is to run an algorithm (`datamatrix\read\extract.py`) that extracts these shapes from bit array, thereby converting the array into a series of bytes. Each of these bytes is just a number between 0 and 255.
 
 This series of bytes is passed to the Reed-Solomon decoder (`datamatrix\read\reedsolo.py`), which corrects any errors, returning a list of corrected bytes.
 

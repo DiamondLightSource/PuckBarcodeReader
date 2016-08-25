@@ -1,6 +1,6 @@
 import unittest
 
-from datamatrix.read import DatamatrixDecoder
+from datamatrix.read import DatamatrixByteInterpreter
 
 cases = [
     ([85, 102, 116, 117, 129], "Test"),
@@ -12,10 +12,10 @@ cases = [
 
 class TestDecode(unittest.TestCase):
     def test_datamatrix_decode(self):
-        decoder = DatamatrixDecoder()
+        decoder = DatamatrixByteInterpreter()
 
         for bytes, message in cases:
-            dec = decoder._interpret_bytes(bytes)
+            dec = decoder.interpret_bytes(bytes)
             assert dec == message
 
 if __name__ == '__main__':
