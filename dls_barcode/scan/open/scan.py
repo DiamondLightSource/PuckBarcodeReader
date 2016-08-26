@@ -17,7 +17,7 @@ class OpenScanner:
 
         self._old_barcode_data = []
 
-    def scan_frame(self, frame_img):
+    def scan_next_frame(self, frame_img):
         self._frame_img = frame_img
         self._frame_number += 1
         result = OpenScanResult(self._frame_number)

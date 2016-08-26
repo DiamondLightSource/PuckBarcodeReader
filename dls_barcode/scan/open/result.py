@@ -17,10 +17,3 @@ class OpenScanResult(ScanResult):
 
     def set_old_barcode_data(self, barcode_data):
         self._old_barcode_data = barcode_data[:]
-
-    def any_new_barcodes(self):
-        return len(self.new_barcodes()) > 0
-
-    def print_summary(self):
-        print('\n------- Frame {} -------'.format(self._frame_number))
-        print("Scan Duration: {0:.3f} secs".format(self.scan_time()))
