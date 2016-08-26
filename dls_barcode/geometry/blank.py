@@ -14,7 +14,9 @@ class BlankGeometry:
     def _set_barcode_bounds(self, barcodes):
         self._barcode_bounds = []
         for barcode in barcodes:
-            self._barcode_bounds.append(barcode.bounds())
+            bounds = barcode.bounds()
+            bounds = Circle(bounds.center(), int(bounds.radius()))
+            self._barcode_bounds.append(bounds)
 
     def slot_bounds(self, slot_num):
         return self._barcode_bounds[slot_num - 1]
