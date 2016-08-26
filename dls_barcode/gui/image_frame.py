@@ -37,7 +37,7 @@ class ImageFrame(QGroupBox):
         self._frame.clear()
         self._frame.setAlignment(Qt.AlignCenter)
 
-        if image is not None:
+        if image is not None and image.is_valid():
             pixmap = image.to_qt_pixmap(self._frame.size())
             self._frame.setPixmap(pixmap)
         else:

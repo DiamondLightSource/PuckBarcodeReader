@@ -26,6 +26,9 @@ class Image:
         # All draw requests will be offset by this amount
         self.draw_offset = Point(0, 0)
 
+    def is_valid(self):
+        return self.width > 0 and self.height > 0
+
     @staticmethod
     def from_file(filename):
         """ Return a new image by loading from the specified image file. """
