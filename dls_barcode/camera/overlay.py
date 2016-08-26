@@ -46,10 +46,10 @@ class PlateOverlay(Overlay):
     already been scanned.
     """
     def __init__(self, plate, options, lifetime=2):
+        Overlay.__init__(self, lifetime)
+
         self._plate = plate
         self._options = options
-        self._lifetime = lifetime
-        self._start_time = time.time()
 
     def draw_on_image(self, img):
         """ Draw the plate highlight  to the image.
