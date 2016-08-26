@@ -135,11 +135,11 @@ class DataMatrix:
 
         self._damaged_symbol = not self._read_ok
 
-    def draw(self, cvimg, color):
+    def draw(self, img, color):
         """ Draw the lines of the finder pattern on the specified image. """
         fp = self._finder_pattern
-        cvimg.draw_line(fp.c1, fp.c2, color)
-        cvimg.draw_line(fp.c1, fp.c3, color)
+        img.draw_line(fp.c1, fp.c2, color)
+        img.draw_line(fp.c1, fp.c3, color)
 
     @staticmethod
     def LocateAllBarcodesInImage(grayscale_img):

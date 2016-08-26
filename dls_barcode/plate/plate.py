@@ -93,15 +93,15 @@ class Plate:
     #########################
     # DRAWING FUNCTIONS
     #########################
-    def draw_barcodes(self, cvimg, color):
+    def draw_barcodes(self, img, color):
         for slot in self._slots:
             if slot.state() == slot.VALID:
-                slot.barcode().draw(cvimg, color)
+                slot.barcode().draw(img, color)
 
-    def draw_plate(self, cvimg, color):
-        self._geometry.draw_plate(cvimg, color)
+    def draw_plate(self, img, color):
+        self._geometry.draw_plate(img, color)
 
-    def draw_pins(self, cvimg, options):
+    def draw_pins(self, img, options):
         for i, slot in enumerate(self._slots):
             state = slot.state()
             if state == Slot.VALID:
@@ -110,7 +110,7 @@ class Plate:
                 color = options.col_empty()
             else:
                 color = options.col_bad()
-            self._geometry.draw_pin_highlight(cvimg, color, i+1)
+            self._geometry.draw_pin_highlight(img, color, i + 1)
 
-    def crop_image(self, cvimg):
-        self._geometry.crop_image(cvimg)
+    def crop_image(self, img):
+        self._geometry.crop_image(img)

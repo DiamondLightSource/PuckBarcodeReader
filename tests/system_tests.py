@@ -40,8 +40,8 @@ OPTIONS = BarcodeConfig(CONFIG_FILE)
 STORE = Store(OPTIONS.store_directory.value(), OPTIONS)
 
 
-def store_scan(plate, cvimg):
-    STORE.add_record(plate, cvimg)
+def store_scan(plate, img):
+    STORE.add_record(plate, img)
 
 
 def run_tests():
