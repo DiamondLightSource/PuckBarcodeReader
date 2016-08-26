@@ -46,6 +46,11 @@ class Record:
         self.geometry = geometry
         self.id = str(id)
 
+        # todo: find a work around for this (i.e. encode the semi colons)
+        # Remove ";" from barcode data
+        for i, bc in enumerate(self.barcodes):
+            self.barcodes[i] = bc.replace(self.ITEM_SEPARATOR, "")
+
         # Generate timestamp and uid if none are supplied
         if timestamp == 0:
             self.timestamp = time.time()
