@@ -107,7 +107,12 @@ class Image:
         self.height = size[0]
 
     def crop_image_to_rectangle(self, rect):
-        sub = self.img[rect[1]:rect[3], rect[0]:rect[2]]
+        xstart = int(max(rect[0], 0))
+        xend = int(min(rect[2], self.width))
+        ystart = int(max(rect[1], 0))
+        yend = int(min(rect[3], self.height))
+
+        sub = self.img[ystart:yend, xstart:xend]
         self.img = sub
         size = self.img.shape
         self.width = size[1]
