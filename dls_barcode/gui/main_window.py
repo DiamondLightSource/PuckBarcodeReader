@@ -6,7 +6,7 @@ from PyQt4.QtGui import QPushButton, QHBoxLayout
 
 from camera import CameraScanner
 from config import BarcodeConfig, BarcodeConfigDialog
-from scan import GeometryScanner, SlotScanner
+from scan import GeometryScanner, SlotScanner, OpenScanner
 from util import Image
 
 from .barcode_table import BarcodeTable
@@ -162,7 +162,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             SlotScanner.DEBUG = self._config.slot_images.value()
             SlotScanner.DEBUG_DIR = self._config.slot_image_directory.value()
 
-            scan_result = GeometryScanner(plate_type).scan_next_frame(gray_image, is_single_image=True)
+            if plate_type == "None":
+                scanner = OpenScanner()
+            else:
+                scanner = GeometryScanner(plate_type)
+
+            scan_result = scanner.scan_next_frame(gray_image, is_single_image=True)
             plate = scan_result.plate()
 
             # If the scan was successful, store the results

@@ -1,6 +1,6 @@
-from dls_barcode.datamatrix import DataMatrix, Locator
+from dls_barcode.datamatrix import DataMatrix
 
-from dls_barcode.plate import Plate, Slot
+from dls_barcode.plate import Plate
 from dls_barcode.geometry import Geometry
 from .result import OpenScanResult
 
@@ -17,7 +17,7 @@ class OpenScanner:
 
         self._old_barcode_data = []
 
-    def scan_next_frame(self, frame_img):
+    def scan_next_frame(self, frame_img, is_single_image=False):
         self._frame_img = frame_img
         self._frame_number += 1
         result = OpenScanResult(self._frame_number)
