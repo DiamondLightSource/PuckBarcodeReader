@@ -174,8 +174,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             if plate is not None:
                 self.recordTable.add_record(plate, cv_image)
             else:
-                QtGui.QMessageBox.warning(self, "Scanning Error",
-                                          "There was a problem scanning the image.")
+                error = "There was a problem scanning the image:\n{}".format(scan_result.error())
+                QtGui.QMessageBox.warning(self, "Scanning Error", error)
 
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
