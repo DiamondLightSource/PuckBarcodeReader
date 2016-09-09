@@ -81,7 +81,8 @@ class GeometryScanner:
 
     def _locate_all_barcodes_in_image(self):
         if self._is_single_image:
-            barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img)
+            # barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img)
+            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img)
         else:
             barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img)
 
