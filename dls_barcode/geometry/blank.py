@@ -5,7 +5,7 @@ class BlankGeometry:
     _SERIAL_DELIM = "-"
 
     TYPE_NAME = "None"
-    NUM_SLOTS = 20
+    NUM_SLOTS = 200
 
     def __init__(self, barcodes):
         self._barcode_bounds = []
