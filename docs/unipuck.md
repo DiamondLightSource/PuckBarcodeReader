@@ -64,6 +64,19 @@ We use 2-degree increments, so try 180 different angles. For each angle we calcu
 For a given angle, for each barcode point, the error is simply the distance from the point to the nearest template slot center. The total error for the angle is then the some of the errors of every point.
 
 
+Empty Slots
+-----------
+It may sometimes be the case that there aren't enough barcodes in the puck to correctly calculate a unique orientation. If for example there were only barcodes in the 5 slots of the inner layer, then there would be 5 equivalent orientations which would give a best fit. In this case, we can often obtain more pin position points to use with the geometry algorithm by looking for empty slots in the puck (i.e., slots without a pin).
+
+Because of the way the pucks are made, empty slots appear as black circles in an image of the puck. An algorithm called HoughCircles can be used to locate circles in an image. This algorithm produces much better results and is vastly more efficient if the size and separation of the circles you are looking for are known. The approximate size of the circles (as they appear in the image) can be calculated from our knowledge of the size of the barcodes that we have found, and of course we know their separation from the geometry of the puck.
+
+If we have detected a low number of barcodes, we run this algorithm on the image and will usually locate most of the empty slots. The center points of these circles roughly correspond to the center of the slot so these points can then be fed into the geometry calculation algorithm. This means that we can accurately determine the slot position of a barcode in the puck, even if there is only a single barcode.
+
+The center of the empty slot circles are slightly closer to the center of the puck than the center of the barcodes. This means that if there are a large number of empty slights, the algorithm calculates that the radius of the puck is smaller than it actually is, though this doesn't usually affect the accuracy of the results. 
+ 
+Note that we don't use this technique to actually specify whether a slot is empty or not because the circle finder algorithm will often find the pins as well (for that we use a different algorithm that examines the relative brightness of each slot).
+
+
 
 
 
