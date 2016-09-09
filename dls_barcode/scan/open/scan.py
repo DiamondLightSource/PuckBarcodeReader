@@ -14,12 +14,14 @@ class OpenScanner:
         self.plate_type = Geometry.NO_GEOMETRY
         self._frame_number = 0
         self._frame_img = None
+        self._is_single_image = False
 
         self._old_barcode_data = []
 
     def scan_next_frame(self, frame_img, is_single_image=False):
         self._frame_img = frame_img
         self._frame_number += 1
+        self._is_single_image = is_single_image
         result = OpenScanResult(self._frame_number)
         result.set_old_barcode_data(self._old_barcode_data)
         result.start_timer()
@@ -67,8 +69,11 @@ class OpenScanner:
 
     def _locate_all_barcodes_in_image(self):
         """ Perform a deep scan to find all the datamatrix barcodes in the image (but don't read them). """
-        # todo: use deep contour locator
-        barcodes = DataMatrix.LocateAllBarcodesInImage(self._frame_img)
+        if self._is_single_image:
+            barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img)
+        else:
+            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img)
+
         if len(barcodes) == 0:
             raise NoBarcodesError("No Barcodes Detected In Image")
         return barcodes

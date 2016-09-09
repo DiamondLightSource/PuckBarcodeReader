@@ -142,7 +142,7 @@ class DataMatrix:
         img.draw_line(fp.c1, fp.c3, color)
 
     @staticmethod
-    def LocateAllBarcodesInImage(grayscale_img):
+    def locate_all_barcodes_in_image(grayscale_img):
         """ Searches the image for all datamatrix finder patterns
         """
         locator = Locator()
