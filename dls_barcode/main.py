@@ -5,7 +5,6 @@ from sys import path
 path.append(dirname(path[0]))
 
 # Required for multiprocessing to work under PyInstaller bundling in Windows
-import util.multiprocessing_support
 
 from PyQt4 import QtGui
 from gui import DiamondBarcodeMainWindow

@@ -1,9 +1,10 @@
 import math
 import random
 
-from dls_barcode.util import Image, Color
-from dls_barcode.util.transform import Transform
-from dls_barcode.util.shape import Point, Circle
+from dls_util.image import Image, Color
+from dls_util.shape import Point, Circle
+
+from dls_util.transform import Transform
 
 IMG_CENTER = Point(500, 400)
 

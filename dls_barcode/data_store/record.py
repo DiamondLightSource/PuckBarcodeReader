@@ -3,8 +3,8 @@ import time
 import uuid
 
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
-from dls_barcode.util import Image, Color
 from geometry import Geometry
+from dls_util.image import Image, Color
 
 
 class Record:

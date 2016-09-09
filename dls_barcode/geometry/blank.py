@@ -1,4 +1,4 @@
-from util.shape import Circle
+from dls_util.shape import Circle
 
 
 class BlankGeometry:

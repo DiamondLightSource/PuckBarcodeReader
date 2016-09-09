@@ -1,4 +1,4 @@
-from util.image import Color
+from ..image import Color
 from .config import Config
 
 

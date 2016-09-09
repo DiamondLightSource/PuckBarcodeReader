@@ -5,8 +5,8 @@ from operator import add
 import cv2
 import numpy as np
 
-from util.shape import Point
 from datamatrix.finder_pattern import FinderPattern
+from dls_util.shape import Point
 
 OPENCV_MAJOR = cv2.__version__[0]
 

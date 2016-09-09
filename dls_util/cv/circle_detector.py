@@ -1,6 +1,6 @@
 import cv2
 
-from util.shape import Point, Circle
+from dls_util.shape import Point, Circle
 
 _OPENCV_MAJOR = cv2.__version__[0]
 

@@ -1,13 +1,14 @@
 from __future__ import division
 
-import numpy as np
 import math
-import time
 import os
+import time
 
-from dls_barcode.plate.slot import Slot
+import numpy as np
+
 from dls_barcode.datamatrix import DataMatrix, Locator
-from dls_barcode.util import Image, Color
+from dls_barcode.plate.slot import Slot
+from dls_util.image import Image, Color
 
 
 class SlotScanner:

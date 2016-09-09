@@ -1,10 +1,9 @@
 import sys
 
-from dls_barcode.util import Color
-from dls_barcode.util import Config, DirectoryConfigItem, ColorConfigItem, \
-    IntConfigItem, BoolConfigItem, EnumConfigItem
-
 from dls_barcode.geometry import Geometry
+from dls_util.image import Color
+from dls_util.config import Config, DirectoryConfigItem, ColorConfigItem, \
+    IntConfigItem, BoolConfigItem, EnumConfigItem
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
 

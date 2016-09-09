@@ -1,5 +1,5 @@
-from util.cv import CircleDetector
-from util.image import Color
+from dls_util.image import Color
+from dls_util.cv import CircleDetector
 
 
 class EmptySlotDetector:

@@ -5,7 +5,7 @@ import numpy as np
 from PyQt4 import QtCore
 from PyQt4.QtGui import QImage, QPixmap
 
-from util.shape import Point
+from dls_util.shape import Point
 
 
 class Image:

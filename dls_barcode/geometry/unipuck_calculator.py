@@ -1,9 +1,11 @@
 from __future__ import division
+
 import math
+
 import numpy as np
 from scipy.optimize import fmin
 
-from util.shape import Point
+from dls_util.shape import Point
 from .exception import GeometryAlignmentError
 from .unipuck import Unipuck
 from .unipuck_template import UnipuckTemplate

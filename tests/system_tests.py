@@ -1,9 +1,9 @@
 import time
 
 from config.barcode_config import BarcodeConfig
-from dls_barcode.scan import GeometryScanner
-from dls_barcode.util import Image
 from data_store import Store
+from dls_barcode.scan import GeometryScanner
+from dls_util.image import Image
 
 # SHOULD BE OPEN CV 2.4.10
 

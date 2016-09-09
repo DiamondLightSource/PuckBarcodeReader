@@ -7,7 +7,7 @@ import winsound
 import cv2
 
 from scan import GeometryScanner, SlotScanner, OpenScanner
-from util.image import Image, Color
+from dls_util.image import Image, Color
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
 Q_LIMIT = 1

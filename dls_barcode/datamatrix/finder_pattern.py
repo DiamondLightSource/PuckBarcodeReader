@@ -1,5 +1,5 @@
-from dls_barcode.util.image import Color
-from dls_barcode.util.shape import Circle
+from dls_util.shape import Circle
+from dls_util.image import Color
 
 
 class FinderPattern:

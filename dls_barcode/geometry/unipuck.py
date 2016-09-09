@@ -1,7 +1,8 @@
 from __future__ import division
+
 import math
 
-from util.shape import Point, Circle
+from dls_util.shape import Point, Circle
 from .unipuck_template import UnipuckTemplate as Template
 
 

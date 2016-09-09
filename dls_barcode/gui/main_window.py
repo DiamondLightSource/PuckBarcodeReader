@@ -7,8 +7,7 @@ from PyQt4.QtGui import QPushButton, QHBoxLayout
 from camera import CameraScanner
 from config import BarcodeConfig, BarcodeConfigDialog
 from scan import GeometryScanner, SlotScanner, OpenScanner
-from util import Image
-
+from dls_util.image import Image
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable

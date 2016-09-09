@@ -1,6 +1,6 @@
 import time
 
-from util import Image, Color
+from dls_util.image import Image, Color
 
 
 class Overlay:
