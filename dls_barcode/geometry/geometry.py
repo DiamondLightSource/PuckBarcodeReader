@@ -5,6 +5,8 @@ from .unipuck_calculator import UnipuckCalculator
 
 
 class Geometry:
+    """ Provides access to the various sample plate geometry classes.
+    """
     NO_GEOMETRY = BlankGeometry.TYPE_NAME
     UNIPUCK = Unipuck.TYPE_NAME
 
@@ -15,6 +17,7 @@ class Geometry:
 
     @staticmethod
     def get_class(geo_name):
+        """ Get the geometry class based on its name. """
         if geo_name == Geometry.NO_GEOMETRY:
             return BlankGeometry
         elif geo_name == Geometry.UNIPUCK:
@@ -24,6 +27,8 @@ class Geometry:
 
     @staticmethod
     def calculate_geometry(geo_name, slot_centers):
+        """ Create a geometry object of the specified type and calculate its layout based on the set of
+        known slot positions."""
         if geo_name == Geometry.NO_GEOMETRY:
             return BlankGeometry(slot_centers)
         elif geo_name == Geometry.UNIPUCK:
@@ -35,6 +40,7 @@ class Geometry:
 
     @staticmethod
     def get_num_slots(geo_name):
+        """ Get the number of slots that a particular geometry type contains. """
         cls = Geometry.get_class(geo_name)
         return cls.NUM_SLOTS
 

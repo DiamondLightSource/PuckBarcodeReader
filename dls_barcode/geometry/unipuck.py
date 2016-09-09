@@ -60,17 +60,17 @@ class Unipuck:
         return None
 
     def set_center(self, center):
+        """ Set the center of the puck to the specified position. Recalculate the positions of the slots. """
         self._center = center
         self._reset_slot_bounds()
 
     def set_radius(self, radius):
+        """ Set the radius of the puck to the specified value. Recalculate the positions of the slots. """
         self._radius = radius
         self._reset_slot_bounds()
 
     def set_rotation(self, angle):
-        """ Set the orientation of the puck to the specified angle. Recalculate the
-        positions of the slots.
-        """
+        """ Set the orientation of the puck to the specified angle. Recalculate the positions of the slots. """
         self._rotation = angle
         self._reset_slot_bounds()
 
@@ -79,6 +79,8 @@ class Unipuck:
 
     @staticmethod
     def calculate_slot_bounds(center, radius, rotation):
+        """ Calculates the bounds (position and radius) of all of the slots in the puck, based on the
+        puck's geometry (position, size, and angle)."""
         # Calculate pin slot locations
         layer_counts = Template.N
         layer_radii = Template.LAYER_RADII
@@ -123,8 +125,18 @@ class Unipuck:
     ############################
     # Serialization
     ############################
+    def to_string(self):
+        return "center: ({}, {}); radius: {}; rotation: {:.3f}".format(
+            self._center.x, self._center.y, self._radius, self._rotation)
+
+    def serialize(self):
+        """ Convert the unipuck object to a string representation that can be written to file. """
+        tokens = [str(self._center.x), str(self._center.y), str(self._radius), str(self._rotation)]
+        return self._SERIAL_DELIM.join(tokens)
+
     @staticmethod
     def deserialize(string):
+        """ Generate a Unipuck object from a string representation. """
         tokens = string.split(Unipuck._SERIAL_DELIM)
 
         center = Point(int(tokens[0]), int(tokens[1]))
@@ -132,11 +144,3 @@ class Unipuck:
         angle = float(tokens[3])
 
         return Unipuck(center, radius, angle)
-
-    def serialize(self):
-        tokens = [str(self._center.x), str(self._center.y), str(self._radius), str(self._rotation)]
-        return self._SERIAL_DELIM.join(tokens)
-
-    def to_string(self):
-        return "center: ({}, {}); radius: {}; rotation: {:.3f}".format(
-            self._center.x, self._center.y, self._radius, self._rotation)
