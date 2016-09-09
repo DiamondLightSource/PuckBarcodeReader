@@ -9,7 +9,7 @@ class DatamatrixByteInterpreter:
         i = 0
         eom_reached = False
 
-        while not eom_reached:
+        while not eom_reached and not i >= len(data_bytes):
             byte = data_bytes[i]
 
             if 1 <= byte < 129:  # ASCII.

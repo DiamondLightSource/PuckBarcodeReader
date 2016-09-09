@@ -41,8 +41,10 @@ class ReedSolomonDecoder:
         self.gf = GaloisField(GaloisField.DATAMATRIX)
 
     def decode(self, encoded_msg, num_data_bytes):
+        num_error_bytes = len(encoded_msg) - num_data_bytes
+
         try:
-            decoded = self._correct_msg(encoded_msg, num_data_bytes)
+            decoded = self._correct_msg(encoded_msg, num_error_bytes)
         except ReedSolomonError as ex:
             raise ReedSolomonError("Unable to correct encoding errors: {}".format(str(ex)))
 
