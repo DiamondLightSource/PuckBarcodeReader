@@ -140,22 +140,28 @@ class DataMatrix:
         img.draw_line(fp.c1, fp.c3, color)
 
     @staticmethod
-    def locate_all_barcodes_in_image(grayscale_img):
+    def locate_all_barcodes_in_image(grayscale_img, matrix_size=DEFAULT_SIZE):
         """ Searches the image for all datamatrix finder patterns
         """
         locator = Locator()
         finder_patterns = locator.locate_shallow(grayscale_img)
-        unread_barcodes = [DataMatrix(fp, grayscale_img) for fp in finder_patterns]
-        return list(unread_barcodes)
+        unread_barcodes = DataMatrix._fps_to_barcodes(grayscale_img, finder_patterns, matrix_size)
+        return unread_barcodes
 
     @staticmethod
-    def locate_all_barcodes_in_image_deep(grayscale_img):
+    def locate_all_barcodes_in_image_deep(grayscale_img, matrix_size=DEFAULT_SIZE):
         """ Searches the image for all datamatrix finder patterns
         """
         # TODO: deep scan is more likely to find some false finder patterns. Filter these out
         locator = Locator()
         locator.set_median_radius_tolerance(0.2)
         finder_patterns = locator.locate_deep(grayscale_img, expected_radius=None, filter_overlap=True)
+        unread_barcodes = DataMatrix._fps_to_barcodes(grayscale_img, finder_patterns, matrix_size)
+        return unread_barcodes
 
+    @staticmethod
+    def _fps_to_barcodes(grayscale_img, finder_patterns, matrix_size):
         unread_barcodes = [DataMatrix(fp, grayscale_img) for fp in finder_patterns]
+        for bc in unread_barcodes:
+            bc.set_matrix_size(matrix_size)
         return list(unread_barcodes)
