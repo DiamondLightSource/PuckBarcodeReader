@@ -24,6 +24,7 @@ class BarcodeConfigDialog(ConfigDialog):
 
         self.start_group("Sample Plate")
         add(cfg.plate_type)
+        add(cfg.barcode_size)
 
         self.start_group("Colors")
         add(cfg.color_ok)

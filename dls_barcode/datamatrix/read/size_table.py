@@ -28,6 +28,11 @@ class DatamatrixSizeTable:
     }
 
     @staticmethod
+    def valid_sizes():
+        sizes = list(DatamatrixSizeTable.CAPACITY.keys())
+        return sorted(sizes)
+
+    @staticmethod
     def num_data_bytes(size):
         """ The number of bytes used to encode data in a square datamatrix of the specified size. """
         DatamatrixSizeTable.check_datamatrix_size(size)

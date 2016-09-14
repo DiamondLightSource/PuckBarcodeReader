@@ -1,6 +1,8 @@
 import sys
 
 from dls_barcode.geometry import Geometry
+from dls_barcode.datamatrix import DataMatrix
+from dls_barcode.datamatrix.read import DatamatrixSizeTable
 from dls_util.image import Color
 from dls_util.config import Config, DirectoryConfigItem, ColorConfigItem, \
     IntConfigItem, BoolConfigItem, EnumConfigItem
@@ -31,6 +33,8 @@ class BarcodeConfig(Config):
         self.camera_height = add(IntConfigItem, "Camera Height", default=1080)
 
         self.plate_type = add(EnumConfigItem, "Sample Plate Type", default=Geometry.UNIPUCK, extra_arg=Geometry.TYPES)
+        self.barcode_size = add(EnumConfigItem, "Datamatrix Size", default=DataMatrix.DEFAULT_SIZE,
+                                extra_arg=DatamatrixSizeTable.valid_sizes())
 
         self.scan_beep = add(BoolConfigItem, "Beep While Scanning", default=True)
         self.scan_clipboard = add(BoolConfigItem, "Results to Clipboard", default=True)
