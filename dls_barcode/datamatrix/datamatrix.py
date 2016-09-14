@@ -1,4 +1,5 @@
 from .locate import Locator
+from .read import DatamatrixSizeTable
 from .read import DatamatrixReaderError, ReedSolomonError
 from .read import DatamatrixBitReader
 from .read import DatamatrixByteExtractor
@@ -25,7 +26,6 @@ class DataMatrix:
     """ Representation of a DataMatrix and its location in an image.
     """
     DEFAULT_SIZE = 14
-    DEFAULT_MESSAGE_LENGTH = 8
 
     _w = 0.25
     DIAG_WIGGLES = [[0, 0], [_w, _w], [-_w, -_w], [_w, -_w], [-_w, _w]]
@@ -42,7 +42,6 @@ class DataMatrix:
         self._finder_pattern = finder_pattern
         self._image = image.img
         self._matrix_size = self.DEFAULT_SIZE
-        self._message_length = self.DEFAULT_MESSAGE_LENGTH
 
         self._data = None
         self._error_message = ""
@@ -52,9 +51,6 @@ class DataMatrix:
 
     def set_matrix_size(self, matrix_size):
         self._matrix_size = matrix_size
-
-    def set_message_length(self, message_length):
-        self._message_length = message_length
 
     def perform_read(self, offsets=wiggle_offsets, force_read=False):
         """ Attempt to read the DataMatrix from the image supplied in the constructor at the position
@@ -115,6 +111,8 @@ class DataMatrix:
         decoder = ReedSolomonDecoder()
         interpreter = DatamatrixByteInterpreter()
 
+        message_length = DatamatrixSizeTable.num_data_bytes(self._matrix_size)
+
         # Try a few different small offsets for the sample positions until we find one that works
         for offset in offsets:
             # Read the bit array at the target location (with offset)
@@ -122,7 +120,7 @@ class DataMatrix:
             try:
                 bit_array = bit_reader.read_bit_array(self._finder_pattern, offset, gray_image)
                 encoded_bytes = extractor.extract_bytes(bit_array)
-                decoded_bytes = decoder.decode(encoded_bytes, self._message_length)
+                decoded_bytes = decoder.decode(encoded_bytes, message_length)
                 data = interpreter.interpret_bytes(decoded_bytes)
 
                 self._data = data

@@ -9,14 +9,13 @@ mono_img = dm_img.to_grayscale()
 barcodes = DataMatrix.locate_all_barcodes_in_image(mono_img)
 
 for barcode in barcodes:
-    barcode.set_message_length(15)
     barcode.set_matrix_size(18)
     barcode.draw(dm_img, Color.Green())
     barcode.perform_read()
     print(barcode.data())
     print(barcode._error_message)
 
-#dm_img.popup()
+dm_img.popup()
 
 
 
