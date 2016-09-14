@@ -15,8 +15,9 @@ class NoBarcodesError(Exception):
 
 
 class GeometryScanner:
-    def __init__(self, plate_type):
+    def __init__(self, plate_type, barcode_size):
         self.plate_type = plate_type
+        self.barcode_size = barcode_size
 
         self._frame_number = 0
         self._plate = None
@@ -81,10 +82,10 @@ class GeometryScanner:
 
     def _locate_all_barcodes_in_image(self):
         if self._is_single_image:
-            # barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img)
-            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img)
+            # barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img, self.barcode_size)
+            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_size)
         else:
-            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img)
+            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_size)
 
         if len(barcodes) == 0:
             raise NoBarcodesError("No Barcodes Detected In Image")

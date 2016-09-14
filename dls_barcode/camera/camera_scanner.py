@@ -122,11 +122,12 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
     SlotScanner.DEBUG_DIR = options.slot_image_directory.value()
 
     plate_type = options.plate_type.value()
+    barcode_size = options.barcode_size.value()
 
     if plate_type == "None":
-        scanner = OpenScanner()
+        scanner = OpenScanner(barcode_size)
     else:
-        scanner = GeometryScanner(plate_type)
+        scanner = GeometryScanner(plate_type, barcode_size)
 
     while True:
         # Get next image from queue (terminate if a queue contains a 'None' sentinel)

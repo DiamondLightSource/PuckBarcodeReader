@@ -158,13 +158,14 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
             # Scan the image for barcodes
             plate_type = self._config.plate_type.value()
+            barcode_size = self._config.barcode_size.value()
             SlotScanner.DEBUG = self._config.slot_images.value()
             SlotScanner.DEBUG_DIR = self._config.slot_image_directory.value()
 
             if plate_type == "None":
-                scanner = OpenScanner()
+                scanner = OpenScanner(barcode_size)
             else:
-                scanner = GeometryScanner(plate_type)
+                scanner = GeometryScanner(plate_type, barcode_size)
 
             scan_result = scanner.scan_next_frame(gray_image, is_single_image=True)
             plate = scan_result.plate()

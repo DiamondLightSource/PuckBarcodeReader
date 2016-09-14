@@ -50,7 +50,7 @@ class DataMatrix:
         self._is_read_performed = False
 
     def set_matrix_size(self, matrix_size):
-        self._matrix_size = matrix_size
+        self._matrix_size = int(matrix_size)
 
     def perform_read(self, offsets=wiggle_offsets, force_read=False):
         """ Attempt to read the DataMatrix from the image supplied in the constructor at the position
