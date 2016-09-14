@@ -109,10 +109,10 @@ class EnumConfigItem(ConfigItem):
     """ Config item that stores an enum value. Constructor takes parameter 'enum_names' which should
     be a list of strings."""
     def __init__(self, tag, default, enum_names):
-        ConfigItem.__init__(self, tag, default)
-        self.enum_names = enum_names
+        ConfigItem.__init__(self, tag, str(default))
+        self.enum_names = [str(name) for name in enum_names]
 
-        if default not in enum_names:
+        if self._default not in self.enum_names:
             self._default = self.enum_names[0]
 
     def from_file_string(self, string):
