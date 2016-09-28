@@ -3,6 +3,7 @@ from PyQt4.QtGui import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit
 
 from dls_util.config import ConfigDialog, ConfigControl
 
+_OPENCV_MAJOR = cv2.__version__[0]
 
 class BarcodeConfigDialog(ConfigDialog):
     """ Dialog to edit the configuration options for the program. Provides a custom control for
@@ -135,9 +136,16 @@ class CameraConfigControl(ConfigControl):
             return
 
         # Check that we can connect to the camera
+        if _OPENCV_MAJOR == '2':
+            width_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+            height_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+        else:
+            width_flag = cv2.CAP_PROP_FRAME_WIDTH
+            height_flag = cv2.CAP_PROP_FRAME_HEIGHT
+
         cap = cv2.VideoCapture(camera_num)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
+        cap.set(width_flag, camera_width)
+        cap.set(height_flag, camera_height)
 
         read_ok, _ = cap.read()
         if not read_ok:
@@ -145,8 +153,8 @@ class CameraConfigControl(ConfigControl):
             return
 
         # Check resolution is acceptable
-        set_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        set_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        set_width = int(cap.get(width_flag))
+        set_height = int(cap.get(height_flag))
         if set_width != camera_width or set_height != camera_height:
             QMessageBox.warning(self, "Camera Error",
                                 "Could not set the camera to the specified resolution: {}x{}.\nThe camera defaulted "

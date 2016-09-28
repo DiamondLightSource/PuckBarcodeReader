@@ -10,6 +10,8 @@ from scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_util.image import Image, Color
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
+_OPENCV_MAJOR = cv2.__version__[0]
+
 Q_LIMIT = 1
 SCANNED_TAG = "Scan Complete"
 NO_PUCK_TIME = 2
@@ -69,8 +71,15 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, config):
     if not read_ok:
         cap = cv2.VideoCapture(0)
 
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera_width.value())
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera_height.value())
+    if _OPENCV_MAJOR == '2':
+        width_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+        height_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+    else:
+        width_flag = cv2.CAP_PROP_FRAME_WIDTH
+        height_flag = cv2.CAP_PROP_FRAME_HEIGHT
+
+    cap.set(width_flag, config.camera_width.value())
+    cap.set(height_flag, config.camera_height.value())
 
     # Store the latest image overlay which highlights the puck
     latest_overlay = Overlay(0)
