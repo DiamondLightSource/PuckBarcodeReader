@@ -1,4 +1,4 @@
-import cv2
+import cv2 as opencv
 import math
 import numpy as np
 
@@ -32,7 +32,7 @@ class Image:
     @staticmethod
     def from_file(filename):
         """ Return a new image by loading from the specified image file. """
-        img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+        img = opencv.imread(filename, opencv.IMREAD_UNCHANGED)
         return Image(img)
 
     @staticmethod
@@ -43,12 +43,12 @@ class Image:
 
     def save_as(self, filename):
         """ Write the image to the specified file. """
-        cv2.imwrite(filename, self.img)
+        opencv.imwrite(filename, self.img)
 
     def popup(self):
         """Pop up a window to display an image until a key is pressed (blocking)."""
-        cv2.imshow('dbg', self.img)
-        cv2.waitKey(0)
+        opencv.imshow('dbg', self.img)
+        opencv.waitKey(0)
 
     def copy(self):
         """ Return an Image object which is a deep copy of this one. """
@@ -70,7 +70,7 @@ class Image:
     def resize(self, new_size):
         """ Return a new Image that is a resized version of this one
         """
-        resized_img = cv2.resize(self.img, new_size)
+        resized_img = opencv.resize(self.img, new_size)
         return Image(resized_img)
 
     def rotate(self, radians, center):
@@ -78,9 +78,9 @@ class Image:
         cut off any areas that are rotated out of the frame.
         """
         degrees = radians * 180 / math.pi
-        matrix = cv2.getRotationMatrix2D(center.tuple(), degrees, 1.0)
+        matrix = opencv.getRotationMatrix2D(center.tuple(), degrees, 1.0)
 
-        rotated = cv2.warpAffine(self.img, matrix, (self.width, self.height))
+        rotated = opencv.warpAffine(self.img, matrix, (self.width, self.height))
         return Image(rotated)
 
     def rotate_no_clip(self, angle):
@@ -182,7 +182,7 @@ class Image:
         """Convert the image to a grey image.
         """
         if len(self.img.shape) in (3, 4):
-            gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+            gray = opencv.cvtColor(self.img, opencv.COLOR_BGR2GRAY)
             return Image(gray)
         else:
             assert len(self.img.shape) == 2
@@ -192,10 +192,10 @@ class Image:
         """Convert the image into a 3 channel BGR image.
         """
         if self.channels == 4:
-            color = cv2.cvtColor(self.img, cv2.COLOR_BGRA2BGR)
+            color = opencv.cvtColor(self.img, opencv.COLOR_BGRA2BGR)
             return Image(color)
         elif self.channels == 1:
-            color = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGR)
+            color = opencv.cvtColor(self.img, opencv.COLOR_GRAY2BGR)
             return Image(color)
         else:
             return Image(self.img)
@@ -204,10 +204,10 @@ class Image:
         """ Convert the image into a 4 channel BGRA image.
         """
         if self.channels == 3:
-            alpha = cv2.cvtColor(self.img, cv2.COLOR_BGR2BGRA)
+            alpha = opencv.cvtColor(self.img, opencv.COLOR_BGR2BGRA)
             return Image(alpha)
         elif self.channels == 1:
-            alpha = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGRA)
+            alpha = opencv.cvtColor(self.img, opencv.COLOR_GRAY2BGRA)
             return Image(alpha)
         else:
             return Image(self.img)
@@ -216,7 +216,7 @@ class Image:
         """ Convert the image into a QT pixmap that can be displayed in QT GUI elements. """
         bytes_per_line = 3 * self.width
         img = self.to_color().img
-        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        rgb = opencv.cvtColor(img, opencv.COLOR_BGR2RGB)
         q_img = QImage(rgb.data, self.width, self.height, bytes_per_line, QImage.Format_RGB888)
         pixmap = QPixmap.fromImage(q_img)
 
@@ -232,32 +232,32 @@ class Image:
         """ Draw the specified rectangle on the image (in place). """
         top_left = self._format_point(Point(roi[0], roi[1]))
         bottom_right = self._format_point(Point(roi[2], roi[3]))
-        cv2.rectangle(self.img, top_left.tuple(), bottom_right.tuple(), color.bgra(), thickness=thickness)
+        opencv.rectangle(self.img, top_left.tuple(), bottom_right.tuple(), color.bgra(), thickness=thickness)
 
     def draw_circle(self, circle, color, thickness=2):
         """ Draw the specified circle on the image (in place). """
         center = self._format_point(circle.center())
-        cv2.circle(self.img, center.tuple(), int(circle.radius()), color.bgra(), thickness=thickness)
+        opencv.circle(self.img, center.tuple(), int(circle.radius()), color.bgra(), thickness=thickness)
 
     def draw_dot(self, center, color, thickness=5):
         """ Draw the specified dot on the image (in place). """
         center = self._format_point(center)
-        cv2.circle(self.img, center.tuple(), radius=0, color=color.bgra(), thickness=thickness)
+        opencv.circle(self.img, center.tuple(), radius=0, color=color.bgra(), thickness=thickness)
 
     def draw_line(self, p1, p2, color, thickness=2):
         """ Draw the specified line on the image (in place). """
         p1 = self._format_point(p1)
         p2 = self._format_point(p2)
-        cv2.line(self.img, p1.tuple(), p2.tuple(), color.bgra(), thickness=thickness)
+        opencv.line(self.img, p1.tuple(), p2.tuple(), color.bgra(), thickness=thickness)
 
     def draw_text(self, text, position, color, centered=False, scale=1.5, thickness=3):
         """ Draw the specified text on the image (in place). """
         if centered:
-            text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
+            text_size = opencv.getTextSize(text, opencv.FONT_HERSHEY_SIMPLEX, fontScale=scale, thickness=thickness)[0]
             text_size = Point(-text_size[0]/2.0, text_size[1]/2.0)
             position = (position + text_size)
         position = self._format_point(position)
-        cv2.putText(self.img, text, position.tuple(), cv2.FONT_HERSHEY_SIMPLEX, fontScale=scale,
+        opencv.putText(self.img, text, position.tuple(), opencv.FONT_HERSHEY_SIMPLEX, fontScale=scale,
                     color=color.bgra(), thickness=thickness)
 
     def _format_point(self, point):
