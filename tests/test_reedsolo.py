@@ -1,6 +1,6 @@
 import unittest
 
-from datamatrix.read import ReedSolomonDecoder, ReedSolomonError
+from dls_barcode.datamatrix.read import ReedSolomonDecoder, ReedSolomonError
 
 
 """
@@ -14,7 +14,7 @@ original message as long as no more than 5 (=10/2) bytes are damaged.
 
 A ReedSolomonError is raised if the decoding fails
 """
-num_ecc_bytes = 10
+num_ecc_bytes = 8
 msg_bytes = [69, 71, 145, 49, 70, 134, 173, 129]
 msg_bytes_encoded = [69, 71, 145, 49, 70, 134, 173, 129, 195, 218, 3, 144, 228, 239, 62, 153, 67, 12]
 msg_bytes_correctable = [
@@ -34,7 +34,12 @@ msg_bytes_uncorrectable = [
 
 class TestReedSolo(unittest.TestCase):
 
-    def test_correctable_barcode(self):
+    def test_ecode(self):
+        coder = ReedSolomonDecoder()
+        encoded = coder.encode(msg_bytes, 8)
+        self.assertEquals(coder.decode(encoded, 8), msg_bytes)
+
+    def test_correctable_barcodes(self):
         decoder = ReedSolomonDecoder()
         for case in msg_bytes_correctable:
             corrected = decoder.decode(case, num_ecc_bytes)

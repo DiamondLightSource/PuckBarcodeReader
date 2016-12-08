@@ -5,7 +5,7 @@ import math
 import cv2
 import numpy as np
 
-from datamatrix.finder_pattern import FinderPattern
+from dls_barcode.datamatrix.finder_pattern import FinderPattern
 from dls_util.shape import Point
 from dls_util.transform import Transform
 from dls_util.image import Image, Color

@@ -13,9 +13,9 @@ else:
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton, QHBoxLayout
 
-from camera import CameraScanner
-from config import BarcodeConfig, BarcodeConfigDialog
-from scan import GeometryScanner, SlotScanner, OpenScanner
+from dls_barcode.camera import CameraScanner
+from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
+from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_util.image import Image
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
@@ -49,7 +49,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
-        """
+               """
         self.setGeometry(100, 100, 1020, 650)
         self.setWindowTitle('Diamond Puck Barcode Scanner')
         self.setWindowIcon(QtGui.QIcon('web.png'))

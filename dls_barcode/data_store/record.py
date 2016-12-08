@@ -3,7 +3,7 @@ import time
 import uuid
 
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
-from geometry import Geometry
+from dls_barcode.geometry import Geometry
 from dls_util.image import Image, Color
 
 

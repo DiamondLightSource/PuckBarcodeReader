@@ -1,6 +1,6 @@
 import random
 
-from plate.slot import Slot
+from dls_barcode.plate.slot import Slot
 
 
 class BadGeometryException(Exception):

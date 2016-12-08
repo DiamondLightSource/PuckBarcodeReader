@@ -1,7 +1,7 @@
 import time
 
-from config.barcode_config import BarcodeConfig
-from data_store import Store
+from dls_barcode.config.barcode_config import BarcodeConfig
+from dls_barcode.data_store import Store
 from dls_barcode.scan import GeometryScanner
 from dls_util.image import Image
 
@@ -30,7 +30,7 @@ puck2_testcases = [(file, PUCK2_CODES) for file in puck2_files]
 # Create a list of test cases
 TEST_CASES = []
 TEST_CASES.extend(puck1_testcases)
-#TEST_CASES.extend(puck2_testcases)
+TEST_CASES.extend(puck2_testcases)
 
 TEST_OUTPUT_PATH = '../test-output/'
 
