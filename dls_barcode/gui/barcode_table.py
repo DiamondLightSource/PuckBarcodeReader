@@ -1,7 +1,6 @@
 from __future__ import division
 
 import os
-import pyperclip
 
 from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
@@ -35,6 +34,7 @@ class BarcodeTable(QGroupBox):
         self._table.setRowCount(10)
         self._table.setHorizontalHeaderLabels(['Barcode'])
         self._table.setColumnWidth(0, 100)
+
 
         # Clipboard button - copy the selected barcodes to the clipboard
         self._btn_clipboard = QtGui.QPushButton('Copy To Clipboard')
@@ -100,4 +100,5 @@ class BarcodeTable(QGroupBox):
         """
         sep = os.linesep
         if self._barcodes:
+            import pyperclip
             pyperclip.copy(sep.join(self._barcodes))

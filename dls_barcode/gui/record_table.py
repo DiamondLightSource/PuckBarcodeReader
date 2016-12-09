@@ -4,7 +4,7 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 
-from data_store import Store
+from dls_barcode.data_store import Store
 
 # todo: allow delete key to be used for deletion
 # todo: allow record selection with arrow keys

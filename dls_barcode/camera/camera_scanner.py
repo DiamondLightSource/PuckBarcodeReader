@@ -15,7 +15,7 @@ else:
 
 import cv2
 
-from scan import GeometryScanner, SlotScanner, OpenScanner
+from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_util.image import Image, Color
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
