@@ -1,5 +1,4 @@
 import unittest
-from mock import MagicMock
 
 from dls_util.shape import Point
 
