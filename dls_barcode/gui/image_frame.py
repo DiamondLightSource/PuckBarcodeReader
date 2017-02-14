@@ -7,18 +7,20 @@ from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout
 class ImageFrame(QGroupBox):
     """ GUI component. Displays an image of the currently selected barcode.
     """
-    def __init__(self):
+    def __init__(self, width_item, height_item, title):
         super(ImageFrame, self).__init__()
 
-        self.setTitle("Scan Image")
+        self.setTitle(title)
+        self._width_item = width_item
+        self._height_item = height_item
         self._init_ui()
 
     def _init_ui(self):
         # Image frame - displays image of the currently selected scan record
         self._frame = QLabel()
         self._frame.setStyleSheet("background-color: black; color: red; font-size: 30pt; text-align: center")
-        self._frame.setFixedWidth(600)
-        self._frame.setFixedHeight(600)
+        self._frame.setFixedWidth(self._width_item)
+        self._frame.setFixedHeight(self._height_item)
         self._frame.setAlignment(Qt.AlignCenter)
 
         vbox = QVBoxLayout()
