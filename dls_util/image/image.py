@@ -133,7 +133,7 @@ class Image:
         y2 = min(y_off + height, self.height)
 
         # Paste location is totally outside image
-        if x1 > x2 or y1 > y2:
+        if x1 >= x2 or y1 >= y2:
             return
 
         # Overlap rectangle in source image coordinates
