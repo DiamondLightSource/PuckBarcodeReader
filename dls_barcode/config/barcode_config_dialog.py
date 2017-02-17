@@ -33,9 +33,12 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.color_empty)
 
         self.start_group("Cameras")
+        self.start_group("Top Camera")
         add(cfg.plate_type)
         self._add_control(camera_puck)
-        add(cfg.plate_type)
+        #add(cfg.plate_type)
+
+        self.start_group("Side Camera")
         self._add_control(camera_side)
 
         self.start_group("Scanning")
