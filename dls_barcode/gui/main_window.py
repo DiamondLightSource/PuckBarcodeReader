@@ -190,18 +190,17 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             gray_image = cv_image.to_grayscale()
 
             # Scan the image for barcodes
-            #plate_type = self._config.plate_type.value()
-            camera_mode = self._config.camera_mode.value()
+            plate_type = self._config.plate_type.value()
             barcode_size = self._config.barcode_size.value()
             SlotScanner.DEBUG = self._config.slot_images.value()
             SlotScanner.DEBUG_DIR = self._config.slot_image_directory.value()
 
-            if camera_mode == "Single Mode":
-                try:
-                    scan_result = GeometryScanner(Geometry.UNIPUCK, barcode_size).scan_next_frame(gray_image, is_single_image=True)
-                except (NoBarcodesError, GeometryException, GeometryAdjustmentError):
-                    scan_result = OpenScanner(barcode_size).scan_next_frame(gray_image, is_single_image=True)
+            if plate_type == "None":
+                scanner = OpenScanner(barcode_size)
+            else:
+                scanner = GeometryScanner(plate_type, barcode_size)
 
+            scan_result = scanner.scan_next_frame(gray_image, is_single_image=True)
             plate = scan_result.plate()
 
             # If the scan was successful, store the results

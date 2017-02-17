@@ -21,10 +21,10 @@ class BarcodeConfigDialog(ConfigDialog):
         cfg = self._config
         add = self.add_item
 
-        camera = CameraConfigControl(cfg.camera_number, cfg.camera_width, cfg.camera_height)
+        camera_puck = CameraConfigControl(cfg.first_camera_number, cfg.first_camera_width, cfg.first_camera_height)
+        camera_side = CameraConfigControl(cfg.second_camera_number, cfg.second_camera_width, cfg.second_camera_height)
 
         self.start_group("Sample Plate")
-        add(cfg.plate_type)
         add(cfg.barcode_size)
 
         self.start_group("Colors")
@@ -32,8 +32,11 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.color_unreadable)
         add(cfg.color_empty)
 
-        self.start_group("Camera")
-        self._add_control(camera)
+        self.start_group("Cameras")
+        add(cfg.plate_type)
+        self._add_control(camera_puck)
+        add(cfg.plate_type)
+        self._add_control(camera_side)
 
         self.start_group("Scanning")
         add(cfg.scan_beep)

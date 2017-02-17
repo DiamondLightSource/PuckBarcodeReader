@@ -28,9 +28,13 @@ class BarcodeConfig(Config):
         self.color_unreadable = add(ColorConfigItem, "Not Read Color", Color.Red())
         self.color_empty = add(ColorConfigItem, "Empty Color", Color.Grey())
 
-        self.camera_number = add(IntConfigItem, "Camera Number", default=0)
-        self.camera_width = add(IntConfigItem, "Camera Width", default=1920)
-        self.camera_height = add(IntConfigItem, "Camera Height", default=1080)
+        self.first_camera_number = add(IntConfigItem, "First Camera Number", default=0)
+        self.first_camera_width = add(IntConfigItem, "First Camera Width", default=1920)
+        self.first_camera_height = add(IntConfigItem, "First Camera Height", default=1080)
+
+        self.second_camera_number = add(IntConfigItem, "Second Camera Number", default=1)
+        self.second_camera_width = add(IntConfigItem, "Second Camera Width", default=1920)
+        self.second_camera_height = add(IntConfigItem, "Second Camera Height", default=1080)
 
         self.plate_type = add(EnumConfigItem, "Sample Plate Type", default=Geometry.UNIPUCK, extra_arg=Geometry.TYPES)
         self.barcode_size = add(EnumConfigItem, "Datamatrix Size", default=DataMatrix.DEFAULT_SIZE,
