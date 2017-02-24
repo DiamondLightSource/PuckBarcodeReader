@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 
 from dls_util.image import Image
+from dls_util.shape import Point
 
 
 class TestImage(unittest.TestCase):
@@ -93,5 +94,78 @@ class TestImage(unittest.TestCase):
 
 
     #def test_sub_image
+    def test_sub_image_is_square_with_side_length_2_radius_if_enough_space_to_cut_from(self):
+        image = Image.blank(10,10,3,0)
+
+        x_center = 5
+        y_center = 5
+        radius = 2
+        sub_image, roi = image.sub_image(Point(x_center,y_center),radius) #sub_image returns a raw cv image
+
+        height = sub_image.height
+        width = sub_image.width
+        self.assertEquals(width, 2*radius)
+        self.assertEquals(height, 2*radius)
+        self.assertEquals(width, height)
+
+    def test_sub_image_is_not_square_if_center_x_is_too_close_to_the_edge(self):
+        image = Image.blank(10, 10, 3, 0)
+        x_center = 9
+        y_center = 5
+        radius = 2
+        sub_image, roi = image.sub_image(Point(x_center, y_center), radius)
+        height = sub_image.height
+        width = sub_image.width
+        self.assertEquals(width, 3)
+        self.assertEquals(height, 2*radius)
+        self.assertNotEquals(width, height)
+
+    def test_sub_image_is_not_square_if_center_x_is_too_close_to_the_edge(self):
+        image = Image.blank(10, 10, 3, 0)
+
+        x_center = 5
+        y_center = 1
+        radius = 2
+        sub_image, roi = image.sub_image(Point(x_center, y_center), radius)
+
+        height = sub_image.height
+        width = sub_image.width
+        self.assertEquals(width, 2*radius)
+        self.assertEquals(height, 3)
+        self.assertNotEquals(width, height)
+
+    def test_sub_image_has_size_of_input_image_if_2xradius_covers_the_whole_image(self):
+        image = Image.blank(5, 6, 3, 0)
+        x_center = 2
+        y_center = 2
+        radius = 7
+        sub_image, roi = image.sub_image(Point(x_center, y_center), radius)
+        height = sub_image.height
+        width = sub_image.width
+        self.assertEquals(width, image.width)
+        self.assertEquals(height, image.height)
+
+    def test_sub_image_has_size_0x0_if_center_and_radius_outside_the_input_image(self):
+        image = Image.blank(5, 6, 3, 0)
+        x_center = 10
+        y_center = 10
+        radius = 2
+        sub_image, roi = image.sub_image(Point(x_center, y_center), radius)
+        height = sub_image.height
+        width = sub_image.width
+        self.assertEquals(width, 0)
+        self.assertEquals(height, 0)
+
+
+    def test_sub_image_is_created_if_the_center_is_outside_but_the_radius_ovelaps_with_input_image(self):
+        image = Image.blank(9, 9, 3, 0)
+        x_center = 10
+        y_center = 10
+        radius = 2
+        sub_image, roi = image.sub_image(Point(x_center, y_center), radius)
+        height = sub_image.height
+        width = sub_image.width
+        self.assertEquals(width, 1)
+        self.assertEquals(height, 1)
 
     #def test_calculate_brightness
