@@ -51,10 +51,10 @@ class CameraScanner:
         self.kill_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
-    def stream_camera(self, config):
+    def stream_camera(self, config, camera_config):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, config)
+        capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, camera_config)
         scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config)
 
         capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
@@ -68,14 +68,14 @@ class CameraScanner:
         self.task_queue.put(None)
 
 
-def _capture_worker(task_queue, overlay_queue, kill_queue, config):
+def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
     position of scanned and unscanned barcodes.
     """
     # Initialize the camera
-    cap = cv2.VideoCapture(config.camera_number.value())
+    cap = cv2.VideoCapture(camera_config[0].value())
     read_ok, _ = cap.read()
     if not read_ok:
         cap = cv2.VideoCapture(0)
@@ -87,8 +87,8 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, config):
         width_flag = cv2.CAP_PROP_FRAME_WIDTH
         height_flag = cv2.CAP_PROP_FRAME_HEIGHT
 
-    cap.set(width_flag, config.camera_width.value())
-    cap.set(height_flag, config.camera_height.value())
+    cap.set(width_flag, camera_config[1].value())
+    cap.set(height_flag, camera_config[2].value())
 
     # Store the latest image overlay which highlights the puck
     latest_overlay = Overlay(0)
