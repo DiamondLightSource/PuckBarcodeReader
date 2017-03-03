@@ -1,5 +1,6 @@
 import multiprocessing
 
+from dls_barcode.config.barcode_config import CameraConfig
 from dls_barcode.geometry import GeometryException
 from dls_barcode.geometry.exception import GeometryAlignmentError
 from dls_barcode.gui.side_barcode_window import SideBarcodeWindow
@@ -37,6 +38,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         super(DiamondBarcodeMainWindow, self).__init__()
 
         self._config = BarcodeConfig(config_file)
+
+        self._camera_config = CameraConfig(config_file)
 
         self._scanner = None
 
@@ -162,7 +165,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         option_menu.addAction(options_action)
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config)
+        dialog = BarcodeConfigDialog(self._config, self._camera_config)
         dialog.exec_()
 
     def _read_new_scan_queue(self):

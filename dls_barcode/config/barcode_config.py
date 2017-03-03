@@ -28,14 +28,6 @@ class BarcodeConfig(Config):
         self.color_unreadable = add(ColorConfigItem, "Not Read Color", Color.Red())
         self.color_empty = add(ColorConfigItem, "Empty Color", Color.Grey())
 
-        self.first_camera_number = add(IntConfigItem, "First Camera Number", default=0)
-        self.first_camera_width = add(IntConfigItem, "First Camera Width", default=1600)
-        self.first_camera_height = add(IntConfigItem, "First Camera Height", default=1200)
-
-        self.second_camera_number = add(IntConfigItem, "Second Camera Number", default=1)
-        self.second_camera_width = add(IntConfigItem, "Second Camera Width", default=1600)
-        self.second_camera_height = add(IntConfigItem, "Second Camera Height", default=1200)
-
         self.plate_type = add(EnumConfigItem, "Sample Plate Type", default=Geometry.UNIPUCK, extra_arg=Geometry.TYPES)
         self.barcode_size = add(EnumConfigItem, "Datamatrix Size", default=DataMatrix.DEFAULT_SIZE,
                                 extra_arg=DatamatrixSizeTable.valid_sizes())
@@ -64,3 +56,29 @@ class BarcodeConfig(Config):
 
     def col_empty(self):
         return self.color_empty.value()
+
+
+class CameraConfig(Config):
+
+    def __init__(self, file):
+        Config.__init__(self, file)
+
+        add = self.add
+
+        self.puck_camera_number = add(IntConfigItem, "Puck Camera Number", default=0)
+        self.puck_camera_width = add(IntConfigItem, "Puck Camera Width", default=1600)
+        self.puck_camera_height = add(IntConfigItem, "Puck Camera Height", default=1200)
+
+        self.side_camera_number = add(IntConfigItem, "Side Camera Number", default=1)
+        self.side_camera_width = add(IntConfigItem, "Side Camera Width", default=1600)
+        self.side_camera_height = add(IntConfigItem, "Side Camera Height", default=1200)
+
+        self.initialize_from_file()
+
+    def getPuckCameraConfig(self):
+        return [self.puck_camera_number, self.puck_camera_width, self.puck_camera_height]
+
+    def getSideCameraConfig(self):
+        return [self.side_camera_number, self.side_camera_width, self.side_camera_height]
+
+
