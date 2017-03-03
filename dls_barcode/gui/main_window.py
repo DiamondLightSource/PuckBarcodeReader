@@ -216,11 +216,18 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        if self._scanner is not None:
-            self._stop_live_capture()
+        self._stop_live_capture()
 
         self._scanner = CameraScanner(self._new_scan_queue)
+
         self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getPuckCameraConfig())
+
+        self._stop_live_capture()
+
+        self._scanner = CameraScanner(self._new_scan_queue)
+
+        self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getSideCameraConfig())
+
 
     def _stop_live_capture(self):
         if self._scanner is not None:

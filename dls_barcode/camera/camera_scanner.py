@@ -55,7 +55,7 @@ class CameraScanner:
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
         capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, camera_config)
-        scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config)
+        scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config, camera_config)
 
         capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
         scanner_pool = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
@@ -125,7 +125,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config):
     cv2.destroyAllWindows()
 
 
-def _scanner_worker(task_queue, overlay_queue, result_queue, options):
+def _scanner_worker(task_queue, overlay_queue, result_queue, options, camera_config):
     """ Function used as the main loop of a worker process. Scan images for barcodes,
     combining partial scans until a full puck is reached.
 
@@ -139,7 +139,11 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options):
     SlotScanner.DEBUG = options.slot_images.value()
     SlotScanner.DEBUG_DIR = options.slot_image_directory.value()
 
-    plate_type = options.plate_type.value()
+    plate_type = "None"
+
+    if (camera_config[0]._tag.find("Side") == -1):
+        plate_type = options.plate_type.value()
+
     barcode_size = options.barcode_size.value()
 
     if plate_type == "None":
