@@ -43,6 +43,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self._scanner = None
 
+        self._flag_top = True
+
+        self._flag_side = True
+
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
 
@@ -179,10 +183,21 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             # Store scan results and display in GUI
             self.recordTable.add_record_frame(plate, cv_image)
 
-            if plate.is_full_valid():
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':
                 # Notify user of new scan
                 print("Scan Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
+                self._flag_top = False
+                self._stop_live_capture()
+                self._start_live_capture()
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None':
+                print("Scan wwwwwwwwwwwww Recorded")
+                winsound.Beep(4000, 500)  # frequency, duration
+                self._flag_top = True
+                self._stop_live_capture()
+                self._start_live_capture()
+
+
 
     def _scan_file_image(self):
         """Load and process (scan for barcodes) an image from file
@@ -216,17 +231,19 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        self._stop_live_capture()
+        if (self._flag_top):
+            self._stop_live_capture()
 
-        self._scanner = CameraScanner(self._new_scan_queue)
+            self._scanner = CameraScanner(self._new_scan_queue)
 
-        self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getPuckCameraConfig())
+            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getPuckCameraConfig())
 
-        self._stop_live_capture()
+        else:
+            self._stop_live_capture()
 
-        self._scanner = CameraScanner(self._new_scan_queue)
+            self._scanner = CameraScanner(self._new_scan_queue)
 
-        self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getSideCameraConfig())
+            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getSideCameraConfig())
 
 
     def _stop_live_capture(self):
