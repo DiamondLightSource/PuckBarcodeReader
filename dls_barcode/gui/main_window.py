@@ -186,9 +186,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             if self.original_plate == None:
                 self.recordTable.add_record_frame(plate, cv_image)
             else:
-                new_plate = self.original_plate.marge_barecodes(plate)
-                new_image = Image(self.original_cv_image).mage_cv_image(cv_image)
-                self.recordTable.add_record_frame(new_plate, new_image.img)
+                self.original_plate.marge_barecodes(plate)
+                new_image = self.original_cv_image#.mage_cv_image(cv_image)
+                self.recordTable.add_record_frame(self.original_plate, new_image)
 
             if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':
                 # Notify user of new scan
@@ -204,7 +204,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 winsound.Beep(4000, 500)  # frequency, duration
                 self._flag_top = True
                 self._stop_live_capture()
-                self._start_live_capture()
+                self.original_plate = None
+                self.original_cv_image = None
 
 
 
