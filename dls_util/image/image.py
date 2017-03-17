@@ -275,3 +275,7 @@ class Image:
 
         brightness = np.sum(self.img[y1:y2, x1:x2]) / (width * height)
         return brightness
+
+    def marge_cv_image(self, cv_image):
+        #TODO - marge two images so that the cv_image is added on the top corner of self return Image
+        pass
