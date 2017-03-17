@@ -1,8 +1,9 @@
 import unittest
 import numpy as np
 
-from dls_util.image import Image
-from dls_util.shape import Point
+from dls_util.image import Image, Color
+from dls_util.shape import Point, Circle
+
 
 
 class TestImage(unittest.TestCase):
@@ -91,6 +92,69 @@ class TestImage(unittest.TestCase):
 
         self.assertEquals(max_alpha_before_paste, 10)
         self.assertEquals(max_alpha_after_paste, 255) #I expected it to be as it was before
+
+    def test_draw_circle_thickness_equals_one(self):
+        img = Image.blank(40, 40)
+        circle = Circle(Point(20, 20), 10)
+        img.draw_circle(circle, Color(200, 200, 200), 1)
+        self.assertEquals(img.img[10][20][1], 200)
+        self.assertEquals(img.img[9][20][1], 0)
+        self.assertEquals(img.img[11][20][1], 0)
+
+    def test_draw_circle_thickness_equals_two(self):
+        img = Image.blank(40, 40)
+        circle = Circle(Point(20, 20), 10)
+        img.draw_circle(circle, Color(200, 200, 200), 2)
+        self.assertEquals(img.img[8][20][1], 0)
+        self.assertEquals(img.img[10][20][1], 200)
+        self.assertEquals(img.img[9][20][1], 200)
+        self.assertEquals(img.img[11][20][1], 200)
+        self.assertEquals(img.img[12][20][1], 0)
+
+    def test_draw_circle_thickness_equals_three(self):
+        img = Image.blank(40, 40)
+        circle = Circle(Point(20, 20), 10)
+        img.draw_circle(circle, Color(200, 200, 200), 3)
+        self.assertEquals(img.img[7][20][1], 0)
+        self.assertEquals(img.img[8][20][1], 200)
+        self.assertEquals(img.img[10][20][1], 200)
+        self.assertEquals(img.img[9][20][1], 200)
+        self.assertEquals(img.img[11][20][1], 200)
+        self.assertEquals(img.img[12][20][1], 200)
+        self.assertEquals(img.img[13][20][1], 0)
+
+    #very confusing thickness 3 and 4 give the same results
+    def test_draw_circle_thickness_equals_four(self):
+        img = Image.blank(40, 40)
+        circle = Circle(Point(20, 20), 10)
+        img.draw_circle(circle, Color(200, 200, 200), 4)
+        self.assertEquals(img.img[6][20][1], 0)
+        self.assertEquals(img.img[7][20][1], 0)#!!
+        self.assertEquals(img.img[8][20][1], 200)
+        self.assertEquals(img.img[10][20][1], 200)
+        self.assertEquals(img.img[9][20][1], 200)
+        self.assertEquals(img.img[11][20][1], 200)
+        self.assertEquals(img.img[12][20][1], 200)
+        self.assertEquals(img.img[13][20][1], 0)#!!
+        self.assertEquals(img.img[14][20][1], 0)
+
+
+    def test_draw_circle_centre_is_kept(self):
+        img = Image.blank(40, 40)
+        circle = Circle(Point(20, 20), 1)
+        img.draw_circle(circle, Color(200, 200, 200), 1)
+        self.assertEquals(img.img[18][20][1], 0)
+        self.assertEquals(img.img[19][20][1], 200)
+        self.assertEquals(img.img[20][20][1], 0)
+        self.assertEquals(img.img[21][20][1], 200)
+        self.assertEquals(img.img[22][20][1], 0)
+
+        self.assertEquals(img.img[20][18][1], 0)
+        self.assertEquals(img.img[20][19][1], 200)
+        self.assertEquals(img.img[20][20][1], 0)
+        self.assertEquals(img.img[20][21][1], 200)
+        self.assertEquals(img.img[20][22][1], 0)
+
 
 
     #def test_sub_image
