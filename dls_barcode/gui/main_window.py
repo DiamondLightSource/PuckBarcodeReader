@@ -185,10 +185,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             # Store scan results and display in GUI
             if self.original_plate == None:
                 self.recordTable.add_record_frame(plate, cv_image)
+
             else:
-                self.original_plate.marge_barecodes(plate)
+                #self.original_plate.marge_barecodes(plate)
                 new_image = self.original_cv_image#.mage_cv_image(cv_image)
-                self.recordTable.add_record_frame(self.original_plate, new_image)
+                self.recordTable.add_record_frame(self.original_plate, plate, new_image)
 
             if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':
                 # Notify user of new scan

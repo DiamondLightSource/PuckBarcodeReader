@@ -69,8 +69,9 @@ class Record:
         self.num_valid_barcodes = self.num_slots - self.num_unread_slots - self.num_empty_slots
 
     @staticmethod
-    def from_plate(plate, image_path):
-        return Record(plate_type=plate.type, barcodes=plate.barcodes(),
+    def from_plate(plate, second_plate, image_path):
+        barcodes = plate.barcodes() + second_plate.barcodes()
+        return Record(plate_type=plate.type, barcodes=barcodes,
                       image_path=image_path, geometry=plate.geometry())
 
     @staticmethod

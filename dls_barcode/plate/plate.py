@@ -22,11 +22,6 @@ class Plate:
         # Initialize slots
         self._slots = [Slot(i) for i in range(1, self.num_slots+1)]
 
-        #self.barcodes = [slot.barcode_data() for slot in self._slots]
-
-    def marge_barecodes(self, new_plate):
-        self._slots.append(new_plate._slots)
-
     #########################
     # ACCESSOR FUNCTIONS
     #########################
