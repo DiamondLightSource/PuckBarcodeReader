@@ -99,7 +99,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, config):
         read_ok, frame = cap.read()
 
         # Add the frame to the task queue to be processed
-        if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
+        if read_ok and task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
             # Make a copy of image so the overlay doesn't overwrite it
             task_queue.put(frame.copy())
             last_time = time.time()
@@ -111,9 +111,10 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, config):
         # Draw the overlay on the frame
         latest_overlay.draw_on_image(frame)
 
+        if read_ok:
         # Display the frame on the screen
-        small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-        cv2.imshow('Barcode Scanner', small)
+          small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+          cv2.imshow('Barcode Scanner', small)
 
         # Exit scanning mode if the exit key is pressed
         if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):

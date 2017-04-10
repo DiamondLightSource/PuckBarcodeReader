@@ -1,5 +1,5 @@
 import unittest
-from dls_util import ConfigItem
+from dls_util import ConfigItem, IntConfigItem
 
 class TestItem(unittest.TestCase):
 
@@ -40,6 +40,31 @@ class TestItem(unittest.TestCase):
         item.set(30)
         str = item.to_file_string()
         self.assertEquals(str, "test_int=30\n")
+
+class TestIntConfigItem(unittest.TestCase):
+
+    def test_units_set_correctly_by_ini(self):
+        item = IntConfigItem("test_int", 2, 'mm')
+        self.assertEquals(item._units, 'mm')
+
+    def test_unit_returns_correct_value(self):
+        item = IntConfigItem("test_int", 2, 'cm')
+        self.assertEquals(item.units(), 'cm')
+
+    def test_clean_returns_default_value_if_not_int(self):
+        item = IntConfigItem("test_int", 2, 'cm')
+        self.assertEquals(item._clean("buu"), 2)
+
+    def test_clean_returns_int_value_correctly(self):
+        item = IntConfigItem("test_int", 2, 'cm')
+        self.assertEquals(item._clean("20"), 20)
+
+
+
+
+
+
+
 
 
 
