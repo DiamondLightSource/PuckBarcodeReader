@@ -71,7 +71,7 @@ class Store:
         """ Create new record or replace existing record if it has the same barcodes as the most
         recent record. Save to backing store. """
 
-        if len(self.records) > 0 and self.records[0].any_barcode_matches(plate.barcodes()):
+        if len(self.records) > 0 and self.records[0].any_barcode_matches(second_plate.barcodes()):
             self.delete_records([self.records[0]])
             self.add_record(plate, second_plate, cv_img)
 

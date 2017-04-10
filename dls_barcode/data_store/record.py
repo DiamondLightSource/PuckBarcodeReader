@@ -70,9 +70,16 @@ class Record:
 
     @staticmethod
     def from_plate(plate, second_plate, image_path):
-        barcodes = plate.barcodes() + second_plate.barcodes()
-        return Record(plate_type=plate.type, barcodes=barcodes,
-                      image_path=image_path, geometry=plate.geometry())
+        barcodes = second_plate.barcodes()
+        plate_type = second_plate.type
+        geometry = second_plate.geometry()
+        if(plate != None):
+            barcodes = plate.barcodes() + second_plate.barcodes()
+            plate_type = plate.type
+            geometry = plate.geometry()
+
+        return Record(plate_type=plate_type, barcodes=barcodes,
+                      image_path=image_path, geometry=geometry)
 
     @staticmethod
     def from_string(string):

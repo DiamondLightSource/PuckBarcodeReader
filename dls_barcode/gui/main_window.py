@@ -5,6 +5,7 @@ from dls_barcode.data_store.record import Record
 from dls_barcode.geometry import GeometryException
 from dls_barcode.geometry.exception import GeometryAlignmentError
 from dls_barcode.gui.side_barcode_window import SideBarcodeWindow
+from dls_barcode.plate import Plate
 from dls_barcode.plate.geometry_adjuster import GeometryAdjustmentError
 from dls_barcode.scan.with_geometry.scan import NoBarcodesError
 
@@ -184,7 +185,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
             # Store scan results and display in GUI
             if self.original_plate == None:
-                self.recordTable.add_record_frame(plate, cv_image)
+                self.recordTable.add_record_frame(self.original_plate, plate, cv_image)
 
             else:
                 #self.original_plate.marge_barecodes(plate)
