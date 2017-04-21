@@ -4,7 +4,6 @@ from dls_barcode.config.barcode_config import CameraConfig
 from dls_barcode.data_store.record import Record
 from dls_barcode.geometry import GeometryException
 from dls_barcode.geometry.exception import GeometryAlignmentError
-from dls_barcode.gui.side_barcode_window import SideBarcodeWindow
 from dls_barcode.plate import Plate
 from dls_barcode.plate.geometry_adjuster import GeometryAdjustmentError
 from dls_barcode.scan.with_geometry.scan import NoBarcodesError
@@ -78,13 +77,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Barcode table - lists all the barcodes in a record
         self.barcodeTable = BarcodeTable(self._config)
 
-        # Side barcode window - side barcode
-        self.sideBarcodeWindow = SideBarcodeWindow(self._config)
-
         # Image frame - displays image of the currently selected scan record
         self.imageFrame = ImageFrame(500, 500, "Plate Image")
-
-        self.imageFrameSide = ImageFrame(100, 100, "Side Image")
 
         # Scan record table - lists all the records in the store
         self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config)
