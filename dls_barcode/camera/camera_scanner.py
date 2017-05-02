@@ -139,12 +139,12 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, options, camera_con
     SlotScanner.DEBUG = options.slot_images.value()
     SlotScanner.DEBUG_DIR = options.slot_image_directory.value()
 
-    plate_type = "None"
-
     if (camera_config[0]._tag.find("Side") == -1):
         plate_type = options.plate_type.value()
-
-    barcode_size = options.barcode_size.value()
+        barcode_size = options.barcode_size.value()
+    else:
+        plate_type = "None"
+        barcode_size = 12
 
     if plate_type == "None":
         scanner = OpenScanner(barcode_size)
