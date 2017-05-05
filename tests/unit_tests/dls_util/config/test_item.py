@@ -1,5 +1,5 @@
 import unittest
-from dls_util import ConfigItem, IntConfigItem, DirectoryConfigItem, BoolConfigItem
+from dls_util import ConfigItem, IntConfigItem, DirectoryConfigItem, BoolConfigItem, EnumConfigItem
 
 class TestItem(unittest.TestCase):
 
@@ -75,13 +75,39 @@ class TestBoolConfigItem(unittest.TestCase):
         item.from_file_string("trUE")
         self.assertTrue(item.value())
 
-    def test_from_file_string_sets_value_True_when_input_string_is_other_than_True(self):
+    def test_from_file_string_sets_value_Fale_when_input_string_is_other_than_True(self):
         item = BoolConfigItem("test_int", 15)
         item.from_file_string("AAAAA")
         self.assertFalse(item.value())
 
 
 class TestEnumConfigItem(unittest.TestCase):
+
+    def test_init_sets_def_value_if_it_is_one_of_possible_enum_names(self):
+        item = EnumConfigItem("test_int", 15, [15,16,17])
+        self.assertEquals(item._default, "15")
+
+        item = EnumConfigItem("test_int", "test", ["test", "test1", "test2"])
+        self.assertEquals(item._default, "test")
+
+    def test_init_sets_def_to_the_first_value_from_possible_enum_names_if_def_not_in_possible_names(self):
+        item = EnumConfigItem("test_int", 1, [15,16,17])
+        self.assertEquals(item._default, "15")
+
+    def test_from_file_string_sets_stripped_string_value_if_it_is_in_enum_names(self):
+        item = EnumConfigItem("test_int", "test", ["test", "test1", "test2"])
+        item.from_file_string("   test2   ")
+        self.assertEquals(item.value(), "test2")
+
+    def test_from_file_string_sets_default_value_if_the_value_is_not_in_enum_names(self):
+        item = EnumConfigItem("test_int", "test", ["test", "test1", "test2"])
+        item.from_file_string("te")
+        self.assertEquals(item.value(), "test")
+
+
+
+
+
 
 
 
