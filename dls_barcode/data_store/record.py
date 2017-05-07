@@ -73,10 +73,8 @@ class Record:
         barcodes = second_plate.barcodes()
         plate_type = second_plate.type
         geometry = second_plate.geometry()
-        if(plate != None):
+        if(plate != None): #geometry and type kept as for the second plate
             barcodes = plate.barcodes() + second_plate.barcodes()
-            plate_type = plate.type
-            geometry = plate.geometry()
 
         return Record(plate_type=plate_type, barcodes=barcodes,
                       image_path=image_path, geometry=geometry)
@@ -123,10 +121,14 @@ class Record:
 
         return False
 
+    #TODO: modify when two images merged
+    # only the image of the top for the time being
     def image(self):
         image = Image.from_file(self.image_path)
         return image
 
+    #TODO: modify when two images merged
+    # only the image of the top for the time being
     def marked_image(self, options):
         geo = self.geometry
         image = self.image()
@@ -142,8 +144,11 @@ class Record:
 
         return image
 
+    # marking the top image
     def _draw_pins(self, image, geometry, options):
-        for i, bc in enumerate(self.barcodes):
+        top_barcodes = list(self.barcodes) #copy of the list
+        top_barcodes.pop(0)# remove the first element (side barcode)
+        for i, bc in enumerate(top_barcodes):
             if bc == NOT_FOUND_SLOT_SYMBOL:
                 color = options.col_bad()
             elif bc == EMPTY_SLOT_SYMBOL:

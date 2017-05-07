@@ -25,19 +25,15 @@ class BarcodeConfigDialog(ConfigDialog):
         camera_puck = CameraConfigControl(self.camera_config.getPuckCameraConfig())
         camera_side = CameraConfigControl(self.camera_config.getSideCameraConfig())
 
-        self.start_group("Sample Plate")
-        add(cfg.barcode_size)
-
         self.start_group("Colors")
         add(cfg.color_ok)
         add(cfg.color_unreadable)
         add(cfg.color_empty)
 
-        self.start_group("Cameras")
         self.start_group("Top Camera")
+        add(cfg.barcode_size)
         add(cfg.plate_type)
         self._add_control(camera_puck)
-        #add(cfg.plate_type)
 
         self.start_group("Side Camera")
         self._add_control(camera_side)
@@ -175,15 +171,15 @@ class CameraConfigControl(ConfigControl):
         while True:
             # Capture the next frame from the camera
             read_ok, frame = cap.read()
-
             if frame is None:
                 breaking_frame = True
                 break
-            elif cv2.waitKey(1) != -1:
+            elif cv2.waitKey(1) != 255: #-1:
                 break
 
             small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
             cv2.imshow('Camera Preview (Press any key to exit)', small)
+
 
         cap.release()
         cv2.destroyAllWindows()

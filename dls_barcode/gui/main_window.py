@@ -44,7 +44,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self._scanner = None
 
-        self._flag_top = True
+        self._flag_side = True
 
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
@@ -176,29 +176,25 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._new_scan_queue.empty():
             # Get the result
             plate, cv_image = self._new_scan_queue.get(False)
-
+            #TODO:mage images
             # Store scan results and display in GUI
-            if self.original_plate == None:
+            if self.original_plate != None:
+                #new_image = self.original_cv_image.mage_cv_image(cv_image)
                 self.recordTable.add_record_frame(self.original_plate, plate, cv_image)
 
-            else:
-                #self.original_plate.marge_barecodes(plate)
-                new_image = self.original_cv_image#.mage_cv_image(cv_image)
-                self.recordTable.add_record_frame(self.original_plate, plate, new_image)
-
-            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None':
                 # Notify user of new scan
                 print("Scan Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-                self._flag_top = False
+                self._flag_side = False
                 self._stop_live_capture()
                 self._start_live_capture()
                 self.original_plate = plate
-                self.original_cv_image = cv_image
-            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None':
+                self.original_cv_image = cv_image#for margeing
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':
                 print("Scan wwwwwwwwwwwww Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-                self._flag_top = True
+                self._flag_side = True
                 self._stop_live_capture()
                 self.original_plate = None
                 self.original_cv_image = None
@@ -237,20 +233,20 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        if (self._flag_top):
+        if (self._flag_side):
 
             self._stop_live_capture()
 
             self._scanner = CameraScanner(self._new_scan_queue)
 
-            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getPuckCameraConfig())
+            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
 
         else:
             self._stop_live_capture()
 
             self._scanner = CameraScanner(self._new_scan_queue)
 
-            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getSideCameraConfig())
+            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
 
 
     def _stop_live_capture(self):
