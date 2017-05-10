@@ -51,10 +51,10 @@ class CameraScanner:
         self.kill_queue = multiprocessing.Queue()
         self.result_queue = result_queue
 
-    def stream_camera(self, config, camera_config):
+    def stream_camera(self, config, camera_config, image_frame):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, camera_config)
+        capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, camera_config, image_frame)
         scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config, camera_config)
 
         capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
@@ -68,7 +68,7 @@ class CameraScanner:
         self.task_queue.put(None)
 
 
-def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config):
+def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config, image_frame):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
@@ -112,17 +112,20 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config):
         latest_overlay.draw_on_image(frame)
 
         # Display the frame on the screen
-        small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-        cv2.imshow('Barcode Scanner', small)
+        #small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        #cv2.imshow('Barcode Scanner', small)
+        image_frame.display_puck_image(frame)
+
+
 
         # Exit scanning mode if the exit key is pressed
-        if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
-            break
+        #if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
+        #    break
 
     # Clean up camera and kill the worker threads
     task_queue.put(None)
     cap.release()
-    cv2.destroyAllWindows()
+   # cv2.destroyAllWindows()
 
 
 def _scanner_worker(task_queue, overlay_queue, result_queue, options, camera_config):

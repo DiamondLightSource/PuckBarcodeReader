@@ -59,7 +59,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.barcodeTable = None
         self.sideBarcodeWindow = None
         self.imageFrame = None
-        self.imageFrameSide = None
         self.original_plate = None
         self.original_cv_image = None
 
@@ -106,10 +105,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         vbox_new = QtGui.QVBoxLayout()
         vbox_new.addWidget(self.imageFrame)
         hbox_new = QtGui.QHBoxLayout()
-
-        hbox_new.addWidget(self.sideBarcodeWindow)
-        hbox_new.addWidget(self.imageFrameSide)
-        vbox_new.addLayout(hbox_new)
 
         hbox.addLayout(vbox_new)
 
@@ -239,14 +234,14 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
             self._scanner = CameraScanner(self._new_scan_queue)
 
-            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
+            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig(), image_frame = self.imageFrame)
 
         else:
             self._stop_live_capture()
 
             self._scanner = CameraScanner(self._new_scan_queue)
 
-            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
+            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig(), image_frame = self.imageFrame)
 
 
     def _stop_live_capture(self):
