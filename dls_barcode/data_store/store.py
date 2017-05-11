@@ -115,3 +115,4 @@ class Store:
         file_contents = "\n".join(record_lines)
         with open(self._file, mode="wt") as file:
             file.writelines(file_contents)
+    #TODO: write a function which stores the result in a csv file

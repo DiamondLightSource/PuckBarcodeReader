@@ -171,7 +171,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._new_scan_queue.empty():
             # Get the result
             plate, cv_image = self._new_scan_queue.get(False)
-            #TODO:mage images
+            #TODO:marge images
             # Store scan results and display in GUI
             if self.original_plate != None:
                 #new_image = self.original_cv_image.mage_cv_image(cv_image)
@@ -234,14 +234,16 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
             self._scanner = CameraScanner(self._new_scan_queue)
 
-            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig(), image_frame = self.imageFrame)
+            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
+
+            self.imageFrame.display_puck_image(self._new_scan_queue.get().)
 
         else:
             self._stop_live_capture()
 
             self._scanner = CameraScanner(self._new_scan_queue)
 
-            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig(), image_frame = self.imageFrame)
+            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
 
 
     def _stop_live_capture(self):
