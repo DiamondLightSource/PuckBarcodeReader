@@ -39,7 +39,10 @@ class Record:
             automatically if a value isn't supplied
         :param id: uid for the record; one will be generated if not supplied
         """
-        self.timestamp = float(timestamp)
+        try:
+            self.timestamp = float(timestamp)
+        except ValueError:
+            self.timestamp = 0.0
         self.image_path = image_path
         self.plate_type = plate_type
         self.barcodes = barcodes
@@ -49,7 +52,7 @@ class Record:
         # todo: find a work around for this (i.e. encode the semi colons)
         # Remove ";" from barcode data
         for i, bc in enumerate(self.barcodes):
-            self.barcodes[i] = bc.replace(self.ITEM_SEPARATOR, "")
+            self.barcodes[i] = bc.replace(self.ITEM_SEPARATOR, "") # interesting where does ; come from?
 
         # Generate timestamp and uid if none are supplied
         if timestamp == 0:
@@ -80,7 +83,7 @@ class Record:
         """
         items = string.strip().split(Record.ITEM_SEPARATOR)
         id = items[Record.IND_ID]
-        timestamp = float(items[Record.IND_TIMESTAMP])
+        timestamp = items[Record.IND_TIMESTAMP] #used to convert into float twice
         image = items[Record.IND_IMAGE]
         plate_type = items[Record.IND_PLATE]
         barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
