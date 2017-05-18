@@ -16,6 +16,7 @@ class Store:
         self._options = options
         self._directory = directory
         self._file = directory + "store.txt"
+        self._csv_file = directory + "store.csv"
         self._img_dir = directory + "/img_dir/"
 
         if not os.path.exists(self._img_dir):
@@ -102,6 +103,7 @@ class Store:
         """
         self._sort_records()
         self._to_file()
+        self._to_csv_file()
 
     def _sort_records(self):
         """ Sort the records in descending date order (must recent first).
@@ -115,4 +117,12 @@ class Store:
         file_contents = "\n".join(record_lines)
         with open(self._file, mode="wt") as file:
             file.writelines(file_contents)
-    #TODO: write a function which stores the result in a csv file
+
+
+    def _to_csv_file(self):
+            """ Save the contents of the store to the backing csv file
+            """
+            record_lines = [rec.to_csv_string() for rec in self.records]
+            file_contents = "\n".join(record_lines)
+            with open(self._csv_file, mode="wt") as file:
+                file.writelines(file_contents)

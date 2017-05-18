@@ -220,7 +220,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
             # If the scan was successful, store the results
             if plate is not None:
-                self.recordTable.add_record(plate, cv_image)
+                self.recordTable.add_record(plate, None, cv_image)
             else:
                 error = "There was a problem scanning the image:\n{}".format(scan_result.error())
                 QtGui.QMessageBox.warning(self, "Scanning Error", error)
@@ -235,8 +235,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._scanner = CameraScanner(self._new_scan_queue)
 
             self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
-
-            self.imageFrame.display_puck_image(self._new_scan_queue.get().)
 
         else:
             self._stop_live_capture()

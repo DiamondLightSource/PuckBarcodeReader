@@ -70,11 +70,16 @@ class Record:
 
     @staticmethod
     def from_plate(plate, second_plate, image_path):
-        barcodes = second_plate.barcodes()
-        plate_type = second_plate.type
-        geometry = second_plate.geometry()
-        if(plate != None): #geometry and type kept as for the second plate
+        if (plate != None and second_plate != None ):
+            plate_type = second_plate.type
+            geometry = second_plate.geometry()
+         #geometry and type kept as for the second plate
             barcodes = plate.barcodes() + second_plate.barcodes()
+
+        if (second_plate == None):
+            plate_type = plate.type
+            geometry = plate.geometry()
+            barcodes = plate.barcodes()
 
         return Record(plate_type=plate_type, barcodes=barcodes,
                       image_path=image_path, geometry=geometry)
@@ -96,6 +101,16 @@ class Record:
 
         return Record(plate_type=plate_type, barcodes=barcodes, timestamp=timestamp,
                       image_path=image, id=id, geometry=geometry)
+
+    def to_csv_string(self):
+        """ Converts a scan record object into a string that can be stored in a file
+        and retrieved later.
+        """
+        items = [0] * 3
+        items[0] = str(self.id)
+        items[1] = str(self.timestamp)
+        items[2] = Record.BC_SEPARATOR.join(self.barcodes)
+        return Record.BC_SEPARATOR.join(items)
 
     def to_string(self):
         """ Converts a scan record object into a string that can be stored in a file
