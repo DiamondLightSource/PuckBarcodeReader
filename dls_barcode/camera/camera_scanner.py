@@ -54,7 +54,7 @@ class CameraScanner:
     def stream_camera(self, config, camera_config):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, camera_config)
+        capture_args = (self.task_queue, self.result_queue, self.overlay_queue, self.kill_queue, camera_config)
         scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, config, camera_config)
 
         capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
@@ -68,7 +68,7 @@ class CameraScanner:
         self.task_queue.put(None)
 
 
-def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config):
+def _capture_worker(task_queue, result_queue, overlay_queue, kill_queue, camera_config):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
@@ -104,6 +104,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config):
             task_queue.put(frame.copy())
             last_time = time.time()
 
+
         # Get the latest overlay
         while not overlay_queue.empty():
             latest_overlay = overlay_queue.get(False)
@@ -111,13 +112,14 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, camera_config):
         # Draw the overlay on the frame
         latest_overlay.draw_on_image(frame)
 
+        if not result_queue.empty():
         # Display the frame on the screen
-        small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-        cv2.imshow('Barcode Scanner', small)
+            small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+            cv2.imshow('Barcode Scanner', small)
 
         # Exit scanning mode if the exit key is pressed
-        if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
-            break
+            if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
+             break
 
     # Clean up camera and kill the worker threads
     task_queue.put(None)

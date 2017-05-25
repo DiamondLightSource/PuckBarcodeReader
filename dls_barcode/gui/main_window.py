@@ -82,20 +82,22 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Scan record table - lists all the records in the store
         self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config)
 
-        self._btn_begin = QPushButton("Start Scan")
-        self._btn_begin.setStyleSheet("font-size:20pt;")
-        self._btn_begin.setFixedSize(150, 60)
-        self._btn_begin.clicked.connect(self._start_live_capture)
+        #self._btn_begin = QPushButton("Start Scan")
+        #self._btn_begin.setStyleSheet("font-size:20pt;")
+        #self._btn_begin.setFixedSize(150, 60)
+        #self._btn_begin.clicked.connect(self._start_live_capture)
+        self._start_live_capture()
 
-        self._btn_stop = QPushButton("Stop Scan")
-        self._btn_stop.setStyleSheet("font-size:20pt")
-        self._btn_stop.setFixedSize(150, 60)
-        self._btn_stop.clicked.connect(self._stop_live_capture)
 
-        hbox_btn = QHBoxLayout()
-        hbox_btn.addWidget(self._btn_begin)
-        hbox_btn.addWidget(self._btn_stop)
-        hbox_btn.addStretch()
+        #self._btn_stop = QPushButton("Stop Scan")
+        #self._btn_stop.setStyleSheet("font-size:20pt")
+        #self._btn_stop.setFixedSize(150, 60)
+        #self._btn_stop.clicked.connect(self._stop_live_capture)
+
+        #hbox_btn = QHBoxLayout()
+        #hbox_btn.addWidget(self._btn_begin)
+        #hbox_btn.addWidget(self._btn_stop)
+        #hbox_btn.addStretch()
 
         # Create layout
         hbox = QtGui.QHBoxLayout()
@@ -110,7 +112,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         vbox = QtGui.QVBoxLayout()
 
-        vbox.addLayout(hbox_btn)
+#        vbox.addLayout(hbox_btn)
         vbox.addLayout(hbox)
 
         main_widget = QtGui.QWidget()
@@ -130,10 +132,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         load_action.triggered.connect(self._scan_file_image)
 
         # Continuous scanner mode
-        live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
-        live_action.setShortcut('Ctrl+W')
-        live_action.setStatusTip('Capture continuously from camera')
-        live_action.triggered.connect(self._start_live_capture)
+        #live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
+        #live_action.setShortcut('Ctrl+W')
+        #live_action.setStatusTip('Capture continuously from camera')
+        #live_action.triggered.connect(self._start_live_capture)
 
         # Exit Application
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -152,9 +154,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         file_menu = menu_bar.addMenu('&File')
         file_menu.addAction(exit_action)
 
-        scan_menu = menu_bar.addMenu('&Scan')
-        scan_menu.addAction(load_action)
-        scan_menu.addAction(live_action)
+  #      scan_menu = menu_bar.addMenu('&Scan')
+ #       scan_menu.addAction(load_action)
+#        scan_menu.addAction(live_action)
 
         option_menu = menu_bar.addMenu('&Option')
         option_menu.addAction(options_action)
