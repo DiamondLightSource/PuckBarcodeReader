@@ -112,14 +112,14 @@ def _capture_worker(task_queue, result_queue, overlay_queue, kill_queue, camera_
         # Draw the overlay on the frame
         latest_overlay.draw_on_image(frame)
 
-        if not result_queue.empty():
+        #if not result_queue.empty():
         # Display the frame on the screen
-            small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-            cv2.imshow('Barcode Scanner', small)
+        small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        cv2.imshow('Barcode Scanner', small)
 
         # Exit scanning mode if the exit key is pressed
-            if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
-             break
+        if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
+            break
 
     # Clean up camera and kill the worker threads
     task_queue.put(None)

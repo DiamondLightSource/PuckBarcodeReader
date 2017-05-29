@@ -65,11 +65,11 @@ class CameraConfig(Config):
 
         add = self.add
 
-        self.puck_camera_number = add(IntConfigItem, "Puck Camera Number", default=2)
+        self.puck_camera_number = add(IntConfigItem, "Puck Camera Number", default=1)
         self.puck_camera_width = add(IntConfigItem, "Puck Camera Width", default=1600)
         self.puck_camera_height = add(IntConfigItem, "Puck Camera Height", default=1200)
 
-        self.side_camera_number = add(IntConfigItem, "Side Camera Number", default=1)
+        self.side_camera_number = add(IntConfigItem, "Side Camera Number", default=2)
         self.side_camera_width = add(IntConfigItem, "Side Camera Width", default=1600)
         self.side_camera_height = add(IntConfigItem, "Side Camera Height", default=1200)
 

@@ -46,6 +46,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self._flag_side = True
 
+        self._count = 0
+
+
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
 
@@ -86,7 +89,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         #self._btn_begin.setStyleSheet("font-size:20pt;")
         #self._btn_begin.setFixedSize(150, 60)
         #self._btn_begin.clicked.connect(self._start_live_capture)
-        self._start_live_capture()
+
+        #open options first to make sure the cameras are set up correctly.
+        #start live capture of the side as soon as the dialog box is closed
+        dialog = self._open_options_dialog()
+        if not dialog.isVisible():
+            self._start_live_capture()
 
 
         #self._btn_stop = QPushButton("Stop Scan")
@@ -164,11 +172,13 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _open_options_dialog(self):
         dialog = BarcodeConfigDialog(self._config, self._camera_config)
         dialog.exec_()
+        return dialog
 
     def _read_new_scan_queue(self):
         """ Called every second; read any new results from the scan results queue,
         store them and display them.
         """
+        self._count = self._count + 1
 
         if not self._new_scan_queue.empty():
             # Get the result
@@ -193,9 +203,18 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 winsound.Beep(4000, 500)  # frequency, duration
                 self._flag_side = True
                 self._stop_live_capture()
-                self.original_plate = None
-                self.original_cv_image = None
+                self._start_live_capture()
 
+        self._limit_number_of_tries(60)
+
+    #function used to limit the number of attempts of reading barcode
+    #limits the whole process of reading the top and than the side to the number specified by the limit
+    def _limit_number_of_tries(self, limit):
+        if self._count > limit:
+            self._flag_side = True
+            self._stop_live_capture()
+            self._start_live_capture()
+            self._count = 0
 
 
     def _scan_file_image(self):
@@ -244,6 +263,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._scanner = CameraScanner(self._new_scan_queue)
 
             self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
+
 
 
     def _stop_live_capture(self):
