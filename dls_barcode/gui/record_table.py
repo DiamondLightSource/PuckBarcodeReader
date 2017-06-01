@@ -72,10 +72,11 @@ class ScanRecordTable(QGroupBox):
 
     def add_record_frame(self, plate, second_plate, image):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
-        self._store.merge_record(plate, second_plate, image)
+        is_repetition = self._store.merge_record(plate, second_plate, image)
         self._load_store_records()
         if self._options.scan_clipboard.value():
             self._barcodeTable.copy_selected_to_clipboard()
+        return is_repetition
 
     def _load_store_records(self):
         """ Populate the record table with all of the records in the store.

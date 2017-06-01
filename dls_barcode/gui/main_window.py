@@ -46,16 +46,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self._flag_side = True
 
-        self._count = 0
-
-
-        # Queue that holds new results generated in continuous scanning mode
-        self._new_scan_queue = multiprocessing.Queue()
-
-        # Timer that controls how often new scan results are looked for
-        self._result_timer = QtCore.QTimer()
-        self._result_timer.timeout.connect(self._read_new_scan_queue)
-        self._result_timer.start(1000)
+        self.is_repetition = False
 
         # UI elements
         self.recordTable = None
@@ -65,7 +56,17 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.original_plate = None
         self.original_cv_image = None
 
-        self._init_ui()
+        dialog = self._init_ui()
+
+        if not dialog.isVisible():
+            # Queue that holds new results generated in continuous scanning mode
+            self._new_scan_queue = multiprocessing.Queue()
+            # Timer that controls how often new scan results are looked for
+            self._result_timer = QtCore.QTimer()
+            self._result_timer.timeout.connect(self._read_new_scan_queue)
+            self._result_timer.start(1000)
+            self._start_live_capture()
+
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
@@ -93,9 +94,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         #open options first to make sure the cameras are set up correctly.
         #start live capture of the side as soon as the dialog box is closed
         dialog = self._open_options_dialog()
-        if not dialog.isVisible():
-            self._start_live_capture()
-
 
         #self._btn_stop = QPushButton("Stop Scan")
         #self._btn_stop.setStyleSheet("font-size:20pt")
@@ -129,6 +127,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self.show()
 
+        return dialog
+
 
     def init_menu_bar(self):
         """Create and populate the menu bar.
@@ -156,6 +156,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
         options_action.triggered.connect(self._open_options_dialog)
+        options_action.triggered.connect(self._stop_live_capture)
+        options_action.triggered.connect(self._start_live_capture)#???should be changed???
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -178,7 +180,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         """ Called every second; read any new results from the scan results queue,
         store them and display them.
         """
-        self._count = self._count + 1
 
         if not self._new_scan_queue.empty():
             # Get the result
@@ -186,35 +187,49 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             #TODO:marge images
             # Store scan results and display in GUI
             if self.original_plate != None:
-                #new_image = self.original_cv_image.mage_cv_image(cv_image)
-                self.recordTable.add_record_frame(self.original_plate, plate, cv_image)
-
-            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None':
+                # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
+                self.is_repetition = self.recordTable.add_record_frame(self.original_plate, plate, cv_image)
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None' and not self.is_repetition:
                 # Notify user of new scan
                 print("Scan Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-                self._flag_side = False
                 self._stop_live_capture()
+                self._flag_side = False #wyjatkowo
                 self._start_live_capture()
                 self.original_plate = plate
                 self.original_cv_image = cv_image#for margeing
             if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':
                 print("Scan wwwwwwwwwwwww Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-                self._flag_side = True
                 self._stop_live_capture()
                 self._start_live_capture()
 
-        self._limit_number_of_tries(60)
+    def _start_live_capture(self):
+        """ Starts the process of continuous capture from an attached camera.
+        """
+        if (self._flag_side):
 
-    #function used to limit the number of attempts of reading barcode
-    #limits the whole process of reading the top and than the side to the number specified by the limit
-    def _limit_number_of_tries(self, limit):
-        if self._count > limit:
+            self._scanner = CameraScanner(self._new_scan_queue)
+
+            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
+
+        else:
+
+            self._scanner = CameraScanner(self._new_scan_queue)
+
+            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
+
+
+
+    def _stop_live_capture(self):
+        if self._scanner is not None:
+            self._scanner.kill()
+            self._scanner = None
+            self.original_plate = None
+            self.original_cv_image = None
             self._flag_side = True
-            self._stop_live_capture()
-            self._start_live_capture()
-            self._count = 0
+
+
 
 
     def _scan_file_image(self):
@@ -245,30 +260,3 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             else:
                 error = "There was a problem scanning the image:\n{}".format(scan_result.error())
                 QtGui.QMessageBox.warning(self, "Scanning Error", error)
-
-    def _start_live_capture(self):
-        """ Starts the process of continuous capture from an attached camera.
-        """
-        if (self._flag_side):
-
-            self._stop_live_capture()
-
-            self._scanner = CameraScanner(self._new_scan_queue)
-
-            self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
-
-        else:
-            self._stop_live_capture()
-
-            self._scanner = CameraScanner(self._new_scan_queue)
-
-            self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
-
-
-
-    def _stop_live_capture(self):
-        if self._scanner is not None:
-            self._scanner.kill()
-            self._scanner = None
-            self.original_plate = None
-            self.original_cv_image = None
