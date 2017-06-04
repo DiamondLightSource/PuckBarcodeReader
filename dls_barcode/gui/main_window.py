@@ -31,6 +31,7 @@ from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
 from dls_barcode.geometry import Geometry
 
+import cv2
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.
@@ -184,6 +185,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._new_scan_queue.empty():
             # Get the result
             plate, cv_image = self._new_scan_queue.get(False)
+
+            self.imageFrame.display_puck_image(cv_image)
+
             #TODO:marge images
             # Store scan results and display in GUI
             if self.original_plate != None:
