@@ -60,6 +60,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not dialog.isVisible():
             # Queue that holds new results generated in continuous scanning mode
             self._new_scan_queue = multiprocessing.Queue()
+
             # Timer that controls how often new scan results are looked for
             self._result_timer = QtCore.QTimer()
             self._result_timer.timeout.connect(self._read_new_scan_queue)
@@ -133,10 +134,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         """Create and populate the menu bar.
         """
         # Load from file action
-        load_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From File...', self)
-        load_action.setShortcut('Ctrl+L')
-        load_action.setStatusTip('Load image from file to scan')
-        load_action.triggered.connect(self._scan_file_image)
+        #load_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From File...', self)
+        #load_action.setShortcut('Ctrl+L')
+        #load_action.setStatusTip('Load image from file to scan')
+        #load_action.triggered.connect(self._scan_file_image)
 
         # Continuous scanner mode
         #live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
@@ -179,6 +180,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         """ Called every second; read any new results from the scan results queue,
         store them and display them.
         """
+
 
         if not self._new_scan_queue.empty():
             # Get the result
@@ -232,34 +234,31 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self.original_cv_image = None
             self._flag_side = True
 
-
-
-
-    def _scan_file_image(self):
-        """Load and process (scan for barcodes) an image from file
-        """
-        filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
-        if filepath:
-            cv_image = Image.from_file(filepath)
-            gray_image = cv_image.to_grayscale()
-
-            # Scan the image for barcodes
-            plate_type = self._config.plate_type.value()
-            barcode_size = self._config.barcode_size.value()
-            SlotScanner.DEBUG = self._config.slot_images.value()
-            SlotScanner.DEBUG_DIR = self._config.slot_image_directory.value()
-
-            if plate_type == "None":
-                scanner = OpenScanner(barcode_size)
-            else:
-                scanner = GeometryScanner(plate_type, barcode_size)
-
-            scan_result = scanner.scan_next_frame(gray_image, is_single_image=True)
-            plate = scan_result.plate()
-
-            # If the scan was successful, store the results
-            if plate is not None:
-                self.recordTable.add_record(plate, None, cv_image)
-            else:
-                error = "There was a problem scanning the image:\n{}".format(scan_result.error())
-                QtGui.QMessageBox.warning(self, "Scanning Error", error)
+    # def _scan_file_image(self):
+    #     """Load and process (scan for barcodes) an image from file
+    #     """
+    #     filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
+    #     if filepath:
+    #         cv_image = Image.from_file(filepath)
+    #         gray_image = cv_image.to_grayscale()
+    #
+    #         # Scan the image for barcodes
+    #         plate_type = self._config.plate_type.value()
+    #         barcode_size = self._config.barcode_size.value()
+    #         SlotScanner.DEBUG = self._config.slot_images.value()
+    #         SlotScanner.DEBUG_DIR = self._config.slot_image_directory.value()
+    #
+    #         if plate_type == "None":
+    #             scanner = OpenScanner(barcode_size)
+    #         else:
+    #             scanner = GeometryScanner(plate_type, barcode_size)
+    #
+    #         scan_result = scanner.scan_next_frame(gray_image, is_single_image=True)
+    #         plate = scan_result.plate()
+    #
+    #         # If the scan was successful, store the results
+    #         if plate is not None:
+    #             self.recordTable.add_record(plate, None, cv_image)
+    #         else:
+    #             error = "There was a problem scanning the image:\n{}".format(scan_result.error())
+    #             QtGui.QMessageBox.warning(self, "Scanning Error", error)
