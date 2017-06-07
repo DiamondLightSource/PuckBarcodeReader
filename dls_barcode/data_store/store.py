@@ -73,14 +73,11 @@ class Store:
         recent record. Save to backing store. """
         #Checking only side barcodes is sufficient
         #if len(self.records) > 0 and (self.records[0].any_barcode_matches(second_plate.barcodes()) or self.records[0].any_barcode_matches(plate.barcodes())):
-        repetition = False
         if len(self.records) > 0 and self.records[0].any_barcode_matches(plate.barcodes()):
             self.delete_records([self.records[0]])
             self.add_record(plate, second_plate, cv_img)
-            repetition = True
         else:
             self.add_record(plate, second_plate, cv_img)
-        return repetition
 
     def delete_records(self, records):
         """ Remove all of the records in the supplied list from the store and
@@ -128,3 +125,5 @@ class Store:
             file_contents = "\n".join(record_lines)
             with open(self._csv_file, mode="wt") as file:
                 file.writelines(file_contents)
+
+

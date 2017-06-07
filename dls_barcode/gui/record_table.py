@@ -17,7 +17,7 @@ class ScanRecordTable(QGroupBox):
     """
     COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
-    def __init__(self, barcode_table, image_frame, options):
+    def __init__(self, barcode_table, image_frame, options, main_window):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
@@ -26,6 +26,8 @@ class ScanRecordTable(QGroupBox):
 
         self._barcodeTable = barcode_table
         self._imageFrame = image_frame
+
+        self.main_window = main_window
 
         self.setTitle("Scan Records")
         self._init_ui()
@@ -53,6 +55,8 @@ class ScanRecordTable(QGroupBox):
         btn_delete.setToolTip('Delete selected scan/s')
         btn_delete.resize(btn_delete.sizeHint())
         btn_delete.clicked.connect(self._delete_selected_records)
+        btn_delete.clicked.connect(self.main_window._stop_live_capture)
+        btn_delete.clicked.connect(self.main_window._start_live_capture)
 
         hbox = QHBoxLayout()
         hbox.setSpacing(10)
@@ -72,11 +76,11 @@ class ScanRecordTable(QGroupBox):
 
     def add_record_frame(self, plate, second_plate, image):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
-        is_repetition = self._store.merge_record(plate, second_plate, image)
+        self._store.merge_record(plate, second_plate, image)
         self._load_store_records()
         if self._options.scan_clipboard.value():
             self._barcodeTable.copy_selected_to_clipboard()
-        return is_repetition
+
 
     def _load_store_records(self):
         """ Populate the record table with all of the records in the store.
@@ -140,3 +144,15 @@ class ScanRecordTable(QGroupBox):
 
             self._store.delete_records(records_to_delete)
             self._load_store_records()
+
+    def unique_side_barcode(self, plate):
+        barcodes = []
+        plate_barcodes = plate.barcodes()
+        store = self._store
+        rec = store.records
+        for m,record in enumerate(rec):
+            barcodes = barcodes + record.barcodes[:]
+        if plate_barcodes[0] in barcodes:
+            return False
+        return True
+

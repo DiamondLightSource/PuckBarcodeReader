@@ -47,8 +47,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self._flag_side = True
 
-        self.is_repetition = False
-
         # UI elements
         self.recordTable = None
         self.barcodeTable = None
@@ -85,7 +83,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.imageFrame = ImageFrame(500, 500, "Plate Image")
 
         # Scan record table - lists all the records in the store
-        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config)
+        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config, self)
 
         #self._btn_begin = QPushButton("Start Scan")
         #self._btn_begin.setStyleSheet("font-size:20pt;")
@@ -158,7 +156,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action.setStatusTip('Open Options Dialog')
         options_action.triggered.connect(self._open_options_dialog)
         options_action.triggered.connect(self._stop_live_capture)
-        options_action.triggered.connect(self._start_live_capture)#???should be changed???
+        options_action.triggered.connect(self._start_live_capture)#find a better way of doing this
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -173,7 +171,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         option_menu.addAction(options_action)
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config, self._camera_config)
+        dialog = BarcodeConfigDialog(self._config, self._camera_config)#pass the object here and trigger when the button is pressed
         dialog.exec_()
         return dialog
 
@@ -192,21 +190,22 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             # Store scan results and display in GUI
             if self.original_plate != None:
                 # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
-                self.is_repetition = self.recordTable.add_record_frame(self.original_plate, plate, cv_image)
-            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None' and not self.is_repetition:
+                self.recordTable.add_record_frame(self.original_plate, plate, cv_image) # add new record to the table - side is the original_plate read first, top is the palate
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None': # side barcode is successfully read
                 # Notify user of new scan
                 print("Scan Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-                self._stop_live_capture()
-                self._flag_side = False #wyjatkowo
-                self._start_live_capture()
-                self.original_plate = plate
-                self.original_cv_image = cv_image#for margeing
-            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':
+                if self.recordTable.unique_side_barcode(plate): #if new side barcode
+                    self._stop_live_capture()
+                    self._flag_side = False
+                    self._start_live_capture() #start reading the top
+                    self.original_plate = plate
+                    self.original_cv_image = cv_image#for margeing
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':  #top (unipuck) successfully read
                 print("Scan wwwwwwwwwwwww Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-                self._stop_live_capture()
-                self._start_live_capture()
+                self._stop_live_capture() #stop reading the top
+                self._start_live_capture() #start reading side
 
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
