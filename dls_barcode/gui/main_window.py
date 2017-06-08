@@ -147,10 +147,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         #load_action.triggered.connect(self._scan_file_image)
 
         # Continuous scanner mode
-        #live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
-        #live_action.setShortcut('Ctrl+W')
-        #live_action.setStatusTip('Capture continuously from camera')
-        #live_action.triggered.connect(self._start_live_capture)
+        live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
+        live_action.setShortcut('Ctrl+W')
+        live_action.setStatusTip('Capture continuously from camera')
+        live_action.triggered.connect(self._stop_live_capture)
+        live_action.triggered.connect(self._start_live_capture)
 
         # Exit Application
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -171,9 +172,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         file_menu = menu_bar.addMenu('&File')
         file_menu.addAction(exit_action)
 
-  #      scan_menu = menu_bar.addMenu('&Scan')
+        scan_menu = menu_bar.addMenu('&Scan')
  #       scan_menu.addAction(load_action)
-#        scan_menu.addAction(live_action)
+        scan_menu.addAction(live_action)
 
         option_menu = menu_bar.addMenu('&Option')
         option_menu.addAction(options_action)
