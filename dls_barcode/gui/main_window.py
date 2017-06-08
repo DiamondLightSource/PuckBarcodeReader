@@ -55,16 +55,23 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.original_plate = None
         self.original_cv_image = None
 
+
+
         dialog = self._init_ui()
 
         if not dialog.isVisible():
             # Queue that holds new results generated in continuous scanning mode
             self._new_scan_queue = multiprocessing.Queue()
-
+            self._view_queue = multiprocessing.Queue()
             # Timer that controls how often new scan results are looked for
             self._result_timer = QtCore.QTimer()
             self._result_timer.timeout.connect(self._read_new_scan_queue)
             self._result_timer.start(1000)
+
+            self._result_timer1 = QtCore.QTimer()
+            self._result_timer1.timeout.connect(self._read_view_queue)
+            self._result_timer1.start(1)
+
             self._start_live_capture()
 
 
@@ -176,17 +183,19 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         dialog.exec_()
         return dialog
 
+    def _read_view_queue(self):
+        if not self._view_queue.empty():
+            image = self._view_queue.get(False)
+            self.imageFrame.display_puck_image(image)
+
     def _read_new_scan_queue(self):
         """ Called every second; read any new results from the scan results queue,
         store them and display them.
         """
-
-
         if not self._new_scan_queue.empty():
             # Get the result
             plate, cv_image = self._new_scan_queue.get(False)
-
-            self.imageFrame.display_puck_image(cv_image)
+            #self.imageFrame.display_puck_image(cv_image)
 
             #TODO:marge images
             # Store scan results and display in GUI
@@ -214,13 +223,13 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         """
         if (self._flag_side):
 
-            self._scanner = CameraScanner(self._new_scan_queue)
+            self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
 
             self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
 
         else:
 
-            self._scanner = CameraScanner(self._new_scan_queue)
+            self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
 
             self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
 
