@@ -55,8 +55,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.original_plate = None
         self.original_cv_image = None
 
-
-
         dialog = self._init_ui()
 
         if not dialog.isVisible():
@@ -205,7 +203,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 self.recordTable.add_record_frame(self.original_plate, plate, cv_image) # add new record to the table - side is the original_plate read first, top is the palate
             if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None': # side barcode is successfully read
                 # Notify user of new scan
-                print("Scan Recorded")
+                #print("Side Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
                 if self.recordTable.unique_side_barcode(plate): #if new side barcode
                     self._stop_live_capture()
@@ -214,7 +212,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                     self.original_plate = plate
                     self.original_cv_image = cv_image#for margeing
             if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':  #top (unipuck) successfully read
-                print("Scan wwwwwwwwwwwww Recorded")
+                print("Scan Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
                 self._stop_live_capture() #stop reading the top
                 self._start_live_capture() #start reading side
@@ -233,7 +231,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
 
             self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
-
 
 
     def _stop_live_capture(self):
