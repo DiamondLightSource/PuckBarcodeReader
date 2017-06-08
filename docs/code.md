@@ -41,9 +41,11 @@ Install PyInstaller with `pip install pyinstaller`. Make sure that the correct v
 
 To create the executable file, run the `build.bat` file. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). If everything has worked correctly, this single file will be all that is needed to run the barcode scanner application.
 
-
-
-
+Trobles creating Executable
+Whe the path to Python on Pyinstaller contains spaces there an error [failed to create process](https://stackoverflow.com/questions/31808180/installing-pyinstaller-via-pip-leads-to-failed-to-create-process/34546220#34546220) occures. 
+To get around the porblem call script pyinstaller-script.py.
+For example: "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\python.exe" "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\Scripts\pyinstaller-script.py" main.py
+The result exec file is created in subdirectrory called dist.
 
 
 
