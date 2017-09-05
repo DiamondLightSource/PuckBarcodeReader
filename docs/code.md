@@ -28,7 +28,7 @@ The following steps will help you prepare an appropriate Python environment to r
     * scipy-0.17.1-cp35-cp35m-win32.whl
     * PyQt4-4.11.4-cp35-none-win32.whl
     
-* Download the source code for the Barcode scanner program from <https://github.com/krisward/dls_barcode> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
+* Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
 
 * Open cmd.exe and navigate to the above folder. `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
