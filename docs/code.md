@@ -28,7 +28,7 @@ The following steps will help you prepare an appropriate Python environment to r
     * scipy-0.17.1-cp35-cp35m-win32.whl
     * PyQt4-4.11.4-cp35-none-win32.whl
     
-* Download the source code for the Barcode scanner program from <https://github.com/krisward/dls_barcode> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
+* Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
 
 * Open cmd.exe and navigate to the above folder. `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
@@ -48,7 +48,4 @@ To get around the porblem call script pyinstaller-script.py.
 For example: "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\python.exe" "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\Scripts\pyinstaller-script.py" main.py
 The result exec file is created in subdirectrory called dist.
 
-
-
-
-
+NOTE: when creating the executable on a 64bit machine (using Python 3.5.1 32bit) you might get the error ‘No module named pywintypes’. To fix this, try `pip install pypiwin32`.
