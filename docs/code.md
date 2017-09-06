@@ -40,3 +40,5 @@ A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used t
 Install PyInstaller with `pip install pyinstaller`. Make sure that the correct version of Python is referenced in your system path.
 
 To create the executable file, run the `build.bat` file. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). If everything has worked correctly, this single file will be all that is needed to run the barcode scanner application.
+
+NOTE: when creating the executable on a 64bit machine (using Python 3.5.1 32bit) you might get the error ‘No module named pywintypes’. To fix this, try `pip install pypiwin32`.
