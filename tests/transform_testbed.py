@@ -64,7 +64,7 @@ def TRIANGLE_DEMO():
         image.draw_line(C, B, Color.Red(), 5)
         image.draw_line(A, C, Color.Red(), 5)
 
-        #Draw transformed triangle
+        # Draw transformed triangle
         image.draw_line(A_, B_, Color.Green())
         image.draw_line(A_, C_, Color.Green())
         image.draw_line(C_, B_, Color.Green())
@@ -128,6 +128,3 @@ def CIRCLES_DEMO():
 
 TRIANGLE_DEMO()
 CIRCLES_DEMO()
-
-
-

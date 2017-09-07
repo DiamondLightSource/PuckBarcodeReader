@@ -3,7 +3,7 @@ import time
 import uuid
 
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
-from geometry import Geometry
+from dls_barcode.geometry import Geometry
 from dls_util.image import Image, Color
 
 
@@ -69,9 +69,20 @@ class Record:
         self.num_valid_barcodes = self.num_slots - self.num_unread_slots - self.num_empty_slots
 
     @staticmethod
-    def from_plate(plate, image_path):
-        return Record(plate_type=plate.type, barcodes=plate.barcodes(),
-                      image_path=image_path, geometry=plate.geometry())
+    def from_plate(plate, second_plate, image_path):
+        if (plate != None and second_plate != None ):
+            plate_type = second_plate.type
+            geometry = second_plate.geometry()
+         #geometry and type kept as for the second plate
+            barcodes = plate.barcodes() + second_plate.barcodes()
+
+        if (second_plate == None):
+            plate_type = plate.type
+            geometry = plate.geometry()
+            barcodes = plate.barcodes()
+
+        return Record(plate_type=plate_type, barcodes=barcodes,
+                      image_path=image_path, geometry=geometry)
 
     @staticmethod
     def from_string(string):
@@ -90,6 +101,16 @@ class Record:
 
         return Record(plate_type=plate_type, barcodes=barcodes, timestamp=timestamp,
                       image_path=image, id=id, geometry=geometry)
+
+    def to_csv_string(self):
+        """ Converts a scan record object into a string that can be stored in a file
+        and retrieved later.
+        """
+        items = [0] * 3
+        items[0] = str(self.id)
+        items[1] = str(self.timestamp)
+        items[2] = Record.BC_SEPARATOR.join(self.barcodes)
+        return Record.BC_SEPARATOR.join(items)
 
     def to_string(self):
         """ Converts a scan record object into a string that can be stored in a file
@@ -115,10 +136,14 @@ class Record:
 
         return False
 
+    #TODO: modify when two images merged
+    # only the image of the top for the time being
     def image(self):
         image = Image.from_file(self.image_path)
         return image
 
+    #TODO: modify when two images merged
+    # only the image of the top for the time being
     def marked_image(self, options):
         geo = self.geometry
         image = self.image()
@@ -134,8 +159,11 @@ class Record:
 
         return image
 
+    # marking the top image
     def _draw_pins(self, image, geometry, options):
-        for i, bc in enumerate(self.barcodes):
+        top_barcodes = list(self.barcodes) #copy of the list
+        top_barcodes.pop(0)# remove the first element (side barcode)
+        for i, bc in enumerate(top_barcodes):
             if bc == NOT_FOUND_SLOT_SYMBOL:
                 color = options.col_bad()
             elif bc == EMPTY_SLOT_SYMBOL:

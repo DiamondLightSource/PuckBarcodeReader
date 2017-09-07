@@ -3,7 +3,7 @@ from __future__ import division
 from dls_barcode.datamatrix import DataMatrix
 from dls_barcode.plate import Plate, Slot
 from dls_barcode.plate.geometry_adjuster import UnipuckGeometryAdjuster, GeometryAdjustmentError
-from geometry import Geometry, GeometryException
+from dls_barcode.geometry import Geometry, GeometryException
 from .empty_detector import EmptySlotDetector
 from .scan_plate import PlateScanner
 from .scan_slot import SlotScanner
