@@ -32,6 +32,9 @@ The following steps will help you prepare an appropriate Python environment to r
 
 * Open cmd.exe and navigate to the above folder. `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
+* To run the tests, you will need to install the nose and mock packages:
+   * `pip install nose`
+   * `pip install mock`
 
 Creating a Self-Contained Executable
 ====================================
