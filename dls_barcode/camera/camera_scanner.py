@@ -99,12 +99,14 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, view_queue, camera_co
         read_ok, frame = cap.read()
 
         # Add the frame to the task queue to be processed
+        # NOTE: the rate at which frames are pushed to the task queue is lower than the rate at which frames are acquired
         if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
             # Make a copy of image so the overlay doesn't overwrite it
             task_queue.put(frame.copy())
             last_time = time.time()
 
-        # Get the latest overlay
+        # All frames (scanned or not) are pushed to the view queue for display
+        # Get the latest overlay - it won't be generated from the current frame but it doesn't matter
         while not overlay_queue.empty():
             latest_overlay = overlay_queue.get(False)
 
