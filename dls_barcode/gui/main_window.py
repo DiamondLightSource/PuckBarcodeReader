@@ -183,6 +183,13 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         dialog.exec_()
         return dialog
 
+    def closeEvent(self, event):
+        print("*******************************")
+        print("**** CLOSE EVENT TRIGGERED ****")
+        print("*******************************")
+        self._stop_live_capture()
+        event.accept()
+
     def _read_view_queue(self):
         if not self._view_queue.empty():
             image = self._view_queue.get(False)

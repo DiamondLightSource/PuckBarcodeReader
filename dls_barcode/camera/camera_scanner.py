@@ -162,7 +162,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options
         scanner = GeometryScanner(plate_type, barcode_size)
 
     while kill_queue.empty():
-        print("Scanner worker cycle")
+        # print("Scanner worker cycle")
         if task_queue.empty():
             continue
 
