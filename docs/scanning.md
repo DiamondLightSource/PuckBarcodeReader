@@ -6,6 +6,6 @@ Data Flow Between Processes
 ---------------------------
 The Camera Scanner starts two sub-processes: the capture process and the scanner process. Below is a schematic of the overall data flow between processes.
 
-![High Level Architecture](img/CameraDataFlow.png)
+!(img/CameraDataFlow.png)
 
 
