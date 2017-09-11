@@ -155,6 +155,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit application')
+        exit_action.triggered.connect(self._stop_live_capture)
         exit_action.triggered.connect(QtGui.qApp.quit)
 
         # Open options dialog
