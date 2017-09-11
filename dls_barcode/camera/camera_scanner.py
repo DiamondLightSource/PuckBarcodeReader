@@ -58,11 +58,11 @@ class CameraScanner:
         capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, self.view_queue, camera_config)
         scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, self.kill_queue, config, camera_config)
 
-        capture_pool = multiprocessing.Process(target=_capture_worker, args=capture_args)
-        scanner_pool = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
+        capture_process = multiprocessing.Process(target=_capture_worker, args=capture_args)
+        scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
-        capture_pool.start()
-        scanner_pool.start()
+        capture_process.start()
+        scanner_process.start()
 
     def kill(self):
         self.kill_queue.put(None)
