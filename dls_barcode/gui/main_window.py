@@ -91,24 +91,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Scan record table - lists all the records in the store
         self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config, self)
 
-        #self._btn_begin = QPushButton("Start Scan")
-        #self._btn_begin.setStyleSheet("font-size:20pt;")
-        #self._btn_begin.setFixedSize(150, 60)
-        #self._btn_begin.clicked.connect(self._start_live_capture)
-
         #open options first to make sure the cameras are set up correctly.
         #start live capture of the side as soon as the dialog box is closed
         dialog = self._open_options_dialog()
-
-        #self._btn_stop = QPushButton("Stop Scan")
-        #self._btn_stop.setStyleSheet("font-size:20pt")
-        #self._btn_stop.setFixedSize(150, 60)
-        #self._btn_stop.clicked.connect(self._stop_live_capture)
-
-        #hbox_btn = QHBoxLayout()
-        #hbox_btn.addWidget(self._btn_begin)
-        #hbox_btn.addWidget(self._btn_stop)
-        #hbox_btn.addStretch()
 
         # Create layout
         hbox = QtGui.QHBoxLayout()
@@ -123,7 +108,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         vbox = QtGui.QVBoxLayout()
 
-#        vbox.addLayout(hbox_btn)
         vbox.addLayout(hbox)
 
         main_widget = QtGui.QWidget()
@@ -138,12 +122,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def init_menu_bar(self):
         """Create and populate the menu bar.
         """
-        # Load from file action
-        #load_action = QtGui.QAction(QtGui.QIcon('open.png'), '&From File...', self)
-        #load_action.setShortcut('Ctrl+L')
-        #load_action.setStatusTip('Load image from file to scan')
-        #load_action.triggered.connect(self._scan_file_image)
-
         # Continuous scanner mode
         live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
@@ -155,6 +133,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit application')
+        exit_action.triggered.connect(self._stop_live_capture)
         exit_action.triggered.connect(QtGui.qApp.quit)
 
         # Open options dialog
@@ -163,7 +142,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action.setStatusTip('Open Options Dialog')
         options_action.triggered.connect(self._open_options_dialog)
         options_action.triggered.connect(self._stop_live_capture)
-        options_action.triggered.connect(self._start_live_capture)#find a better way of doing this
+        options_action.triggered.connect(self._start_live_capture) #find a better way of doing this
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -171,16 +150,21 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         file_menu.addAction(exit_action)
 
         scan_menu = menu_bar.addMenu('&Scan')
- #       scan_menu.addAction(load_action)
         scan_menu.addAction(live_action)
 
         option_menu = menu_bar.addMenu('&Option')
         option_menu.addAction(options_action)
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config, self._camera_config)#pass the object here and trigger when the button is pressed
+        dialog = BarcodeConfigDialog(self._config, self._camera_config) #pass the object here and trigger when the button is pressed
         dialog.exec_()
         return dialog
+
+    def closeEvent(self, event):
+        """This overrides the method from the base class.
+        It is called when the user closes the window from the X on the top right."""
+        self._stop_live_capture()
+        event.accept()
 
     def _read_view_queue(self):
         if not self._view_queue.empty():
@@ -196,7 +180,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             plate, cv_image = self._new_scan_queue.get(False)
             #self.imageFrame.display_puck_image(cv_image)
 
-            #TODO:marge images
+            #TODO:merge images
             # Store scan results and display in GUI
             if self.original_plate != None:
                 # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
@@ -208,30 +192,24 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 if self.recordTable.unique_side_barcode(plate): #if new side barcode
                     self._stop_live_capture()
                     self._flag_side = False
-                    self._start_live_capture() #start reading the top
+                    self._start_live_capture() # start reading the top
                     self.original_plate = plate
-                    self.original_cv_image = cv_image#for margeing
-            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':  #top (unipuck) successfully read
+                    self.original_cv_image = cv_image # for merging
+            if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':  # top (unipuck) successfully read
                 print("Scan Recorded")
                 winsound.Beep(4000, 500)  # frequency, duration
-                self._stop_live_capture() #stop reading the top
-                self._start_live_capture() #start reading side
+                self._stop_live_capture() # stop reading the top
+                self._start_live_capture() # start reading side
 
     def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
         if (self._flag_side):
-
             self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
-
             self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
-
         else:
-
             self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
-
             self._scanner.stream_camera(config=self._config, camera_config=self._camera_config.getPuckCameraConfig())
-
 
     def _stop_live_capture(self):
         if self._scanner is not None:
@@ -240,32 +218,3 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self.original_plate = None
             self.original_cv_image = None
             self._flag_side = True
-
-    # def _scan_file_image(self):
-    #     """Load and process (scan for barcodes) an image from file
-    #     """
-    #     filepath = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
-    #     if filepath:
-    #         cv_image = Image.from_file(filepath)
-    #         gray_image = cv_image.to_grayscale()
-    #
-    #         # Scan the image for barcodes
-    #         plate_type = self._config.plate_type.value()
-    #         barcode_size = self._config.barcode_size.value()
-    #         SlotScanner.DEBUG = self._config.slot_images.value()
-    #         SlotScanner.DEBUG_DIR = self._config.slot_image_directory.value()
-    #
-    #         if plate_type == "None":
-    #             scanner = OpenScanner(barcode_size)
-    #         else:
-    #             scanner = GeometryScanner(plate_type, barcode_size)
-    #
-    #         scan_result = scanner.scan_next_frame(gray_image, is_single_image=True)
-    #         plate = scan_result.plate()
-    #
-    #         # If the scan was successful, store the results
-    #         if plate is not None:
-    #             self.recordTable.add_record(plate, None, cv_image)
-    #         else:
-    #             error = "There was a problem scanning the image:\n{}".format(scan_result.error())
-    #             QtGui.QMessageBox.warning(self, "Scanning Error", error)
