@@ -116,28 +116,28 @@ class DataMatrix:
 
             message_length = DatamatrixSizeTable.num_data_bytes(matrix_size)
 
-            if (self._read_ok):
+            # Try a few different small offsets for the sample positions until we find one that works
+            for offset in offsets:
+                # Read the bit array at the target location (with offset)
+                # If the bit array is valid, decode it and create a datamatrix object
+                try:
+                    bit_array = bit_reader.read_bit_array(self._finder_pattern, offset, gray_image)
+                    encoded_bytes = extractor.extract_bytes(bit_array)
+                    decoded_bytes = decoder.decode(encoded_bytes, message_length)
+                    data = interpreter.interpret_bytes(decoded_bytes)
+
+                    self._data = data
+                    self._read_ok = True
+                    self._error_message = ""
+                    break
+                except (DatamatrixReaderError, ReedSolomonError) as ex:
+                    self._read_ok = False
+                    self._error_message = str(ex)
+
+            self._damaged_symbol = not self._read_ok
+
+            if self._read_ok:
                 break
-            else:
-                # Try a few different small offsets for the sample positions until we find one that works
-                for offset in offsets:
-                    # Read the bit array at the target location (with offset)
-                    # If the bit array is valid, decode it and create a datamatrix object
-                    try:
-                        bit_array = bit_reader.read_bit_array(self._finder_pattern, offset, gray_image)
-                        encoded_bytes = extractor.extract_bytes(bit_array)
-                        decoded_bytes = decoder.decode(encoded_bytes, message_length)
-                        data = interpreter.interpret_bytes(decoded_bytes)
-
-                        self._data = data
-                        self._read_ok = True
-                        self._error_message = ""
-                        break
-                    except (DatamatrixReaderError, ReedSolomonError) as ex:
-                        self._read_ok = False
-                        self._error_message = str(ex)
-
-                self._damaged_symbol = not self._read_ok
 
     def draw(self, img, color):
         """ Draw the lines of the finder pattern on the specified image. """
