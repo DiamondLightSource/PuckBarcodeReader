@@ -26,6 +26,7 @@ class DataMatrix:
     """ Representation of a DataMatrix and its location in an image.
     """
     DEFAULT_SIZE = 14
+    DEFAULT_SIDE_SIZES = [12, 14]
 
     _w = 0.25
     DIAG_WIGGLES = [[0, 0], [_w, _w], [-_w, -_w], [_w, -_w], [-_w, _w]]

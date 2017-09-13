@@ -17,7 +17,7 @@ import cv2
 
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_util.image import Image, Color
-from dls_barcode.datamatrix.read import DatamatrixSizeTable
+from dls_barcode.datamatrix import DataMatrix
 from .overlay import PlateOverlay, TextOverlay, Overlay
 
 _OPENCV_MAJOR = cv2.__version__[0]
@@ -145,7 +145,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options
     if ("Side" in camera_config[0]._tag):
         # Side camera
         plate_type = "None"
-        barcode_sizes = DatamatrixSizeTable.valid_sizes()
+        barcode_sizes = DataMatrix.DEFAULT_SIDE_SIZES
     else:
         # Top camera
         plate_type = options.plate_type.value()
