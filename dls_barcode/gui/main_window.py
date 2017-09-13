@@ -40,10 +40,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         super(DiamondBarcodeMainWindow, self).__init__()
 
         self._config = BarcodeConfig(config_file)
-
         self._camera_config = CameraConfig(config_file)
 
         self._scanner = None
+        self._switch_to_side()
 
         # UI elements
         self.recordTable = None
@@ -68,7 +68,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._result_timer1.timeout.connect(self._read_view_queue)
             self._result_timer1.start(1)
 
-            self._start_live_capture(is_side=True)
+            self._start_live_capture()
 
 
     def _init_ui(self):
@@ -184,22 +184,25 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
             self.recordTable.add_record_frame(self.original_plate, plate, cv_image) # add new record to the table - side is the original_plate read first, top is the palate
 
-        if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None': # side barcode is successfully read
-            self._beep()
-            if self.recordTable.unique_side_barcode(plate): #if new side barcode
+        if not plate.is_full_valid():
+            return
+
+        # barcode successfully read
+        self._beep()
+
+        if self._is_side:
+            if self.recordTable.unique_side_barcode(plate): # if new side barcode
                 self._restart_live_capture_from_top()
                 self.original_plate = plate
                 self.original_cv_image = cv_image # for merging
-
-        if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':  # top (unipuck) successfully read
+        else:
             print("Scan Recorded")
-            self._beep()
             self._restart_live_capture_from_side()
 
-    def _start_live_capture(self, is_side):
+    def _start_live_capture(self):
         """ Starts the process of continuous capture from an attached camera.
         """
-        if (is_side):
+        if (self._is_side):
             self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
             self._scanner.stream_camera(config=self._config, camera_config = self._camera_config.getSideCameraConfig())
         else:
@@ -215,11 +218,19 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _restart_live_capture_from_side(self):
         self._stop_live_capture()
-        self._start_live_capture(True)
+        self._switch_to_side()
+        self._start_live_capture()
 
     def _restart_live_capture_from_top(self):
         self._stop_live_capture()
-        self._start_live_capture(False)
+        self._switch_to_top()
+        self._start_live_capture()
+
+    def _switch_to_side(self):
+        self._is_side = True
+
+    def _switch_to_top(self):
+        self._is_side = False
 
     def _beep(self):
         playsound(frequency=4000, duration=500)
