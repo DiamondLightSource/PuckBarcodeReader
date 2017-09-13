@@ -15,6 +15,18 @@ class TestIntConfigItem(unittest.TestCase):
         self.assertEqual(item.tag(), tag)
         self.assertIsNone(item.value())
 
+    def test_units_are_initialised_correctly(self):
+        # Arrange
+        tag = "A tag"
+        default_value = 5
+        units = "ms"
+
+        # Act
+        item = IntConfigItem(tag, default_value, units)
+
+        # Assert
+        self.assertEqual(item.units(), units)
+
     def test_valid_integer_value_is_set_correctly(self):
         # Arrange
         item = self._create_item()
