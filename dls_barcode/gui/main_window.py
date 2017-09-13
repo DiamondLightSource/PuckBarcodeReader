@@ -12,12 +12,12 @@ try:
     import winsound
 except ImportError:
     import os
-    def playsound(frequency,duration):
+    def playsound(frequency, duration):
         #apt-get install beep
-        os.system('beep -f %s -l %s' % (frequency,duration))
+        os.system('beep -f %s -l %s' % (frequency, duration))
 else:
-    def playsound(frequency,duration):
-        winsound.Beep(frequency,duration)
+    def playsound(frequency, duration):
+        winsound.Beep(frequency, duration)
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton, QHBoxLayout
@@ -173,7 +173,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         """
         if self._new_scan_queue.empty():
             return
-            
+
         # Get the result
         plate, cv_image = self._new_scan_queue.get(False)
         #self.imageFrame.display_puck_image(cv_image)
@@ -183,17 +183,17 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if self.original_plate != None:
             # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
             self.recordTable.add_record_frame(self.original_plate, plate, cv_image) # add new record to the table - side is the original_plate read first, top is the palate
+
         if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'None': # side barcode is successfully read
-            # Notify user of new scan
-            #print("Side Recorded")
-            winsound.Beep(4000, 500)  # frequency, duration
+            self._beep()
             if self.recordTable.unique_side_barcode(plate): #if new side barcode
                 self._restart_live_capture_from_top()
                 self.original_plate = plate
                 self.original_cv_image = cv_image # for merging
+
         if plate.is_full_valid() and plate._geometry.TYPE_NAME == 'Unipuck':  # top (unipuck) successfully read
             print("Scan Recorded")
-            winsound.Beep(4000, 500)  # frequency, duration
+            self._beep()
             self._restart_live_capture_from_side()
 
     def _start_live_capture(self, is_side):
@@ -220,4 +220,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _restart_live_capture_from_top(self):
         self._stop_live_capture()
         self._start_live_capture(False)
+
+    def _beep(self):
+        playsound(frequency=4000, duration=500)
 
