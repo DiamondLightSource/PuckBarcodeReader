@@ -106,8 +106,7 @@ class DataMatrix:
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
-        # TODO: reset this to what it was
-        for MatrixSize in [14]:
+        for MatrixSize in range(12, 16, 2):
             bit_reader = DatamatrixBitReader(MatrixSize)
             extractor = DatamatrixByteExtractor()
             decoder = ReedSolomonDecoder()
