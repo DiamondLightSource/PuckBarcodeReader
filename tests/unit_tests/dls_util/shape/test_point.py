@@ -11,6 +11,9 @@ class TestPoint(unittest.TestCase):
         self.second_point = Point(2.0, 2.0)
         self.third_point = Point(2.0, 1.0)
 
+    def test_maths_works(self):
+        self.assertEqual(self.first_point.distance_to(self.second_point - self.third_point), 0.0)
+
     def test_length_sq(self):
         self.assertEquals(Point.length_sq(self.point), 4.0)
 
