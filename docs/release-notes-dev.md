@@ -6,6 +6,7 @@ Changes merged into master
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
 | I04_1-143 | [#8](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/8) | Patch | Ghost subprocesses closed when exiting application |
+| I04_1-145 | [#6](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/6) | Patch | Side barcode sizes 12-14 supported but user selection of top barcode size is not overridden |
 
 
 Change Types:
