@@ -33,6 +33,7 @@ class BarcodeConfigDialog(ConfigDialog):
         self.start_group("Top Camera")
         add(cfg.top_barcode_size)
         add(cfg.plate_type)
+        # add(cfg.)
         self._add_control(camera_puck)
 
         self.start_group("Side Camera")

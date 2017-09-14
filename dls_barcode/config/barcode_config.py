@@ -31,6 +31,7 @@ class BarcodeConfig(Config):
         self.plate_type = add(EnumConfigItem, "Sample Plate Type", default=Geometry.UNIPUCK, extra_arg=Geometry.TYPES)
         self.top_barcode_size = add(EnumConfigItem, "Datamatrix Size", default=DataMatrix.DEFAULT_SIZE,
                                     extra_arg=DatamatrixSizeTable.valid_sizes())
+        # self.top_camera_timeout = add(IntConfigItem, "Scan Timeout", default=60)
 
         self.scan_beep = add(BoolConfigItem, "Beep While Scanning", default=True)
         self.scan_clipboard = add(BoolConfigItem, "Results to Clipboard", default=True)
@@ -40,7 +41,7 @@ class BarcodeConfig(Config):
         self.image_crop = add(BoolConfigItem, "Crop to Puck", default=True)
 
         self.store_directory = add(DirectoryConfigItem, "Store Directory", default=default_store)
-        self.store_capacity = add(IntConfigItem, "Results History Size", default=50)
+        self.store_capacity = add(IntConfigItem, "Results History Size", default=50) #TODO: add units
 
         self.console_frame = add(BoolConfigItem, "Print Frame Summary", default=False)
         self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)
