@@ -244,8 +244,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _is_top_scan_timeout(self):
         now = time.time()
-        # TODO: have this timeout come from the config
-        timeout = 100 # s
+        timeout = self._config.top_camera_timeout.value()
         return (self._top_scan_time_start is not None) and (now - self._top_scan_time_start > timeout)
 
     def _beep(self):
