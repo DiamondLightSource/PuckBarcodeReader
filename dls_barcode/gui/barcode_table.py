@@ -19,7 +19,7 @@ class BarcodeTable(QGroupBox):
 
         self._options = options
 
-        self.setTitle("Barcodes")
+        self.setTitle("Plate Barcodes")
         self._init_ui()
 
     def _init_ui(self):

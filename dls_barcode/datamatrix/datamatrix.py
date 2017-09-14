@@ -26,6 +26,7 @@ class DataMatrix:
     """ Representation of a DataMatrix and its location in an image.
     """
     DEFAULT_SIZE = 14
+    DEFAULT_SIDE_SIZES = [12, 14]
 
     _w = 0.25
     DIAG_WIGGLES = [[0, 0], [_w, _w], [-_w, -_w], [_w, -_w], [-_w, _w]]
@@ -41,7 +42,7 @@ class DataMatrix:
         """
         self._finder_pattern = finder_pattern
         self._image = image.img
-        self._matrix_size = self.DEFAULT_SIZE
+        self._matrix_sizes = [self.DEFAULT_SIZE]
 
         self._data = None
         self._error_message = ""
@@ -49,8 +50,8 @@ class DataMatrix:
         self._damaged_symbol = False
         self._is_read_performed = False
 
-    def set_matrix_size(self, matrix_size):
-        self._matrix_size = int(matrix_size)
+    def set_matrix_sizes(self, matrix_sizes):
+        self._matrix_sizes = [int(v) for v in matrix_sizes]
 
     def perform_read(self, offsets=wiggle_offsets, force_read=False):
         """ Attempt to read the DataMatrix from the image supplied in the constructor at the position
@@ -106,32 +107,36 @@ class DataMatrix:
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
-        bit_reader = DatamatrixBitReader(self._matrix_size)
-        extractor = DatamatrixByteExtractor()
-        decoder = ReedSolomonDecoder()
-        interpreter = DatamatrixByteInterpreter()
+        for matrix_size in self._matrix_sizes:
+            bit_reader = DatamatrixBitReader(matrix_size)
+            extractor = DatamatrixByteExtractor()
+            decoder = ReedSolomonDecoder()
+            interpreter = DatamatrixByteInterpreter()
 
-        message_length = DatamatrixSizeTable.num_data_bytes(self._matrix_size)
+            message_length = DatamatrixSizeTable.num_data_bytes(matrix_size)
 
-        # Try a few different small offsets for the sample positions until we find one that works
-        for offset in offsets:
-            # Read the bit array at the target location (with offset)
-            # If the bit array is valid, decode it and create a datamatrix object
-            try:
-                bit_array = bit_reader.read_bit_array(self._finder_pattern, offset, gray_image)
-                encoded_bytes = extractor.extract_bytes(bit_array)
-                decoded_bytes = decoder.decode(encoded_bytes, message_length)
-                data = interpreter.interpret_bytes(decoded_bytes)
+            # Try a few different small offsets for the sample positions until we find one that works
+            for offset in offsets:
+                # Read the bit array at the target location (with offset)
+                # If the bit array is valid, decode it and create a datamatrix object
+                try:
+                    bit_array = bit_reader.read_bit_array(self._finder_pattern, offset, gray_image)
+                    encoded_bytes = extractor.extract_bytes(bit_array)
+                    decoded_bytes = decoder.decode(encoded_bytes, message_length)
+                    data = interpreter.interpret_bytes(decoded_bytes)
 
-                self._data = data
-                self._read_ok = True
-                self._error_message = ""
+                    self._data = data
+                    self._read_ok = True
+                    self._error_message = ""
+                    break
+                except (DatamatrixReaderError, ReedSolomonError) as ex:
+                    self._read_ok = False
+                    self._error_message = str(ex)
+
+            self._damaged_symbol = not self._read_ok
+
+            if self._read_ok:
                 break
-            except (DatamatrixReaderError, ReedSolomonError) as ex:
-                self._read_ok = False
-                self._error_message = str(ex)
-
-        self._damaged_symbol = not self._read_ok
 
     def draw(self, img, color):
         """ Draw the lines of the finder pattern on the specified image. """
@@ -140,28 +145,28 @@ class DataMatrix:
         img.draw_line(fp.c1, fp.c3, color)
 
     @staticmethod
-    def locate_all_barcodes_in_image(grayscale_img, matrix_size=DEFAULT_SIZE):
+    def locate_all_barcodes_in_image(grayscale_img, matrix_sizes=[DEFAULT_SIZE]):
         """ Searches the image for all datamatrix finder patterns
         """
         locator = Locator()
         finder_patterns = locator.locate_shallow(grayscale_img)
-        unread_barcodes = DataMatrix._fps_to_barcodes(grayscale_img, finder_patterns, matrix_size)
+        unread_barcodes = DataMatrix._fps_to_barcodes(grayscale_img, finder_patterns, matrix_sizes)
         return unread_barcodes
 
     @staticmethod
-    def locate_all_barcodes_in_image_deep(grayscale_img, matrix_size=DEFAULT_SIZE):
+    def locate_all_barcodes_in_image_deep(grayscale_img, matrix_sizes=[DEFAULT_SIZE]):
         """ Searches the image for all datamatrix finder patterns
         """
         # TODO: deep scan is more likely to find some false finder patterns. Filter these out
         locator = Locator()
         locator.set_median_radius_tolerance(0.2)
         finder_patterns = locator.locate_deep(grayscale_img, expected_radius=None, filter_overlap=True)
-        unread_barcodes = DataMatrix._fps_to_barcodes(grayscale_img, finder_patterns, matrix_size)
+        unread_barcodes = DataMatrix._fps_to_barcodes(grayscale_img, finder_patterns, matrix_sizes)
         return unread_barcodes
 
     @staticmethod
-    def _fps_to_barcodes(grayscale_img, finder_patterns, matrix_size):
+    def _fps_to_barcodes(grayscale_img, finder_patterns, matrix_sizes):
         unread_barcodes = [DataMatrix(fp, grayscale_img) for fp in finder_patterns]
         for bc in unread_barcodes:
-            bc.set_matrix_size(matrix_size)
+            bc.set_matrix_sizes(matrix_sizes)
         return list(unread_barcodes)

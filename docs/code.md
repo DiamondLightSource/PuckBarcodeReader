@@ -28,10 +28,13 @@ The following steps will help you prepare an appropriate Python environment to r
     * scipy-0.17.1-cp35-cp35m-win32.whl
     * PyQt4-4.11.4-cp35-none-win32.whl
     
-* Download the source code for the Barcode scanner program from <https://github.com/krisward/dls_barcode> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
+* Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
 
 * Open cmd.exe and navigate to the above folder. `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
+* To run the tests, you will need to install the nose and mock packages:
+   * `pip install nose`
+   * `pip install mock`
 
 Creating a Self-Contained Executable
 ====================================
@@ -41,9 +44,11 @@ Install PyInstaller with `pip install pyinstaller`. Make sure that the correct v
 
 To create the executable file, run the `build.bat` file. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). If everything has worked correctly, this single file will be all that is needed to run the barcode scanner application.
 
+Troubles creating Executable
 
+Whe the path to Python on Pyinstaller contains spaces there an error [failed to create process](https://stackoverflow.com/questions/31808180/installing-pyinstaller-via-pip-leads-to-failed-to-create-process/34546220#34546220) occures. 
+To get around the porblem call script pyinstaller-script.py.
+For example: "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\python.exe" "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\Scripts\pyinstaller-script.py" main.py
+The result exec file is created in subdirectrory called dist.
 
-
-
-
-
+NOTE: when creating the executable on a 64bit machine (using Python 3.5.1 32bit) you might get the error ‘No module named pywintypes’. To fix this, try `pip install pypiwin32`.

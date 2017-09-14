@@ -9,9 +9,10 @@ class BarcodeConfigDialog(ConfigDialog):
     """ Dialog to edit the configuration options for the program. Provides a custom control for
     setting up the camera.
     """
-    def __init__(self, config):
+    def __init__(self, config, camera_config):
         ConfigDialog.__init__(self, config)
 
+        self.camera_config = camera_config
         self._init_ui()
         self.finalize_layout()
 
@@ -21,19 +22,21 @@ class BarcodeConfigDialog(ConfigDialog):
         cfg = self._config
         add = self.add_item
 
-        camera = CameraConfigControl(cfg.camera_number, cfg.camera_width, cfg.camera_height)
-
-        self.start_group("Sample Plate")
-        add(cfg.plate_type)
-        add(cfg.barcode_size)
+        camera_puck = CameraConfigControl(self.camera_config.getPuckCameraConfig())
+        camera_side = CameraConfigControl(self.camera_config.getSideCameraConfig())
 
         self.start_group("Colors")
         add(cfg.color_ok)
         add(cfg.color_unreadable)
         add(cfg.color_empty)
 
-        self.start_group("Camera")
-        self._add_control(camera)
+        self.start_group("Top Camera")
+        add(cfg.top_barcode_size)
+        add(cfg.plate_type)
+        self._add_control(camera_puck)
+
+        self.start_group("Side Camera")
+        self._add_control(camera_side)
 
         self.start_group("Scanning")
         add(cfg.scan_beep)
@@ -58,11 +61,11 @@ class CameraConfigControl(ConfigControl):
     RES_TEXT_WIDTH = 50
     BUTTON_WIDTH = 100
 
-    def __init__(self, number_item, width_item, height_item):
-        ConfigControl.__init__(self, width_item)
-        self._number_item = number_item
-        self._width_item = width_item
-        self._height_item = height_item
+    def __init__(self, number_width_height):
+        ConfigControl.__init__(self, number_width_height[1])
+        self._number_item = number_width_height[0]
+        self._width_item = number_width_height[1]
+        self._height_item = number_width_height[2]
         self._init_ui()
 
     def _init_ui(self):
@@ -168,15 +171,15 @@ class CameraConfigControl(ConfigControl):
         while True:
             # Capture the next frame from the camera
             read_ok, frame = cap.read()
-
             if frame is None:
                 breaking_frame = True
                 break
-            elif cv2.waitKey(1) != -1:
+            elif cv2.waitKey(1) != 255: #-1:
                 break
 
             small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
             cv2.imshow('Camera Preview (Press any key to exit)', small)
+
 
         cap.release()
         cv2.destroyAllWindows()

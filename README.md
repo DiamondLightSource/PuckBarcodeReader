@@ -24,3 +24,7 @@ This section serves as an introduction for developers who are interested in main
 * [Data Matrix Reading](docs/datamatrix-reader.md)
 * [Unipuck Geometry Calculation](docs/unipuck.md)
 * [Camera Scanning](docs/scanning.md)
+
+Release Notes
+-------------
+* [ReleaseNotes (development)](docs/release-notes-dev.md)
