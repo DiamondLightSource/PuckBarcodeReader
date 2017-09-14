@@ -29,23 +29,32 @@ class ScanResult:
     ############################
     # Accessors
     ############################
-    def frame_number(self): return self._frame_number
+    def frame_number(self):
+        return self._frame_number
 
-    def barcodes(self): return self._barcodes
+    def barcodes(self):
+        return self._barcodes
 
-    def geometry(self): return self._geometry
+    def geometry(self):
+        return self._geometry
 
-    def plate(self): return self._plate
+    def plate(self):
+        return self._plate
 
-    def error(self): return self._error
+    def error(self):
+        return self._error
 
-    def set_barcodes(self, value): self._barcodes = value
+    def set_barcodes(self, value):
+        self._barcodes = value
 
-    def set_geometry(self, value): self._geometry = value
+    def set_geometry(self, value):
+        self._geometry = value
 
-    def set_plate(self, value): self._plate = value
+    def set_plate(self, value):
+        self._plate = value
 
-    def set_error(self, value): self._error = value
+    def set_error(self, value):
+        self._error = value
 
     ############################
     # Status Functions

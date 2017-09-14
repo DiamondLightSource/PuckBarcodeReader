@@ -56,8 +56,6 @@ class ScanRecordTable(QGroupBox):
         btn_delete.setToolTip('Delete selected scan/s')
         btn_delete.resize(btn_delete.sizeHint())
         btn_delete.clicked.connect(self._delete_selected_records)
-        #btn_delete.clicked.connect(self.main_window._stop_live_capture)
-        #btn_delete.clicked.connect(self.main_window._start_live_capture)
 
         hbox = QHBoxLayout()
         hbox.setSpacing(10)
