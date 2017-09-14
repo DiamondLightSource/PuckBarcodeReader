@@ -189,7 +189,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # barcode successfully read
         self._beep()
-
         if self._is_side:
             if self.recordTable.unique_side_barcode(plate): # if new side barcode
                 self._restart_live_capture_from_top()
