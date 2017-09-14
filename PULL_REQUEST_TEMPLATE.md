@@ -16,4 +16,4 @@ To test
 
 Final steps
 -----------
-- [ ] Added work to development [release notes](docs/release-notes-dev.md)
+- [ ] Added work to [development release notes](docs/release-notes-dev.md)
