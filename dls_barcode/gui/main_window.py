@@ -209,7 +209,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._scanner.stream_camera(config=self._config, camera_config=camera_config)
 
     def _stop_live_capture(self):
-        print("STOP")
         if self._scanner is not None:
             self._scanner.kill()
             self._scanner = None
@@ -219,13 +218,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _restart_live_capture_from_side(self):
         self._stop_live_capture()
-        print("Restarting from side")
         self._switch_to_side()
         self._start_live_capture(self._camera_config.getSideCameraConfig())
 
     def _restart_live_capture_from_top(self):
         self._stop_live_capture()
-        print("Restarting from top")
         self._switch_to_top()
         self._start_top_scan_timer()
         self._start_live_capture(self._camera_config.getPuckCameraConfig())
