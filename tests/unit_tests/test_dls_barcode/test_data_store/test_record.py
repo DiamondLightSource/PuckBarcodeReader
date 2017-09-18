@@ -11,15 +11,10 @@ class TestRecord(unittest.TestCase):
         barcodes = r.barcodes
         self.assertEqual(len(barcodes), 3)
         self.assertTrue('DLSL-010' in barcodes)
-
         self.assertEquals(r.id, 'f59c92c1')
-
         self.assertEquals(r.timestamp, 1494238920.0)
-
         self.assertEquals(r.image_path, 'test.png')
-
         self.assertEquals(r.plate_type, 'None')
-
         self.assertTrue(isinstance(r.geometry, BlankGeometry))
 
 
@@ -30,18 +25,13 @@ class TestRecord(unittest.TestCase):
         barcodes = r.barcodes
         self.assertEqual(len(barcodes), 3)
         self.assertTrue('DLSL-010' in barcodes)
-
         self.assertEquals(r.id, 'f59c92c1')
-
         self.assertEquals(r.timestamp, 0.0) #could possibly generate a new timestamp instead
-
         self.assertEquals(r.image_path, 'test.png')
-
         self.assertEquals(r.plate_type, 'None')
-
         self.assertTrue(isinstance(r.geometry, BlankGeometry))
 
-    def test_to_string_recriates_given_values_excluding_serial_number(self):
+    def test_to_string_recreates_given_values_excluding_serial_number(self):
         str = "f59c92c1;1494238920.0;test.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
         r = Record.from_string(str)
         new_str = r.to_string()

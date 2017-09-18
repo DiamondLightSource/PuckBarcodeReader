@@ -87,25 +87,11 @@ class TestIntConfigItem(unittest.TestCase):
         # Assert
         self.assertEqual(item.value(), expected_default)
 
-    def test_units_returns_cam_if_set_to_cm_in_constructor(self):
-        item = IntConfigItem("test_int", 2, 'cm')
-        self.assertEquals(item.units(), 'cm')
-
-    def test_from_file_string_sets_default_value_if_not_int(self):
-        item = IntConfigItem("test_int", 2, 'cm')
-        item.from_file_string("buu")
-        self.assertEquals(item.value(), 2)
-
-    def test_from_file_string_sets_int_value_correctly(self):
-        item = IntConfigItem("test_int", 2, 'cm')
-        item.from_file_string("20")
-        self.assertEquals(item.value(), 20)
-
     def _create_item(self, tag = "A tag", default_value = 5):
         return IntConfigItem(tag, default_value)
 
-class TestItem(unittest.TestCase):
 
+class TestConfigItem(unittest.TestCase):
 
     def test_value_returns_None_If_value_not_set(self):
         item = ConfigItem("test_int", 2)
