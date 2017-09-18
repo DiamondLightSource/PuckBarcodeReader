@@ -1,13 +1,13 @@
 from dls_barcode.datamatrix import DataMatrix
 from dls_util import Image, Color
 
-dm_img_file = './test-resources/test/dm6.png'
+dm_img_file = '../tests/test-resources/test/dm6.png'
 
 dm_img = Image.from_file(dm_img_file)
 mono_img = dm_img.to_grayscale()
 
 
-barcodes = DataMatrix.locate_all_barcodes_in_image(mono_img, matrix_sizes=18)
+barcodes = DataMatrix.locate_all_barcodes_in_image(mono_img, matrix_sizes=[18])
 
 for barcode in barcodes:
     barcode.draw(dm_img, Color.Green())
