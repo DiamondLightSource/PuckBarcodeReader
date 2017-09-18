@@ -30,6 +30,7 @@ from dls_util.image import Image
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
+from .scan_manager import ScanManager
 from dls_barcode.geometry import Geometry
 
 import cv2
@@ -43,22 +44,25 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._config = BarcodeConfig(config_file)
         self._camera_config = CameraConfig(config_file)
 
-        self._scanner = None
+        # self._scanner = None
 
         # UI elements
         self.recordTable = None
         self.barcodeTable = None
         self.sideBarcodeWindow = None
         self.imageFrame = None
-        self.original_plate = None
-        self.original_cv_image = None
+        # self.original_plate = None
+        # self.original_cv_image = None
+
+        # Queue that holds new results generated in continuous scanning mode
+        self._new_scan_queue = multiprocessing.Queue()
+        self._view_queue = multiprocessing.Queue()
+
+        self._scan_manager = ScanManager(self._config, self._camera_config, self._new_scan_queue, self._view_queue)
 
         dialog = self._init_ui()
 
         if not dialog.isVisible():
-            # Queue that holds new results generated in continuous scanning mode
-            self._new_scan_queue = multiprocessing.Queue()
-            self._view_queue = multiprocessing.Queue()
             # Timer that controls how often new scan results are looked for
             self._result_timer = QtCore.QTimer()
             self._result_timer.timeout.connect(self._read_new_scan_queue)
@@ -68,9 +72,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._result_timer1.timeout.connect(self._read_view_queue)
             self._result_timer1.start(1)
 
-            self._reset_top_scan_timer()
-            self._restart_live_capture_from_side()
-
+            # self._reset_top_scan_timer()
+            # self._restart_live_capture_from_side()
+            self._scan_manager.restart_live_capture_from_side()
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
@@ -125,13 +129,15 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
         live_action.setStatusTip('Capture continuously from camera')
-        live_action.triggered.connect(self._restart_live_capture_from_side)
+        live_action.triggered.connect(self._scan_manager.restart_live_capture_from_side)
+        # live_action.triggered.connect(self._restart_live_capture_from_side)
 
         # Exit Application
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit application')
-        exit_action.triggered.connect(self._stop_live_capture)
+        exit_action.triggered.connect(self._scan_manager.stop_live_capture)
+        # exit_action.triggered.connect(self._stop_live_capture)
         exit_action.triggered.connect(QtGui.qApp.quit)
 
         # Open options dialog
@@ -139,7 +145,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
         options_action.triggered.connect(self._open_options_dialog)
-        options_action.triggered.connect(self._restart_live_capture_from_side) #find a better way of doing this
+        # options_action.triggered.connect(self._restart_live_capture_from_side) #find a better way of doing this
+        options_action.triggered.connect(self._scan_manager.restart_live_capture_from_side)  # find a better way of doing this
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -160,8 +167,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
-        self._stop_live_capture()
+        self._scan_manager.stop_live_capture()
+        # self._stop_live_capture()
         event.accept()
+
+    def on_record_table_clicked(self):
+        self._scan_manager.stop_live_capture()
 
     def _read_view_queue(self):
         if not self._view_queue.empty():
@@ -173,9 +184,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         store them and display them.
         """
         if self._new_scan_queue.empty():
-            if self._is_top_scan_timeout():
+            if self._scan_manager.is_top_scan_timeout():
                 print("*** Scan timeout ***")
-                self._restart_live_capture_from_side()
+                # self._restart_live_capture_from_side()
+                self._scan_manager.restart_live_capture_from_side()
             return
 
         # Get the result
@@ -184,7 +196,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         #TODO:merge images
         # Store scan results and display in GUI
-        if self.original_plate != None:
+        # if self.original_plate != None:
+        if not self._scan_manager.is_side():# and not self.recordTable.unique_side_barcode(plate):
             # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
             self.recordTable.add_record_frame(self.original_plate, plate, cv_image) # add new record to the table - side is the original_plate read first, top is the palate
 
@@ -193,56 +206,61 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # barcode successfully read
         self._beep()
-        if self._is_side:
+        if self._scan_manager.is_side():
             if self.recordTable.unique_side_barcode(plate): # if new side barcode
-                self._restart_live_capture_from_top()
+                self._scan_manager.restart_live_capture_from_top()
                 self.original_plate = plate
                 self.original_cv_image = cv_image # for merging
         else:
             print("Scan Recorded")
-            self._restart_live_capture_from_side()
+            self._scan_manager.restart_live_capture_from_side()
 
-    def _start_live_capture(self, camera_config):
-        """ Starts the process of continuous capture from an attached camera.
-        """
-        self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
-        self._scanner.stream_camera(config=self._config, camera_config=camera_config)
+    # def _read_new_scan_queue_test(self):
+    #     if self._scan_manager.is_side():
+    #         if self._new_scan_queue.empty()
 
-    def _stop_live_capture(self):
-        if self._scanner is not None:
-            self._scanner.kill()
-            self._scanner = None
-            self.original_plate = None
-            self.original_cv_image = None
-            self._reset_top_scan_timer()
 
-    def _restart_live_capture_from_side(self):
-        self._stop_live_capture()
-        self._switch_to_side()
-        self._start_live_capture(self._camera_config.getSideCameraConfig())
+    # def _start_live_capture(self, camera_config):
+    #     """ Starts the process of continuous capture from an attached camera.
+    #     """
+    #     self._scanner = CameraScanner(self._new_scan_queue, self._view_queue)
+    #     self._scanner.stream_camera(config=self._config, camera_config=camera_config)
 
-    def _restart_live_capture_from_top(self):
-        self._stop_live_capture()
-        self._switch_to_top()
-        self._start_top_scan_timer()
-        self._start_live_capture(self._camera_config.getPuckCameraConfig())
+    # def _stop_live_capture(self):
+    #     if self._scanner is not None:
+    #         self._scanner.kill()
+    #         self._scanner = None
+    #         self.original_plate = None
+    #         self.original_cv_image = None
+    #         self._reset_top_scan_timer()
 
-    def _switch_to_side(self):
-        self._is_side = True
+    # def _restart_live_capture_from_side(self):
+    #     self._stop_live_capture()
+    #     self._switch_to_side()
+    #     self._start_live_capture(self._camera_config.getSideCameraConfig())
+    #
+    # def _restart_live_capture_from_top(self):
+    #     self._stop_live_capture()
+    #     self._switch_to_top()
+    #     self._start_top_scan_timer()
+    #     self._start_live_capture(self._camera_config.getPuckCameraConfig())
 
-    def _switch_to_top(self):
-        self._is_side = False
-
-    def _start_top_scan_timer(self):
-        self._top_scan_time_start = time.time()
-
-    def _reset_top_scan_timer(self):
-        self._top_scan_time_start = None
-
-    def _is_top_scan_timeout(self):
-        now = time.time()
-        timeout = self._config.top_camera_timeout.value()
-        return (self._top_scan_time_start is not None) and (now - self._top_scan_time_start > timeout)
+    # def _switch_to_side(self):
+    #     self._is_side = True
+    #
+    # def _switch_to_top(self):
+    #     self._is_side = False
+    #
+    # def _start_top_scan_timer(self):
+    #     self._top_scan_time_start = time.time()
+    #
+    # def _reset_top_scan_timer(self):
+    #     self._top_scan_time_start = None
+    #
+    # def _is_top_scan_timeout(self):
+    #     now = time.time()
+    #     timeout = self._config.top_camera_timeout.value()
+    #     return (self._top_scan_time_start is not None) and (now - self._top_scan_time_start > timeout)
 
     def _beep(self):
         playsound(frequency=4000, duration=500)

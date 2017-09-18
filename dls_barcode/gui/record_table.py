@@ -48,7 +48,7 @@ class ScanRecordTable(QGroupBox):
         self._table.setColumnWidth(4, 60)
         self._table.setColumnWidth(5, 60)
         self._table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self._table.cellPressed.connect(self.main_window._stop_live_capture)
+        self._table.cellPressed.connect(self.main_window.on_record_table_clicked)
         self._table.cellPressed.connect(self._record_selected)
 
         # Delete button - deletes selected records
@@ -117,24 +117,6 @@ class ScanRecordTable(QGroupBox):
             record = self._store.get_record(row)
             self._barcodeTable.populate(record.barcodes)
             marked_image = record.marked_image(self._options)
-            #self.main_window._stop_live_capture()
-            self._imageFrame.display_puck_image(marked_image)
-        except IndexError:
-            pass
-            self._barcodeTable.populate([])
-            self._imageFrame.clear_frame()
-
-    def _record_selected_(self):
-        """ Called when a row is selected, causes details of the selected record to be
-        displayed (list of barcodes in the barcode table and image of the scan in the
-        image frame).
-        """
-        try:
-            row = self._table.selectionModel().selectedRows()[0].row()
-            record = self._store.get_record(row)
-            self._barcodeTable.populate(record.barcodes)
-            marked_image = record.marked_image(self._options)
-            self.main_window._stop_live_capture()
             self._imageFrame.display_puck_image(marked_image)
         except IndexError:
             pass
