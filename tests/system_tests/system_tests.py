@@ -1,4 +1,3 @@
-import os
 import time
 
 from dls_barcode.config.barcode_config import BarcodeConfig
@@ -9,7 +8,6 @@ from dls_util.image import Image
 # SHOULD BE OPEN CV 2.4.10
 
 # Directory storing all of the test images
-# TEST_IMG_DIR = './test-resources/'
 TEST_IMG_DIR = '../tests/test-resources/'
 
 # Barcode data that is expected to appear in each image of the pucks
@@ -59,7 +57,6 @@ def run_tests():
         total += len(expected_codes)
 
         filename = TEST_IMG_DIR + file
-        print("_*_*_*_*   " + filename)
         cv_image = Image.from_file(filename)
         gray_image = cv_image.to_grayscale()
         results = GeometryScanner("Unipuck", [14]).scan_next_frame(gray_image, is_single_image=True)
