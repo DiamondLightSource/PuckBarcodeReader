@@ -2,7 +2,6 @@
 store
 debug-output
 test-output
-test-resources
 demo-resources
 *.pyc
 config.ini
