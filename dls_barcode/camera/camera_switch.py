@@ -3,27 +3,25 @@ import time
 class CameraSwitch:
     """Class that handles switching camera streams"""
 
-    def __init__(self, config, stream_manager, camera_config):
+    def __init__(self, stream_manager, config, camera_config):
         self._config = config
         self._camera_config = camera_config
 
         self._stream = stream_manager
         self._reset_top_scan_timer()
+        self._switch_to_side()
 
     def stop_live_capture(self):
-        print("Stop")
         self._stream.stop_live_capture()
         self._reset_top_scan_timer()
 
     def restart_live_capture_from_side(self):
         self.stop_live_capture()
-        print("Start side")
         self._switch_to_side()
         self._stream.start_live_capture(self._config, self._camera_config.getSideCameraConfig())
 
     def restart_live_capture_from_top(self):
         self.stop_live_capture()
-        print("Start top")
         self._switch_to_top()
         self._start_top_scan_timer()
         self._stream.start_live_capture(self._config, self._camera_config.getPuckCameraConfig())

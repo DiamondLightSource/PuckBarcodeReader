@@ -19,8 +19,7 @@ from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
-from .camera_switch import CameraSwitch
-from dls_barcode.camera import StreamManager
+from dls_barcode.camera import StreamManager, CameraSwitch
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.
@@ -41,7 +40,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._scan_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
         stream_manager = StreamManager(self._scan_queue, self._view_queue)
-        self._camera_switch = CameraSwitch(self._config, stream_manager, self._camera_config)
+        self._camera_switch = CameraSwitch(stream_manager, self._config, self._camera_config)
 
         dialog = self._init_ui()
         if not dialog.isVisible():

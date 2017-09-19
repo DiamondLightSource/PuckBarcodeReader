@@ -1,4 +1,4 @@
-from dls_barcode.camera import CameraScanner
+from .camera_scanner import CameraScanner
 
 class StreamManager:
     """Class that stops and starts a camera stream"""
