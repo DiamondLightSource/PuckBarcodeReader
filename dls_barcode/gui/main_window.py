@@ -73,8 +73,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Scan record table - lists all the records in the store
         self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config, self)
 
-        #open options first to make sure the cameras are set up correctly.
-        #start live capture of the side as soon as the dialog box is closed
+        # Open options first to make sure the cameras are set up correctly.
+        # Start live capture of the side as soon as the dialog box is closed
         dialog = self._open_options_dialog()
 
         # Create layout
@@ -166,7 +166,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not plate.is_full_valid():
             return
 
-        # barcode successfully read
+        # Barcode successfully read
         self._beep()
         if self.recordTable.unique_side_barcode(plate): # if new side barcode
             self._camera_switch.restart_live_capture_from_top()
@@ -192,7 +192,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not plate.is_full_valid():
             return
 
-        # barcode successfully read
+        # Barcode successfully read
         self._beep()
         print("Scan Recorded")
         self._camera_switch.restart_live_capture_from_side()
