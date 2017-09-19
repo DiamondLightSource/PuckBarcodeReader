@@ -4,13 +4,11 @@ from .stream_manager import StreamManager
 class CameraSwitch:
     """Class that handles switching camera streams"""
 
-    def __init__(self, config, camera_config, scan_queue, view_queue):
+    def __init__(self, config, stream_manager, camera_config):
         self._config = config
         self._camera_config = camera_config
-        self._scan_queue = scan_queue
-        self._view_queue = view_queue
 
-        self._stream = StreamManager(self._scan_queue, self._view_queue)
+        self._stream = stream_manager
         self._reset_top_scan_timer()
 
     def stop_live_capture(self):
@@ -29,7 +27,7 @@ class CameraSwitch:
         print("Start top")
         self._switch_to_top()
         self._start_top_scan_timer()
-        self._stream._start_live_capture(self._self._camera_config.getPuckCameraConfig())
+        self._stream.start_live_capture(self._config, self._camera_config.getPuckCameraConfig())
 
     def is_side(self):
         return self._is_side
