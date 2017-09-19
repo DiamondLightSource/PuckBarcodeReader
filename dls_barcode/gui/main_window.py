@@ -20,7 +20,7 @@ from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
 from .camera_switch import CameraSwitch
-from .stream_manager import StreamManager
+from dls_barcode.camera import StreamManager
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.

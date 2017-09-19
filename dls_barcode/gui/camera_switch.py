@@ -1,5 +1,4 @@
 import time
-from .stream_manager import StreamManager
 
 class CameraSwitch:
     """Class that handles switching camera streams"""
