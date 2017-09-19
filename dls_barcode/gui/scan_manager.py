@@ -18,15 +18,12 @@ class ScanManager:
         if self._scanner is not None:
             self._scanner.kill()
             self._scanner = None
-            # self.original_plate = None #### TODO
-            # self.original_cv_image = None #### TODO
             self._reset_top_scan_timer()
 
     def restart_live_capture_from_side(self):
         self.stop_live_capture()
         print("Start side")
         self._switch_to_side()
-        cfg = self._camera_config.getSideCameraConfig()
         self._start_live_capture(self._camera_config.getSideCameraConfig())
 
     def restart_live_capture_from_top(self):
@@ -34,7 +31,6 @@ class ScanManager:
         print("Start top")
         self._switch_to_top()
         self._start_top_scan_timer()
-        cfg = self._camera_config.getPuckCameraConfig()
         self._start_live_capture(self._camera_config.getPuckCameraConfig())
 
     def is_side(self):

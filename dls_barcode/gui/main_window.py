@@ -57,7 +57,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Queue that holds new results generated in continuous scanning mode
         self._new_scan_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
-
         self._scan_manager = ScanManager(self._config, self._camera_config, self._new_scan_queue, self._view_queue)
 
         dialog = self._init_ui()
@@ -180,45 +179,52 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self.imageFrame.display_puck_image(image)
 
     def _read_new_scan_queue(self):
-        """ Called every second; read any new results from the scan results queue,
-        store them and display them.
+        """ Called every second; read any new results from the scan results queue, store them and display them.
         """
+        if self._scan_manager.is_side():
+            self._read_side_scan()
+        else:
+            self._read_top_scan()
+
+    def _read_side_scan(self):
+        if self._new_scan_queue.empty():
+            return
+
+        # Get the result
+        plate, cv_image = self._new_scan_queue.get(False)
+        if not plate.is_full_valid():
+            return
+
+        # barcode successfully read
+        self._beep()
+        if self.recordTable.unique_side_barcode(plate): # if new side barcode
+            self._scan_manager.restart_live_capture_from_top()
+            self.original_plate = plate
+            self.original_cv_image = cv_image # for merging
+
+    def _read_top_scan(self):
         if self._new_scan_queue.empty():
             if self._scan_manager.is_top_scan_timeout():
                 print("*** Scan timeout ***")
-                # self._restart_live_capture_from_side()
                 self._scan_manager.restart_live_capture_from_side()
             return
 
         # Get the result
         plate, cv_image = self._new_scan_queue.get(False)
-        #self.imageFrame.display_puck_image(cv_image)
 
-        #TODO:merge images
+        # TODO:merge images
         # Store scan results and display in GUI
-        # if self.original_plate != None:
-        if not self._scan_manager.is_side():# and not self.recordTable.unique_side_barcode(plate):
-            # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
-            self.recordTable.add_record_frame(self.original_plate, plate, cv_image) # add new record to the table - side is the original_plate read first, top is the palate
+        # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
+        self.recordTable.add_record_frame(self.original_plate, plate, cv_image)  # add new record to the table
+            #  - side is the original_plate read first, top is the plate
 
         if not plate.is_full_valid():
             return
 
         # barcode successfully read
         self._beep()
-        if self._scan_manager.is_side():
-            if self.recordTable.unique_side_barcode(plate): # if new side barcode
-                self._scan_manager.restart_live_capture_from_top()
-                self.original_plate = plate
-                self.original_cv_image = cv_image # for merging
-        else:
-            print("Scan Recorded")
-            self._scan_manager.restart_live_capture_from_side()
-
-    # def _read_new_scan_queue_test(self):
-    #     if self._scan_manager.is_side():
-    #         if self._new_scan_queue.empty()
-
+        print("Scan Recorded")
+        self._scan_manager.restart_live_capture_from_side()
 
     # def _start_live_capture(self, camera_config):
     #     """ Starts the process of continuous capture from an attached camera.
