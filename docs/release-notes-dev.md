@@ -8,6 +8,7 @@ Changes merged into master
 | I04_1-143 | [#8](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/8) | Patch | Ghost subprocesses closed when exiting application |
 | I04_1-145 | [#6](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/6) | Patch | Side barcode sizes 12-14 supported |
 | I04_1-146 | [#11](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/11) | Minor | Added top camera scan timeout |
+| I04_1-166 | [#22](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/22) | Minor | Timestamp in csv file is human readable |
 
 
 Change Types:
