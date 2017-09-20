@@ -106,12 +106,11 @@ class Record:
                       image_path=image, id=id, geometry=geometry)
 
     def to_csv_string(self):
-        """ Converts a scan record object into a string that can be stored in a file
-        and retrieved later.
+        """ Converts a scan record object into a string that can be stored in a csv file.
         """
         items = [0] * 3
         items[0] = str(self.id)
-        items[1] = str(self.timestamp)
+        items[1] = str(self._formatted_date())
         items[2] = Record.BC_SEPARATOR.join(self.barcodes)
         return Record.BC_SEPARATOR.join(items)
 
