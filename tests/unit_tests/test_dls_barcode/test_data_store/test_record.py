@@ -60,6 +60,20 @@ class TestRecord(unittest.TestCase):
 
         self.assertFalse(r.any_barcode_matches([]))
 
+    def test_csv_string_contains_time_in_human_readable_format(self):
+        # Arrange
+        timestamp = 1505913516.3836024
+        human_readable_timestamp = "2017-09-20 14:18:36"
+        source_string = "f59c92c1;" + str(timestamp) + ";test.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        record = Record.from_string(source_string)
+
+        # Act
+        csv_string = record.to_csv_string()
+
+        # Assert
+        self.assertIn(human_readable_timestamp, csv_string)
+        self.assertNotIn(str(timestamp), csv_string)
+
 
 
 
