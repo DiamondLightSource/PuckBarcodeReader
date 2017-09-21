@@ -15,7 +15,7 @@ class CameraStream:
 
     def get_frame(self):
         read_ok, frame = self._cap.read()
-        print("--- Read OK: " + str(read_ok))
+        # print("--- Read OK: " + str(read_ok))
         return frame
 
     def release_resources(self):

@@ -47,7 +47,7 @@ class CaptureWorker:
                 display = False
 
             # Capture the next frame from the camera
-            print("--- acquiring...")
+            # print("--- acquiring...")
             frame = stream.get_frame()
             # Add the frame to the task queue to be processed
             # NOTE: the rate at which frames are pushed to the task queue is lower than the rate at which frames are acquired
