@@ -48,6 +48,7 @@ class CameraStream:
         cap = opencv.VideoCapture(self._camera_number)
         read_ok, _ = cap.read()
         if not read_ok:
+            print("Read on " + str(self._camera_number) + " failed. Using default index")
             self._camera_number = DEFAULT_CAMERA_NUMBER
             cap = opencv.VideoCapture(self._camera_number)
 
