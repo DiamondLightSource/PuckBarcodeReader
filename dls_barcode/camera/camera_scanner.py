@@ -2,6 +2,8 @@ from __future__ import division
 
 import multiprocessing
 import time
+
+# TODO: delete this because it's not used here - winsound is used - sort it out
 try:
     import winsound
 except ImportError:
@@ -13,14 +15,13 @@ else:
     def playsound(frequency,duration):
         winsound.Beep(frequency,duration)
 
-import cv2
-
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_util.image import Image, Color
 from dls_barcode.datamatrix import DataMatrix
 from .overlay import PlateOverlay, TextOverlay, Overlay
-
-_OPENCV_MAJOR = cv2.__version__[0]
+from .camera import CameraStream
+from .capture_worker import CaptureWorker
+from .camera_position import CameraPosition
 
 Q_LIMIT = 1
 SCANNED_TAG = "Scan Complete"
@@ -41,7 +42,7 @@ class CameraScanner:
     Two separate processes are spawned, one to handle capturing and displaying images from the camera,
     and the other to handle processing (scanning) of those images.
     """
-    def __init__(self, result_queue, view_queue):
+    def __init__(self, result_queue, view_queue, camera_config):
         """ The task queue is used to store a queue of captured frames to be processed; the overlay
         queue stores Overlay objects which are drawn on to the image displayed to the user to highlight
         certain features; and the result queue is used to pass on the results of successful scans to
@@ -49,47 +50,78 @@ class CameraScanner:
         """
         self.task_queue = multiprocessing.Queue()
         self.overlay_queue = multiprocessing.Queue()
-        self.kill_queue = multiprocessing.Queue()
+        self.capture_start_queue = multiprocessing.Queue()
+        self.capture_stop_queue = multiprocessing.Queue()
+        self.capture_kill_queue = multiprocessing.Queue()
+        self.scanner_kill_queue = multiprocessing.Queue()
         self.result_queue = result_queue
         self.view_queue = view_queue
 
-    def stream_camera(self, config, camera_config):
+        self._camera_configs = {CameraPosition.SIDE: camera_config.getSideCameraConfig(),
+                          CameraPosition.TOP: camera_config.getPuckCameraConfig()}
+
+        capture_args = (self.task_queue, self.view_queue, self.overlay_queue, self.capture_start_queue,
+                        self.capture_stop_queue, self.capture_kill_queue, self._camera_configs)
+
+        # The capture process is always running: we initialise the cameras only once because it's time consuming
+        self._capture_process = multiprocessing.Process(target=_capture_worker, args=capture_args)
+        self._capture_process.start()
+
+        self._scanner_process = None
+
+    def start_scan(self, cam_position, config):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        capture_args = (self.task_queue, self.overlay_queue, self.kill_queue, self.view_queue, camera_config)
-        scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, self.kill_queue, config, camera_config)
+        print("\nMAIN: start triggered")
+        scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, self.scanner_kill_queue, config,
+                        self._camera_configs[cam_position])
+        self._scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
-        capture_process = multiprocessing.Process(target=_capture_worker, args=capture_args)
-        scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
+        self.capture_start_queue.put(cam_position)
+        self._scanner_process.start()
 
-        capture_process.start()
-        scanner_process.start()
+    def stop_scan(self):
+        print("MAIN: Stop triggered")
+        self.capture_stop_queue.put(None)
+        if self._scanner_process is not None:
+            self.scanner_kill_queue.put(None)
+            self._scanner_process.join()
+            self._flush_queue(self.scanner_kill_queue)
+
+        # print("MAIN: Kill queue empty: " + str(self.scanner_kill_queue.empty()))
+        print("MAIN: Stop completed")
 
     def kill(self):
-        self.kill_queue.put(None)
+        print("\n__________")
+        print("MAIN: Kill")
+        self.stop_scan()
+        self.capture_kill_queue.put(None)
+
+    def _flush_queue(self, queue):
+        while not queue.empty():
+            queue.get()
 
 
-def _capture_worker(task_queue, overlay_queue, kill_queue, view_queue, camera_config):
+def _capture_worker(task_queue, view_queue, overlay_queue, start_queue, stop_queue, kill_queue, camera_configs):
+    """ Function used as the main loop of a worker process. Continuously captures images from
+    the camera and puts them on a queue to be processed. The images are displayed (as video)
+    to the user with appropriate highlights (taken from the overlay queue) which indicate the
+    position of scanned and unscanned barcodes.
+    """
+    worker = CaptureWorker(camera_configs)
+    worker.run(task_queue, view_queue, overlay_queue, start_queue, stop_queue, kill_queue)
+
+def _capture_worker_old(task_queue, overlay_queue, kill_queue, view_queue, camera_config):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
     position of scanned and unscanned barcodes.
     """
     # Initialize the camera
-    cap = cv2.VideoCapture(camera_config[0].value())
-    read_ok, _ = cap.read()
-    if not read_ok:
-        cap = cv2.VideoCapture(0)
-
-    if _OPENCV_MAJOR == '2':
-        width_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
-        height_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
-    else:
-        width_flag = cv2.CAP_PROP_FRAME_WIDTH
-        height_flag = cv2.CAP_PROP_FRAME_HEIGHT
-
-    cap.set(width_flag, camera_config[1].value())
-    cap.set(height_flag, camera_config[2].value())
+    cam_number = camera_config[0].value()
+    cam_width = camera_config[1].value()
+    cam_height = camera_config[2].value()
+    stream = CameraStream(cam_number, cam_width, cam_height)
 
     # Store the latest image overlay which highlights the puck
     latest_overlay = Overlay(0)
@@ -97,8 +129,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, view_queue, camera_co
 
     while kill_queue.empty():
         # Capture the next frame from the camera
-        read_ok, frame = cap.read()
-
+        frame = stream.get_frame()# cap.read()
         # Add the frame to the task queue to be processed
         # NOTE: the rate at which frames are pushed to the task queue is lower than the rate at which frames are acquired
         if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
@@ -117,8 +148,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, view_queue, camera_co
         view_queue.put(Image(frame))
 
     # Clean up camera
-    cap.release()
-    cv2.destroyAllWindows()
+    stream.release_resources()
 
     # Flush the queues for which this process is a writer
     while not task_queue.empty():
@@ -128,7 +158,7 @@ def _capture_worker(task_queue, overlay_queue, kill_queue, view_queue, camera_co
         view_queue.get()
 
 
-def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options, camera_config):
+def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config, camera_config):
     """ Function used as the main loop of a worker process. Scan images for barcodes,
     combining partial scans until a full puck is reached.
 
@@ -137,10 +167,11 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options
     this previous plates so that we don't have to re-read any of the previously captured barcodes
     (because this is a relatively expensive operation).
     """
+    print("SCANNER start")
     last_plate_time = time.time()
 
-    SlotScanner.DEBUG = options.slot_images.value()
-    SlotScanner.DEBUG_DIR = options.slot_image_directory.value()
+    SlotScanner.DEBUG = config.slot_images.value()
+    SlotScanner.DEBUG_DIR = config.slot_image_directory.value()
 
     if ("Side" in camera_config[0]._tag):
         # Side camera
@@ -148,15 +179,21 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options
         barcode_sizes = DataMatrix.DEFAULT_SIDE_SIZES
     else:
         # Top camera
-        plate_type = options.plate_type.value()
-        barcode_sizes = [options.top_barcode_size.value()]
+        plate_type = config.plate_type.value()
+        barcode_sizes = [config.top_barcode_size.value()]
 
     if plate_type == "None":
         scanner = OpenScanner(barcode_sizes)
     else:
         scanner = GeometryScanner(plate_type, barcode_sizes)
 
+    # print("- scanner before loop")
+    display = True
+    # print("SCANNER: Kill queue empty: " + str(kill_queue.empty()))
     while kill_queue.empty():
+        if display:
+            print("--- scanner inside loop")
+            display = False
         if task_queue.empty():
             continue
 
@@ -171,7 +208,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options
         # barcode read is expensive.
         scan_result = scanner.scan_next_frame(gray_image)
 
-        if options.console_frame.value():
+        if config.console_frame.value():
             scan_result.print_summary()
 
         if scan_result.success():
@@ -183,8 +220,8 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options
             if scan_result.already_scanned():
                 overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
             elif scan_result.any_valid_barcodes():
-                overlay_queue.put(PlateOverlay(plate, options))
-                _plate_beep(plate, options)
+                overlay_queue.put(PlateOverlay(plate, config))
+                _plate_beep(plate, config)
 
             if scan_result.any_new_barcodes():
                 result_queue.put((plate, image))
@@ -199,6 +236,8 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, options
 
     while not overlay_queue.empty():
         overlay_queue.get()
+
+    print("SCANNER stop & kill")
 
 
 def _plate_beep(plate, options):
