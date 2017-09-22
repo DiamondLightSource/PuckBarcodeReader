@@ -28,9 +28,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Queue that holds new results generated in continuous scanning mode
         self._scan_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
-        # stream_manager = StreamManager(self._scan_queue, self._view_queue)
-        # self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._camera_config)
-        # self._camera_switch = CameraSwitch(self._camera_scanner, self._config)
         self._initialise_scanner()
 
         dialog = self._init_ui()
@@ -190,9 +187,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # TODO:merge images
         # Store scan results and display in GUI
         # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
-        self.recordTable.add_record_frame(self.original_plate, plate, cv_image)  # add new record to the table
-            #  - side is the original_plate read first, top is the plate
 
+        # add new record to the table - side is the original_plate read first, top is the plate
+        self.recordTable.add_record_frame(self.original_plate, plate, cv_image)
         if not plate.is_full_valid():
             return
 

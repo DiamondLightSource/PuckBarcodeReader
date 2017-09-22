@@ -32,9 +32,9 @@ class CaptureWorker:
                 continue
 
             command = command_queue.get()
-            if command.action == StreamAction.START:
-                print("CAPTURE start: " + str(command.camera_position))
-                self._run_capture(self._streams[command.camera_position], task_queue, view_queue, overlay_queue, command_queue)
+            if command.get_action() == StreamAction.START:
+                print("CAPTURE start: " + str(command.get_camera_position()))
+                self._run_capture(self._streams[command.get_camera_position()], task_queue, view_queue, overlay_queue, command_queue)
 
         # Clean up
         print("CAPTURE kill & cleanup")

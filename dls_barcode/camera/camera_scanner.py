@@ -95,10 +95,7 @@ class CameraScanner:
 
 
 def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_queue, camera_configs):
-    """ Function used as the main loop of a worker process. Continuously captures images from
-    the camera and puts them on a queue to be processed. The images are displayed (as video)
-    to the user with appropriate highlights (taken from the overlay queue) which indicate the
-    position of scanned and unscanned barcodes.
+    """ Function used as the main loop of a worker process.
     """
     worker = CaptureWorker(camera_configs)
     worker.run(task_queue, view_queue, overlay_queue, command_queue, kill_queue)
