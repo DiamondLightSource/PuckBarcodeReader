@@ -22,6 +22,8 @@ from .overlay import PlateOverlay, TextOverlay, Overlay
 from .camera import CameraStream
 from .capture_worker import CaptureWorker
 from .camera_position import CameraPosition
+from .stream_action import StreamAction
+from .capture_command import CaptureCommand
 
 Q_LIMIT = 1
 SCANNED_TAG = "Scan Complete"
@@ -50,8 +52,7 @@ class CameraScanner:
         """
         self.task_queue = multiprocessing.Queue()
         self.overlay_queue = multiprocessing.Queue()
-        self.capture_start_queue = multiprocessing.Queue()
-        self.capture_stop_queue = multiprocessing.Queue()
+        self.capture_command_queue = multiprocessing.Queue()
         self.capture_kill_queue = multiprocessing.Queue()
         self.scanner_kill_queue = multiprocessing.Queue()
         self.result_queue = result_queue
@@ -60,8 +61,8 @@ class CameraScanner:
         self._camera_configs = {CameraPosition.SIDE: camera_config.getSideCameraConfig(),
                           CameraPosition.TOP: camera_config.getPuckCameraConfig()}
 
-        capture_args = (self.task_queue, self.view_queue, self.overlay_queue, self.capture_start_queue,
-                        self.capture_stop_queue, self.capture_kill_queue, self._camera_configs)
+        capture_args = (self.task_queue, self.view_queue, self.overlay_queue, self.capture_command_queue,
+                        self.capture_kill_queue, self._camera_configs)
 
         # The capture process is always running: we initialise the cameras only once because it's time consuming
         self._capture_process = multiprocessing.Process(target=_capture_worker, args=capture_args)
@@ -77,12 +78,12 @@ class CameraScanner:
                         self._camera_configs[cam_position])
         self._scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
-        self.capture_start_queue.put(cam_position)
+        self.capture_command_queue.put(CaptureCommand(StreamAction.START, cam_position))
         self._scanner_process.start()
 
     def stop_scan(self):
         print("\nMAIN: Stop triggered")
-        self.capture_stop_queue.put(None)
+        self.capture_command_queue.put(CaptureCommand(StreamAction.STOP))
         if self._scanner_process is not None:
             self.scanner_kill_queue.put(None)
             self._scanner_process.join()
@@ -105,14 +106,14 @@ class CameraScanner:
             queue.get()
 
 
-def _capture_worker(task_queue, view_queue, overlay_queue, start_queue, stop_queue, kill_queue, camera_configs):
+def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_queue, camera_configs):
     """ Function used as the main loop of a worker process. Continuously captures images from
     the camera and puts them on a queue to be processed. The images are displayed (as video)
     to the user with appropriate highlights (taken from the overlay queue) which indicate the
     position of scanned and unscanned barcodes.
     """
     worker = CaptureWorker(camera_configs)
-    worker.run(task_queue, view_queue, overlay_queue, start_queue, stop_queue, kill_queue)
+    worker.run(task_queue, view_queue, overlay_queue, command_queue, kill_queue)
 
 def _capture_worker_old(task_queue, overlay_queue, kill_queue, view_queue, camera_config):
     """ Function used as the main loop of a worker process. Continuously captures images from

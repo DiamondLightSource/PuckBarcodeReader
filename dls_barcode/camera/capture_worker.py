@@ -3,6 +3,7 @@ import queue
 
 from .camera import CameraStream
 from .overlay import Overlay
+from .stream_action import StreamAction
 from dls_util.image import Image
 
 Q_LIMIT = 1
@@ -21,22 +22,15 @@ class CaptureWorker:
         for cam_position, cam_config in self._camera_configs.items():
             self._streams[cam_position] = self._initialise_stream(cam_config)
 
-    def run(self, task_queue, view_queue, overlay_queue, start_queue, stop_queue, kill_queue):
+    def run(self, task_queue, view_queue, overlay_queue, command_queue, kill_queue):
         while kill_queue.empty():
-            if not stop_queue.empty():
-                print("--- capture flushing stop Q")
-                self._flush_queue(stop_queue)
-                print("--- capture stop Q flushed")
-
-            if start_queue.empty():
+            if command_queue.empty():
                 continue
 
-            # TODO: support change in cam configs
-            cam_position = start_queue.get(True)
-            print("CAPTURE start: " + str(cam_position))
-
-            # Update cam parameters from config, in case it has changed:
-            self._run_capture(self._streams[cam_position], task_queue, view_queue, overlay_queue, stop_queue)
+            command = command_queue.get()
+            if command.action == StreamAction.START:
+                print("CAPTURE start: " + str(command.camera_position))
+                self._run_capture(self._streams[command.camera_position], task_queue, view_queue, overlay_queue, command_queue)
 
         # Clean up
         print("CAPTURE kill & cleanup")
