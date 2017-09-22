@@ -53,6 +53,8 @@ class CaptureWorker:
         latest_overlay = Overlay(0)
         last_time = time.time()
 
+        # Sometimes there is a race condition where we can still get
+
         display = True
         while stop_queue.empty():
             if display:
@@ -76,7 +78,7 @@ class CaptureWorker:
                 except queue.Empty:
                     # Race condition where the scanner worker has stopped and cleared the overlay queue between
                     # our check for empty and call to queue.get(False)
-                    print("Overlay empty queue error occured")
+                    print("- CAPTURE: Empty overlay queue error occured - using default overlay")
                     latest_overlay = Overlay(0)
 
             # Draw the overlay on the frame
@@ -96,6 +98,9 @@ class CaptureWorker:
         height = camera_config[2].value()
         return CameraStream(cam_number, width, height)
 
-    def _flush_queue(self, queue):
-        while not queue.empty():
-            queue.get(False)
+    def _flush_queue(self, q):
+        while not q.empty():
+            try:
+                q.get(False)
+            except queue.Empty:
+                print("- CAPTURE: Empty queue error occured - skipping")

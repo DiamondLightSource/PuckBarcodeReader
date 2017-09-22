@@ -1,4 +1,5 @@
 import multiprocessing
+import queue
 
 from PyQt4 import QtGui, QtCore
 
@@ -146,8 +147,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _read_view_queue(self):
         if not self._view_queue.empty():
-            image = self._view_queue.get(False)
-            self.imageFrame.display_puck_image(image)
+            try:
+                image = self._view_queue.get(False)
+                self.imageFrame.display_puck_image(image)
+            except queue.Empty:
+                print("MAIN: Empty view queue error occured - skipping")
 
     def _read_scan_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.

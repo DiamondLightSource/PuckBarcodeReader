@@ -71,7 +71,6 @@ class CameraScanner:
 
     def stop_scan(self):
         print("\nMAIN: Stop triggered")
-        self._capture_command_q.put(CaptureCommand(StreamAction.STOP))
         if self._scanner_process is not None:
             self._scanner_kill_q.put(None)
             self._scanner_process.join()
@@ -79,6 +78,7 @@ class CameraScanner:
             self._scanner_process = None
             print("MAIN: scanner rejoined")
 
+        self._capture_command_q.put(CaptureCommand(StreamAction.STOP))
         print("MAIN: Stop completed")
 
     def kill(self):
