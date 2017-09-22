@@ -14,7 +14,11 @@ INTERVAL = 1.0 / MAX_SAMPLE_RATE
 
 # TODO: sort out doc string
 class CaptureWorker:
-
+    """Continuously captures images from the camera and puts them on a queue to be processed. The images are displayed
+    (as video) to the user with appropriate highlights (taken from the overlay queue) which indicate the position of
+    scanned and unscanned barcodes. Cameras are initialised at startup, then the stream is stopped and started to the
+    correct camera by reading the command from a start/stop command queue.
+    """
     def __init__(self, camera_configs):
         print("CAPTURE init")
         self._streams = {}

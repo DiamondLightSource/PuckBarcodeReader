@@ -91,7 +91,6 @@ class CameraScanner:
             self._scanner_process = None
             print("MAIN: scanner rejoined")
 
-        # print("MAIN: Kill queue empty: " + str(self.scanner_kill_queue.empty()))
         print("MAIN: Stop completed")
 
     def kill(self):
@@ -115,52 +114,6 @@ def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_q
     """
     worker = CaptureWorker(camera_configs)
     worker.run(task_queue, view_queue, overlay_queue, command_queue, kill_queue)
-
-def _capture_worker_old(task_queue, overlay_queue, kill_queue, view_queue, camera_config):
-    """ Function used as the main loop of a worker process. Continuously captures images from
-    the camera and puts them on a queue to be processed. The images are displayed (as video)
-    to the user with appropriate highlights (taken from the overlay queue) which indicate the
-    position of scanned and unscanned barcodes.
-    """
-    # Initialize the camera
-    cam_number = camera_config[0].value()
-    cam_width = camera_config[1].value()
-    cam_height = camera_config[2].value()
-    stream = CameraStream(cam_number, cam_width, cam_height)
-
-    # Store the latest image overlay which highlights the puck
-    latest_overlay = Overlay(0)
-    last_time = time.time()
-
-    while kill_queue.empty():
-        # Capture the next frame from the camera
-        frame = stream.get_frame()# cap.read()
-        # Add the frame to the task queue to be processed
-        # NOTE: the rate at which frames are pushed to the task queue is lower than the rate at which frames are acquired
-        if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
-            # Make a copy of image so the overlay doesn't overwrite it
-            task_queue.put(frame.copy())
-            last_time = time.time()
-
-        # All frames (scanned or not) are pushed to the view queue for display
-        # Get the latest overlay - it won't be generated from the current frame but it doesn't matter
-        while not overlay_queue.empty():
-            latest_overlay = overlay_queue.get(False)
-
-        # Draw the overlay on the frame
-        latest_overlay.draw_on_image(frame)
-
-        view_queue.put(Image(frame))
-
-    # Clean up camera
-    stream.release_resources()
-
-    # Flush the queues for which this process is a writer
-    while not task_queue.empty():
-        task_queue.get()
-
-    while not view_queue.empty():
-        view_queue.get()
 
 
 def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config, camera_config):
@@ -192,9 +145,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
     else:
         scanner = GeometryScanner(plate_type, barcode_sizes)
 
-    # print("- scanner before loop")
     display = True
-    # print("SCANNER: Kill queue empty: " + str(kill_queue.empty()))
     while kill_queue.empty():
         if display:
             print("--- scanner inside loop")
