@@ -40,8 +40,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._scan_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
         # stream_manager = StreamManager(self._scan_queue, self._view_queue)
-        self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._camera_config)
-        self._camera_switch = CameraSwitch(self._camera_scanner, self._config)
+        # self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._camera_config)
+        # self._camera_switch = CameraSwitch(self._camera_scanner, self._config)
+        self._initialise_scanner()
 
         dialog = self._init_ui()
         if not dialog.isVisible():
@@ -118,7 +119,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
         options_action.triggered.connect(self._open_options_dialog)
-        options_action.triggered.connect(self._camera_switch.restart_live_capture_from_side)  # find a better way of doing this
+        options_action.triggered.connect(self._on_options_changed)  # find a better way of doing this
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -144,6 +145,15 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _cleanup(self):
         self._camera_scanner.kill()
+
+    def _initialise_scanner(self):
+        self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._camera_config)
+        self._camera_switch = CameraSwitch(self._camera_scanner, self._config)
+
+    def _on_options_changed(self):
+        self._cleanup()
+        self._initialise_scanner()
+        self._camera_switch.restart_live_capture_from_side()
 
     def on_record_table_clicked(self):
         self._camera_switch.stop_live_capture()

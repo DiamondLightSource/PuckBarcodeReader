@@ -1,4 +1,5 @@
 import time
+import queue
 
 from .camera import CameraStream
 from .overlay import Overlay
@@ -16,24 +17,32 @@ class CaptureWorker:
     def __init__(self, camera_configs):
         print("CAPTURE init")
         self._streams = {}
-        for cam_position, cam_config in camera_configs.items():
+        self._camera_configs = camera_configs
+        for cam_position, cam_config in self._camera_configs.items():
             self._streams[cam_position] = self._initialise_stream(cam_config)
 
     def run(self, task_queue, view_queue, overlay_queue, start_queue, stop_queue, kill_queue):
         while kill_queue.empty():
-            self._flush_queue(stop_queue)
+            if not stop_queue.empty():
+                print("--- capture flushing stop Q")
+                self._flush_queue(stop_queue)
+                print("--- capture stop Q flushed")
+
             if start_queue.empty():
                 continue
 
             # TODO: support change in cam configs
             cam_position = start_queue.get(True)
             print("CAPTURE start: " + str(cam_position))
+
+            # Update cam parameters from config, in case it has changed:
             self._run_capture(self._streams[cam_position], task_queue, view_queue, overlay_queue, stop_queue)
 
         # Clean up
         print("CAPTURE kill & cleanup")
         for _, stream in self._streams.items():
             stream.release_resources()
+        print("- capture all cleaned")
 
     def _run_capture(self, stream, task_queue, view_queue, overlay_queue, stop_queue):
         # Store the latest image overlay which highlights the puck
@@ -59,7 +68,12 @@ class CaptureWorker:
             # All frames (scanned or not) are pushed to the view queue for display
             # Get the latest overlay - it won't be generated from the current frame but it doesn't matter
             while not overlay_queue.empty():
-                latest_overlay = overlay_queue.get(False)
+                try:
+                    latest_overlay = overlay_queue.get(False)
+                except queue.Empty:
+                    # Race condition where the scanner worker has stopped and cleared the overlay queue between
+                    # our check for empty and call to queue.get(False)
+                    latest_overlay = Overlay(0)
 
             # Draw the overlay on the frame
             latest_overlay.draw_on_image(frame)
@@ -68,7 +82,9 @@ class CaptureWorker:
 
         print("CAPTURE stop & flush queues")
         self._flush_queue(task_queue)
+        print("--- capture task Q flushed")
         self._flush_queue(view_queue)
+        print("--- capture view Q flushed")
 
     def _initialise_stream(self, camera_config):
         cam_number = camera_config[0].value()
@@ -78,4 +94,4 @@ class CaptureWorker:
 
     def _flush_queue(self, queue):
         while not queue.empty():
-            queue.get()
+            queue.get(False)

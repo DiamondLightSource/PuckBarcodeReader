@@ -81,12 +81,13 @@ class CameraScanner:
         self._scanner_process.start()
 
     def stop_scan(self):
-        print("MAIN: Stop triggered")
+        print("\nMAIN: Stop triggered")
         self.capture_stop_queue.put(None)
         if self._scanner_process is not None:
             self.scanner_kill_queue.put(None)
             self._scanner_process.join()
             self._flush_queue(self.scanner_kill_queue)
+            print("MAIN: scanner rejoined")
 
         # print("MAIN: Kill queue empty: " + str(self.scanner_kill_queue.empty()))
         print("MAIN: Stop completed")
@@ -96,6 +97,8 @@ class CameraScanner:
         print("MAIN: Kill")
         self.stop_scan()
         self.capture_kill_queue.put(None)
+        self._capture_process.join()
+        print("MAIN: KILL COMPLETED")
 
     def _flush_queue(self, queue):
         while not queue.empty():
@@ -233,10 +236,11 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
     # Flush the queues for which this process is a writer
     while not result_queue.empty():
         result_queue.get()
+    print("--- scanner result Q flushed")
 
     while not overlay_queue.empty():
         overlay_queue.get()
-
+    print("--- scanner overlay Q flushed")
     print("SCANNER stop & kill")
 
 

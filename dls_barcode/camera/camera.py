@@ -8,10 +8,10 @@ class CameraStream:
     """ Class that wraps an OpenCV VideoCapture
     """
     def __init__(self, camera_number, width, height):
-        self._camera_number = camera_number
-        self._cap = self._create_capture()
-        self.set_width(width)
-        self.set_height(height)
+        # self._camera_number = camera_number
+        self._cap = self._create_capture(camera_number)
+        self._set_width(width)
+        self._set_height(height)
 
     def get_frame(self):
         read_ok, frame = self._cap.read()
@@ -21,36 +21,36 @@ class CameraStream:
     def release_resources(self):
         self._cap.release()
 
-    def set_camera_number(self, camera_number):
-        if camera_number == self._camera_number:
-            return
+    # def set_camera_number(self, camera_number):
+    #     if camera_number == self._camera_number:
+    #         return
+    #
+    #     width = self.get_width()
+    #     height = self.get_height()
+    #     self.release_resources()
+    #     self._cap = self._create_capture()
+    #     self.set_width(width)
+    #     self.set_height(height)
 
-        width = self.get_width()
-        height = self.get_height()
-        self.release_resources()
-        self._cap = self._create_capture()
-        self.set_width(width)
-        self.set_height(height)
-
-    def set_width(self, width):
+    def _set_width(self, width):
         self._cap.set(self._get_width_flag(), width)
 
-    def set_height(self, height):
+    def _set_height(self, height):
         self._cap.set(self._get_height_flag(), height)
 
-    def get_width(self):
-        return self._cap.get(self._get_width_flag())
+    # def get_width(self):
+    #     return self._cap.get(self._get_width_flag())
+    #
+    # def get_height(self):
+    #     return self._cap.get(self._get_height_flag())
 
-    def get_height(self):
-        return self._cap.get(self._get_height_flag())
-
-    def _create_capture(self):
-        cap = opencv.VideoCapture(self._camera_number)
+    def _create_capture(self, camera_number):
+        cap = opencv.VideoCapture(camera_number)
         read_ok, _ = cap.read()
         if not read_ok:
-            print("Read on " + str(self._camera_number) + " failed. Using default index")
-            self._camera_number = DEFAULT_CAMERA_NUMBER
-            cap = opencv.VideoCapture(self._camera_number)
+            print("Read on " + str(camera_number) + " failed. Using default index")
+            # camera_number = DEFAULT_CAMERA_NUMBER
+            cap = opencv.VideoCapture(DEFAULT_CAMERA_NUMBER)
 
         return cap
 
