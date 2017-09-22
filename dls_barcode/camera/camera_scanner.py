@@ -29,28 +29,28 @@ class CameraScanner:
     periodically scans the images for plates and barcodes. Multiple partial images are combined
     together until enough barcodes are scanned to make a full plate.
 
-    Two separate processes are spawned, one to handle capturing and displaying images from the camera,
+    Two separate processes are spawned, one to handle capturing and displaying images from the cameras,
     and the other to handle processing (scanning) of those images.
     """
     def __init__(self, result_queue, view_queue, camera_config):
         """ The task queue is used to store a queue of captured frames to be processed; the overlay
         queue stores Overlay objects which are drawn on to the image displayed to the user to highlight
         certain features; and the result queue is used to pass on the results of successful scans to
-        the object that created the ContinuousScan.
+        the object that created the scanner.
         """
-        self.task_queue = multiprocessing.Queue()
-        self.overlay_queue = multiprocessing.Queue()
-        self.capture_command_queue = multiprocessing.Queue()
-        self.capture_kill_queue = multiprocessing.Queue()
-        self.scanner_kill_queue = multiprocessing.Queue()
-        self.result_queue = result_queue
-        self.view_queue = view_queue
+        self._task_q = multiprocessing.Queue()
+        self._overlay_q = multiprocessing.Queue()
+        self._capture_command_q = multiprocessing.Queue()
+        self._capture_kill_q = multiprocessing.Queue()
+        self._scanner_kill_q = multiprocessing.Queue()
+        self._result_q = result_queue
+        self._view_q = view_queue
 
         self._camera_configs = {CameraPosition.SIDE: camera_config.getSideCameraConfig(),
                           CameraPosition.TOP: camera_config.getPuckCameraConfig()}
 
-        capture_args = (self.task_queue, self.view_queue, self.overlay_queue, self.capture_command_queue,
-                        self.capture_kill_queue, self._camera_configs)
+        capture_args = (self._task_q, self._view_q, self._overlay_q, self._capture_command_q, self._capture_kill_q,
+                        self._camera_configs)
 
         # The capture process is always running: we initialise the cameras only once because it's time consuming
         self._capture_process = multiprocessing.Process(target=_capture_worker, args=capture_args)
@@ -62,20 +62,20 @@ class CameraScanner:
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
         print("\nMAIN: start triggered")
-        scanner_args = (self.task_queue, self.overlay_queue, self.result_queue, self.scanner_kill_queue, config,
+        scanner_args = (self._task_q, self._overlay_q, self._result_q, self._scanner_kill_q, config,
                         self._camera_configs[cam_position])
         self._scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
-        self.capture_command_queue.put(CaptureCommand(StreamAction.START, cam_position))
+        self._capture_command_q.put(CaptureCommand(StreamAction.START, cam_position))
         self._scanner_process.start()
 
     def stop_scan(self):
         print("\nMAIN: Stop triggered")
-        self.capture_command_queue.put(CaptureCommand(StreamAction.STOP))
+        self._capture_command_q.put(CaptureCommand(StreamAction.STOP))
         if self._scanner_process is not None:
-            self.scanner_kill_queue.put(None)
+            self._scanner_kill_q.put(None)
             self._scanner_process.join()
-            self._flush_queue(self.scanner_kill_queue)
+            self._flush_queue(self._scanner_kill_q)
             self._scanner_process = None
             print("MAIN: scanner rejoined")
 
@@ -85,7 +85,7 @@ class CameraScanner:
         print("\n__________")
         print("MAIN: Kill")
         self.stop_scan()
-        self.capture_kill_queue.put(None)
+        self._capture_kill_q.put(None)
         self._capture_process.join()
         print("MAIN: KILL COMPLETED")
 
