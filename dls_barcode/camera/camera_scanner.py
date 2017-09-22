@@ -3,23 +3,11 @@ from __future__ import division
 import multiprocessing
 import time
 
-# TODO: delete this because it's not used here - winsound is used - sort it out
-try:
-    import winsound
-except ImportError:
-    import os
-    def playsound(frequency,duration):
-        #apt-get install beep
-        os.system('beep -f %s -l %s' % (frequency,duration))
-else:
-    def playsound(frequency,duration):
-        winsound.Beep(frequency,duration)
-
-from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_util.image import Image, Color
+from dls_util import Beeper
+from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
-from .overlay import PlateOverlay, TextOverlay, Overlay
-from .camera_stream import CameraStream
+from .overlay import PlateOverlay, TextOverlay
 from .capture_worker import CaptureWorker
 from .camera_position import CameraPosition
 from .stream_action import StreamAction
@@ -204,4 +192,4 @@ def _plate_beep(plate, options):
     empty_fraction = (plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots
     frequency = int(10000 * empty_fraction + 37)
     duration = 200
-    winsound.Beep(frequency, duration)
+    Beeper.beep(frequency, duration)

@@ -2,7 +2,7 @@ import time
 from .camera_position import CameraPosition
 
 class CameraSwitch:
-    """Class that handles switching camera streams"""
+    """Class that orchestrates switching camera streams"""
 
     def __init__(self, camera_scanner, config):
         self._config = config

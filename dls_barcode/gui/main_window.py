@@ -1,25 +1,14 @@
 import multiprocessing
 
-from dls_barcode.config.barcode_config import CameraConfig
-
-try:
-    import winsound
-except ImportError:
-    import os
-    def playsound(frequency, duration):
-        #apt-get install beep
-        os.system('beep -f %s -l %s' % (frequency, duration))
-else:
-    def playsound(frequency, duration):
-        winsound.Beep(frequency, duration)
-
 from PyQt4 import QtGui, QtCore
 
 from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
+from dls_barcode.config.barcode_config import CameraConfig
+from dls_barcode.camera import CameraScanner, CameraSwitch
+from dls_util import Beeper
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
-from dls_barcode.camera import CameraScanner, CameraSwitch
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.
@@ -181,7 +170,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             return
 
         # Barcode successfully read
-        self._beep()
+        Beeper.beep()
         print("MAIN: side barcode recorded")
         if self.recordTable.unique_side_barcode(plate): # if new side barcode
             self._camera_switch.restart_live_capture_from_top()
@@ -208,10 +197,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             return
 
         # Barcode successfully read
-        self._beep()
+        Beeper.beep()
         print("Scan Recorded")
         self._camera_switch.restart_live_capture_from_side()
-
-    def _beep(self):
-        playsound(frequency=4000, duration=500)
 
