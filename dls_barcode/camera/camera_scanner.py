@@ -19,7 +19,7 @@ from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_util.image import Image, Color
 from dls_barcode.datamatrix import DataMatrix
 from .overlay import PlateOverlay, TextOverlay, Overlay
-from .camera import CameraStream
+from .camera_stream import CameraStream
 from .capture_worker import CaptureWorker
 from .camera_position import CameraPosition
 from .stream_action import StreamAction

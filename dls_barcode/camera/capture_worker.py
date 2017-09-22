@@ -1,7 +1,7 @@
 import time
 import queue
 
-from .camera import CameraStream
+from .camera_stream import CameraStream
 from .overlay import Overlay
 from .stream_action import StreamAction
 from dls_util.image import Image
@@ -36,6 +36,12 @@ class CaptureWorker:
         print("CAPTURE kill & cleanup")
         for _, stream in self._streams.items():
             stream.release_resources()
+
+        # Flush the queues again - sometimes there is a race condition which I don't quite understand, and the flush
+        # done after the STOP command is not complete and leaves the process hanging. It's important that this is done
+        # AFTER releasing the cameras, so there is a little delay from the previous flushes
+        self._flush_queue(task_queue)
+        self._flush_queue(view_queue)
         print("- capture all cleaned")
 
     def _run_capture(self, stream, task_queue, view_queue, overlay_queue, stop_queue):
@@ -67,6 +73,7 @@ class CaptureWorker:
                 except queue.Empty:
                     # Race condition where the scanner worker has stopped and cleared the overlay queue between
                     # our check for empty and call to queue.get(False)
+                    print("Overlay empty queue error occured")
                     latest_overlay = Overlay(0)
 
             # Draw the overlay on the frame
