@@ -88,6 +88,7 @@ class CameraScanner:
             self.scanner_kill_queue.put(None)
             self._scanner_process.join()
             self._flush_queue(self.scanner_kill_queue)
+            self._scanner_process = None
             print("MAIN: scanner rejoined")
 
         # print("MAIN: Kill queue empty: " + str(self.scanner_kill_queue.empty()))
