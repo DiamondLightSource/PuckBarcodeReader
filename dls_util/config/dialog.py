@@ -97,8 +97,6 @@ class ConfigDialog(QtGui.QDialog):
         btn_cancel.pressed.connect(self._dialog_close_cancel)
         btn_ok = QtGui.QPushButton("OK")
         btn_ok.pressed.connect(self._dialog_close_ok)
-        # btn_apply = QtGui.QPushButton("Apply")
-        # btn_apply.pressed.connect(self._dialog_apply_changes)
         btn_reset = QtGui.QPushButton("Reset All")
         btn_reset.pressed.connect(self._dialog_reset)
 
@@ -106,7 +104,6 @@ class ConfigDialog(QtGui.QDialog):
         hbox.addStretch(1)
         hbox.addWidget(btn_ok)
         hbox.addWidget(btn_cancel)
-        # hbox.addWidget(btn_apply)
         hbox.addWidget(btn_reset)
         hbox.addStretch(1)
 

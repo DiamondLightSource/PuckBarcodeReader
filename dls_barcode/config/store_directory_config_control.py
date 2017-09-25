@@ -1,3 +1,4 @@
+import os.path
 from PyQt4 import QtGui
 
 from dls_util.config import DirectoryConfigControl
@@ -10,14 +11,17 @@ class StoreDirectoryConfigControl(DirectoryConfigControl):
 
     def before_apply(self):
         self.is_confirmed = True
-        if self._txt_dir.text() == self._config_item.value():
+        current_dir = self._config_item.value()
+        new_dir = self._txt_dir.text()
+        if os.path.abspath(new_dir) == os.path.abspath(current_dir):
             return
 
-        confirm_msg = "TODO: add message here"
-        reply = QtGui.QMessageBox.question(self, 'CHANGE ME to Change Store Directory',
-                                           confirm_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        confirm_msg = "The Startup Store Directory was changed from " + current_dir + " to " + new_dir + ".\n\n"\
+            "This change will only take effect at the next startup."
+        reply = QtGui.QMessageBox.question(self, 'Startup Store Directory',
+                                           confirm_msg, QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
 
-        if reply == QtGui.QMessageBox.No:
+        if reply == QtGui.QMessageBox.Cancel:
             self.is_confirmed = False
 
 
