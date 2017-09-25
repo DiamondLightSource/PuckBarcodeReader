@@ -3,13 +3,13 @@ import queue
 
 from PyQt4 import QtGui, QtCore
 
-from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
-from dls_barcode.config.barcode_config import CameraConfig
+from dls_barcode.config import BarcodeConfig, CameraConfig, BarcodeConfigDialog
 from dls_barcode.camera import CameraScanner, CameraSwitch
 from dls_util import Beeper
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
+
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.
