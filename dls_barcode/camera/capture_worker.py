@@ -42,8 +42,9 @@ class CaptureWorker:
             stream.release_resources()
 
         # Flush the queues again - sometimes there is a race condition which I don't quite understand, and the flush
-        # done after the STOP command is not complete and leaves the process hanging. It's important that this is done
-        # AFTER releasing the cameras, so there is a little delay from the previous flushes
+        # done after the STOP command is not complete and leaves the process hanging. It's important that there is a
+        # tiny delay before doing this
+        time.sleep(0.2)
         self._flush_queue(task_queue)
         self._flush_queue(view_queue)
         print("- capture all cleaned")
