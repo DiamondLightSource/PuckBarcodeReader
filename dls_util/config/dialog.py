@@ -144,11 +144,11 @@ class ConfigDialog(QtGui.QDialog):
             return
 
         self._dialog_apply_changes()
-        self.close()
+        self.accept()
 
     def _dialog_close_cancel(self):
         """ Close the dialog but don't save the changes. """
-        self.close()
+        self.reject()
 
     def _dialog_reset(self):
         """ Reset the value of all options to their default values. """
