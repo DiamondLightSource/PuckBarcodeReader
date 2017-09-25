@@ -92,13 +92,13 @@ class ConfigDialog(QtGui.QDialog):
         self._update_options_display()
 
     def _make_dialog_buttons(self):
-        """ Create the OK/Cancel/Apply/Reset buttons. """
+        """ Create the OK/Cancel/Reset buttons. """
         btn_cancel = QtGui.QPushButton("Cancel")
         btn_cancel.pressed.connect(self._dialog_close_cancel)
         btn_ok = QtGui.QPushButton("OK")
         btn_ok.pressed.connect(self._dialog_close_ok)
-        btn_apply = QtGui.QPushButton("Apply")
-        btn_apply.pressed.connect(self._dialog_apply_changes)
+        # btn_apply = QtGui.QPushButton("Apply")
+        # btn_apply.pressed.connect(self._dialog_apply_changes)
         btn_reset = QtGui.QPushButton("Reset All")
         btn_reset.pressed.connect(self._dialog_reset)
 
@@ -106,7 +106,7 @@ class ConfigDialog(QtGui.QDialog):
         hbox.addStretch(1)
         hbox.addWidget(btn_ok)
         hbox.addWidget(btn_cancel)
-        hbox.addWidget(btn_apply)
+        # hbox.addWidget(btn_apply)
         hbox.addWidget(btn_reset)
         hbox.addStretch(1)
 
@@ -133,12 +133,6 @@ class ConfigDialog(QtGui.QDialog):
     def _dialog_apply_changes(self):
         """ Save the current state of the options in the dialog to their backing ConfigItem objects. """
         for control in self._config_controls:
-            control.before_apply()
-
-        if not self._all_changes_confirmed():
-            return
-
-        for control in self._config_controls:
             control.save_to_config()
 
         self._config.save_to_file()
@@ -146,6 +140,12 @@ class ConfigDialog(QtGui.QDialog):
 
     def _dialog_close_ok(self):
         """ Apply and save any changes and close the dialog. """
+        for control in self._config_controls:
+            control.before_apply()
+
+        if not self._all_changes_confirmed():
+            return
+
         self._dialog_apply_changes()
         self.close()
 
