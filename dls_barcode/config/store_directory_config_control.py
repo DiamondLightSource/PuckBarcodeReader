@@ -16,7 +16,7 @@ class StoreDirectoryConfigControl(DirectoryConfigControl):
         if os.path.abspath(new_dir) == os.path.abspath(current_dir):
             return
 
-        confirm_msg = "The Startup Store Directory was changed from " + current_dir + " to " + new_dir + ".\n\n"\
+        confirm_msg = "The Startup Store Directory was changed from " + current_dir + " to\n" + new_dir + ".\n\n"\
             "This change will only take effect at the next startup."
         reply = QtGui.QMessageBox.question(self, 'Startup Store Directory',
                                            confirm_msg, QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)

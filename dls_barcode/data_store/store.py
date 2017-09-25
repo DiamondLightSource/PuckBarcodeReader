@@ -15,9 +15,9 @@ class Store:
         """
         self._options = options
         self._directory = directory
-        self._file = directory + "store.txt"
-        self._csv_file = directory + "store.csv"
-        self._img_dir = directory + "/img_dir/"
+        self._file = os.path.join(directory, "store.txt")
+        self._csv_file = os.path.join(directory, "store.csv")
+        self._img_dir = os.path.join(directory, "img_dir")
 
         if not os.path.exists(self._img_dir):
             os.makedirs(self._img_dir)
@@ -59,7 +59,7 @@ class Store:
         """ Add a new record to the store and save to the backing file.
         """
         guid = str(uuid.uuid4())
-        filename = os.path.abspath(self._img_dir + guid + '.png')
+        filename = os.path.abspath(os.path.join(self._img_dir, guid + '.png'))
         cv_img.save_as(filename)
 
         record = Record.from_plate(plate, second_plate, filename)

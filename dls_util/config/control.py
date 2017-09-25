@@ -162,7 +162,7 @@ class DirectoryConfigControl(ConfigControl):
         self._config_item.set(self._txt_dir.text())
 
     def _open_directory(self):
-        directory = QtGui.QFileDialog.getExistingDirectory(self, 'Select a Directory')
+        directory = QtGui.QFileDialog.getExistingDirectory(self, 'Select a Directory', self._txt_dir.text())
         if directory:
             self._txt_dir.setText(directory)
 
