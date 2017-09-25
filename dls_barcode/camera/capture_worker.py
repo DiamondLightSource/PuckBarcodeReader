@@ -44,7 +44,7 @@ class CaptureWorker:
         # Flush the queues again - sometimes there is a race condition which I don't quite understand, and the flush
         # done after the STOP command is not complete and leaves the process hanging. It's important that there is a
         # tiny delay before doing this
-        time.sleep(0.2)
+        time.sleep(0.3)
         self._flush_queue(task_queue)
         self._flush_queue(view_queue)
         print("- capture all cleaned")
