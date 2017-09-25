@@ -126,8 +126,18 @@ class ConfigDialog(QtGui.QDialog):
         for control in self._config_controls:
             control.update_from_config()
 
+    def _all_changes_confirmed(self):
+        """ Confirm that the user is happy with all changes. """
+        return all(ctrl.is_confirmed for ctrl in self._config_controls)
+
     def _dialog_apply_changes(self):
-        """ Save the current state of the options in the dialog to their backing ConfigItem objects"""
+        """ Save the current state of the options in the dialog to their backing ConfigItem objects. """
+        for control in self._config_controls:
+            control.before_apply()
+
+        if not self._all_changes_confirmed():
+            return
+
         for control in self._config_controls:
             control.save_to_config()
 

@@ -1,7 +1,6 @@
-
-
 from dls_util.config import ConfigDialog
 from .camera_config_control import CameraConfigControl
+from .store_directory_config_control import StoreDirectoryConfigControl
 
 
 class BarcodeConfigDialog(ConfigDialog):
@@ -48,7 +47,7 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.image_crop)
 
         self.start_group("Store")
-        add(cfg.store_directory)
+        self._add_control(StoreDirectoryConfigControl(cfg.store_directory))
         add(cfg.store_capacity)
 
         self.start_group("Debug")

@@ -16,6 +16,7 @@ class ConfigControl(QWidget):
     def __init__(self, item):
         super(ConfigControl, self).__init__()
         self._config_item = item
+        self.is_confirmed = True
         self.setContentsMargins(0, 0, 0, 0)
 
     def update_from_config(self):
@@ -24,6 +25,10 @@ class ConfigControl(QWidget):
 
     def save_to_config(self):
         """ Set the value of the ConfigItem to that displayed in this control. """
+        pass
+
+    def before_apply(self):
+        """ A hook for something to run before any config changes are applied """
         pass
 
 
