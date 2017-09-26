@@ -91,7 +91,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
         live_action.setStatusTip('Capture continuously from camera')
-        live_action.triggered.connect(self._camera_switch.restart_live_capture_from_side)
+        live_action.triggered.connect(self._on_scan_menu_clicked)
 
         # Exit Application
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -104,7 +104,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Options', self)
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
-        options_action.triggered.connect(self._open_options_dialog_from_menu)
+        options_action.triggered.connect(self._on_options_menu_clicked)
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -117,7 +117,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         option_menu = menu_bar.addMenu('&Option')
         option_menu.addAction(options_action)
 
-    def _open_options_dialog_from_menu(self):
+    def _on_scan_menu_clicked(self):
+        print("MAIN: Scan menu clicked")
+        self._camera_switch.restart_live_capture_from_side()
+
+    def _on_options_menu_clicked(self):
         result_ok = self._open_options_dialog()
         if result_ok:
             self._on_options_changed()
@@ -154,7 +158,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 image = self._view_queue.get(False)
                 self.imageFrame.display_puck_image(image)
             except queue.Empty:
-                print("MAIN: Empty view queue error occured - skipping")
+                pass
 
     def _read_scan_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
