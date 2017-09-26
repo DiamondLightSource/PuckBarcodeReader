@@ -64,9 +64,8 @@ class Config:
 
     def save_to_file(self):
         """ Save the current options to the config file specified in the constructor. """
-        if self._items:
-            string_items = [i.to_file_string() for i in self._items]
-            self._file_manager.write_lines(self._file, string_items)
+        string_items = [i.to_file_string() for i in self._items]
+        self._file_manager.write_lines(self._file, string_items)
 
     def _load_from_file(self, file):
         """ Load options from the config file specified in the constructor. """

@@ -48,7 +48,6 @@ class CameraScanner:
         self._view_q = view_queue
 
         self._config = config
-
         self._camera_configs = {CameraPosition.SIDE: self._config.get_side_camera_config(),
                                 CameraPosition.TOP: self._config.get_top_camera_config()}
 
@@ -154,7 +153,6 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
     SlotScanner.DEBUG = config.slot_images.value()
     SlotScanner.DEBUG_DIR = config.slot_image_directory.value()
 
-    # TODO: just check for the enum
     if cam_position == CameraPosition.SIDE:
         plate_type = "None"
         barcode_sizes = DataMatrix.DEFAULT_SIDE_SIZES
