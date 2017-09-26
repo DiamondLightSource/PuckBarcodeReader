@@ -41,19 +41,12 @@ class CaptureWorker:
         for _, stream in self._streams.items():
             stream.release_resources()
 
-        # Flush the queues again - sometimes there is a race condition which I don't quite understand, and the flush
-        # done after the STOP command is not complete and leaves the process hanging. It's important that this is done
-        # AFTER releasing the cameras, so there is a little delay from the previous flushes
-        self._flush_queue(task_queue)
-        self._flush_queue(view_queue)
         print("- capture all cleaned")
 
     def _run_capture(self, stream, task_queue, view_queue, overlay_queue, stop_queue):
         # Store the latest image overlay which highlights the puck
         latest_overlay = Overlay(0)
         last_time = time.time()
-
-        # Sometimes there is a race condition where we can still get
 
         display = True
         while stop_queue.empty():
@@ -76,9 +69,8 @@ class CaptureWorker:
                 try:
                     latest_overlay = overlay_queue.get(False)
                 except queue.Empty:
-                    # Race condition where the scanner worker has stopped and cleared the overlay queue between
-                    # our check for empty and call to queue.get(False)
-                    print("- CAPTURE: Empty overlay queue error occured - using default overlay")
+                    # Race condition where the scanner worker was stopped and the overlay queue cleared between
+                    # our calls to queue.empty() and queue.get(False)
                     latest_overlay = Overlay(0)
 
             # Draw the overlay on the frame
@@ -103,4 +95,4 @@ class CaptureWorker:
             try:
                 q.get(False)
             except queue.Empty:
-                print("- CAPTURE: Empty queue error occured - skipping")
+                pass

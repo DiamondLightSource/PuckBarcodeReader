@@ -2,6 +2,7 @@ from __future__ import division
 
 import multiprocessing
 import time
+import queue
 
 from dls_util.image import Image, Color
 from dls_util import Beeper
@@ -71,13 +72,7 @@ class CameraScanner:
 
     def stop_scan(self):
         print("\nMAIN: Stop triggered")
-        if self._scanner_process is not None:
-            self._scanner_kill_q.put(None)
-            self._scanner_process.join()
-            self._flush_queue(self._scanner_kill_q)
-            self._scanner_process = None
-            print("MAIN: scanner rejoined")
-
+        self._terminate_scanner_process()
         self._capture_command_q.put(CaptureCommand(StreamAction.STOP))
         print("MAIN: Stop completed")
 
@@ -86,12 +81,54 @@ class CameraScanner:
         print("MAIN: Kill")
         self.stop_scan()
         self._capture_kill_q.put(None)
+        print("MAIN: forcing capture cleanup")
+        self._process_cleanup(self._capture_process, [self._task_q, self._view_q])
         self._capture_process.join()
         print("MAIN: KILL COMPLETED")
 
     def _flush_queue(self, queue):
         while not queue.empty():
             queue.get()
+
+    def _terminate_scanner_process(self):
+        if self._scanner_process is not None:
+            self._scanner_kill_q.put(None)
+            print("MAIN: forcing scanner cleanup")
+            self._process_cleanup(self._scanner_process, [self._result_q, self._overlay_q])
+            self._scanner_process.join()
+            self._flush_queue(self._scanner_kill_q)
+            self._scanner_process = None
+            print("MAIN: scanner rejoined")
+
+    def _process_cleanup(self, process, queues):
+        """ A sub-process that writes to a queue can't terminate if the queue is not empty.
+            I have tried letting the sub-processes empty the queues by relying on queue.empty() but this method
+            may indicate that a queue is empty when in fact it's not, and the processes can't terminate!
+            Here we keep trying to empty the queues until the process is dead.
+            This was adapted from:
+            https://stackoverflow.com/questions/31708646/process-join-and-queue-dont-work-with-large-numbers
+        """
+        # Put the process in a list so we don't need to check is_alive() every time - supposed to perform better
+        live_processes = [process]
+        display = True
+        while live_processes:
+            if display:
+                print("MAIN: sub-process still alive")
+                display = False
+
+            for q in queues:
+                try:
+                    while True:
+                        q.get(False)
+                except queue.Empty:
+                    pass
+
+            if not all(q.empty() for q in queues):
+                continue
+
+            live_processes = [p for p in live_processes if p.is_alive()]
+
+        print("MAIN: sub-process terminated!")
 
 
 def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_queue, camera_configs):
@@ -171,14 +208,6 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
             if time_since_plate > NO_PUCK_TIME:
                 overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
 
-    # Flush the queues for which this process is a writer
-    while not result_queue.empty():
-        result_queue.get()
-    print("--- scanner result Q flushed")
-
-    while not overlay_queue.empty():
-        overlay_queue.get()
-    print("--- scanner overlay Q flushed")
     print("SCANNER stop & kill")
 
 
