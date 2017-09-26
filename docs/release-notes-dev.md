@@ -11,6 +11,7 @@ Changes merged into master
 | I04_1-166 | [#22](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/22) | Minor | Timestamp in csv file is human readable |
 | I04_1-147 | [#24](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/24) | Minor | Cameras initialised only once, switching streams |
 | I04_1-151 | [#21](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/21) | Minor | Popup tells user that Store dir changes only apply at startup |
+| I04_1-171 | [#27](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/27) | Patch | Improve termination of ghost subprocesses |
 
 Change Types:
 * Major - Backward incompatible change
