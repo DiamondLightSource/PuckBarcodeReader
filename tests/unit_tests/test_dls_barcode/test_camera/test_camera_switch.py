@@ -13,7 +13,7 @@ class TestCameraSwitch(unittest.TestCase):
 
     def setUp(self):
         self._mock_scanner = MagicMock()
-        self._mock_config = MagicMock()
+        self._mock_timeout = MagicMock()
         self._mock_camera_config = MagicMock()
 
         self._list_of_calls = []
@@ -87,7 +87,7 @@ class TestCameraSwitch(unittest.TestCase):
         switch.restart_live_capture_from_side()
 
         # Assert
-        self._mock_scanner.start_scan.assert_called_once_with(CameraPosition.SIDE, self._mock_config)
+        self._mock_scanner.start_scan.assert_called_once_with(CameraPosition.SIDE)
 
     def test_when_restarting_capture_from_top_then_stream_is_stopped_before_being_started(self):
         # Arrange
@@ -124,12 +124,12 @@ class TestCameraSwitch(unittest.TestCase):
         switch.restart_live_capture_from_top()
 
         # Assert
-        self._mock_scanner.start_scan.assert_called_once_with(CameraPosition.TOP, self._mock_config)
+        self._mock_scanner.start_scan.assert_called_once_with(CameraPosition.TOP)
 
     def test_when_restarting_capture_from_top_then_timeout_is_checked(self):
         # Arrange
         timeout = TIMEOUT # s
-        self._mock_config.top_camera_timeout.value.return_value = timeout
+        self._mock_timeout.value.return_value = timeout
         switch = self._create_switch()
 
         # Act
@@ -143,7 +143,7 @@ class TestCameraSwitch(unittest.TestCase):
     def test_when_restarting_capture_from_side_then_timeout_is_not_checked(self):
         # Arrange
         timeout = TIMEOUT # s
-        self._mock_config.top_camera_timeout.value.return_value = timeout
+        self._mock_timeout.value.return_value = timeout
         switch = self._create_switch()
 
         # Act
@@ -157,7 +157,7 @@ class TestCameraSwitch(unittest.TestCase):
     def test_given_capture_started_from_top_when_capture_is_stopped_then_timeout_is_not_checked(self):
         # Arrange
         timeout = TIMEOUT # s
-        self._mock_config.top_camera_timeout.value.return_value = timeout
+        self._mock_timeout.value.return_value = timeout
         switch = self._create_switch()
         switch.restart_live_capture_from_top()
 
@@ -169,9 +169,9 @@ class TestCameraSwitch(unittest.TestCase):
         self.assertFalse(switch.is_top_scan_timeout())
 
     def _create_switch(self):
-        return CameraSwitch(self._mock_scanner, self._mock_config)
+        return CameraSwitch(self._mock_scanner, self._mock_timeout)
 
-    def _stream_start_side_effect(self, unused1, unused2):
+    def _stream_start_side_effect(self, unused):
         self._list_of_calls.append(START)
 
     def _stream_stop_side_effect(self):
