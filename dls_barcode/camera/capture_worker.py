@@ -85,9 +85,9 @@ class CaptureWorker:
         print("--- capture view Q flushed")
 
     def _initialise_stream(self, camera_config):
-        cam_number = camera_config[0].value()
-        width = camera_config[1].value()
-        height = camera_config[2].value()
+        cam_number = camera_config.camera_number.value()
+        width = camera_config.width.value()
+        height = camera_config.height.value()
         return CameraStream(cam_number, width, height)
 
     def _flush_queue(self, q):

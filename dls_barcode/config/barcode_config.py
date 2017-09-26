@@ -6,6 +6,7 @@ from dls_barcode.datamatrix.read import DatamatrixSizeTable
 from dls_util.image import Color
 from dls_util.config import Config, DirectoryConfigItem, ColorConfigItem, \
     IntConfigItem, BoolConfigItem, EnumConfigItem
+from .camera_config import CameraConfig
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
 
@@ -47,6 +48,14 @@ class BarcodeConfig(Config):
         self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)
         self.slot_image_directory = add(DirectoryConfigItem, "Debug Directory", default="../debug-output/")
 
+        self.top_camera_number = add(IntConfigItem, "Top Camera Number", default=1)
+        self.top_camera_width = add(IntConfigItem, "Top Camera Width", default=1600)
+        self.top_camera_height = add(IntConfigItem, "Top Camera Height", default=1200)
+
+        self.side_camera_number = add(IntConfigItem, "Side Camera Number", default=2)
+        self.side_camera_width = add(IntConfigItem, "Side Camera Width", default=1600)
+        self.side_camera_height = add(IntConfigItem, "Side Camera Height", default=1200)
+
         self.initialize_from_file()
 
     def col_ok(self):
@@ -57,6 +66,12 @@ class BarcodeConfig(Config):
 
     def col_empty(self):
         return self.color_empty.value()
+
+    def get_top_camera_config(self):
+        return CameraConfig(self.top_camera_number, self.top_camera_width, self.top_camera_height)
+
+    def get_side_camera_config(self):
+        return CameraConfig(self.side_camera_number, self.side_camera_width, self.side_camera_height)
 
 
 

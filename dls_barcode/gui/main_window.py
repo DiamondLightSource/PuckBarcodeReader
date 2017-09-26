@@ -3,7 +3,7 @@ import queue
 
 from PyQt4 import QtGui, QtCore
 
-from dls_barcode.config import BarcodeConfig, CameraConfig, BarcodeConfigDialog
+from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
 from dls_barcode.camera import CameraScanner, CameraSwitch
 from dls_util import Beeper
 from .barcode_table import BarcodeTable
@@ -18,7 +18,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         super(DiamondBarcodeMainWindow, self).__init__()
 
         self._config = BarcodeConfig(config_file)
-        self._camera_config = CameraConfig(config_file)
 
         # UI elements
         self.recordTable = None
@@ -127,7 +126,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._on_options_changed()
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config, self._camera_config) # pass the object here and trigger when the button is pressed
+        dialog = BarcodeConfigDialog(self._config) # pass the object here and trigger when the button is pressed
         result_ok = dialog.exec_()
         return result_ok
 
@@ -141,8 +140,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._camera_scanner.kill()
 
     def _initialise_scanner(self):
-        self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._camera_config)
-        self._camera_switch = CameraSwitch(self._camera_scanner, self._config)
+        self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._config)
+        self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
 
     def _on_options_changed(self):
         self._cleanup()

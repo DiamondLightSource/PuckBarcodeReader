@@ -33,7 +33,7 @@ class CameraScanner:
     Two separate processes are spawned, one to handle capturing and displaying images from the cameras,
     and the other to handle processing (scanning) of those images.
     """
-    def __init__(self, result_queue, view_queue, camera_config):
+    def __init__(self, result_queue, view_queue, config):
         """ The task queue is used to store a queue of captured frames to be processed; the overlay
         queue stores Overlay objects which are drawn on to the image displayed to the user to highlight
         certain features; and the result queue is used to pass on the results of successful scans to
@@ -47,8 +47,10 @@ class CameraScanner:
         self._result_q = result_queue
         self._view_q = view_queue
 
-        self._camera_configs = {CameraPosition.SIDE: camera_config.getSideCameraConfig(),
-                          CameraPosition.TOP: camera_config.getPuckCameraConfig()}
+        self._config = config
+
+        self._camera_configs = {CameraPosition.SIDE: self._config.get_side_camera_config(),
+                                CameraPosition.TOP: self._config.get_top_camera_config()}
 
         capture_args = (self._task_q, self._view_q, self._overlay_q, self._capture_command_q, self._capture_kill_q,
                         self._camera_configs)
@@ -59,11 +61,11 @@ class CameraScanner:
 
         self._scanner_process = None
 
-    def start_scan(self, cam_position, config):
+    def start_scan(self, cam_position):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
         print("\nMAIN: start triggered")
-        scanner_args = (self._task_q, self._overlay_q, self._result_q, self._scanner_kill_q, config,
+        scanner_args = (self._task_q, self._overlay_q, self._result_q, self._scanner_kill_q, self._config,
                         self._camera_configs[cam_position])
         self._scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
@@ -153,7 +155,8 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
     SlotScanner.DEBUG = config.slot_images.value()
     SlotScanner.DEBUG_DIR = config.slot_image_directory.value()
 
-    if ("Side" in camera_config[0]._tag):
+    # TODO: just check for the enum
+    if ("Side" in camera_config.camera_number._tag):
         # Side camera
         plate_type = "None"
         barcode_sizes = DataMatrix.DEFAULT_SIDE_SIZES
