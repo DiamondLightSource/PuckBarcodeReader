@@ -10,11 +10,11 @@ class CameraConfigControl(ConfigControl):
     RES_TEXT_WIDTH = 50
     BUTTON_WIDTH = 100
 
-    def __init__(self, number_width_height):
-        ConfigControl.__init__(self, number_width_height[1])
-        self._number_item = number_width_height[0]
-        self._width_item = number_width_height[1]
-        self._height_item = number_width_height[2]
+    def __init__(self, camera_config):
+        ConfigControl.__init__(self, camera_config)
+        self._number_item = camera_config.camera_number
+        self._width_item = camera_config.width
+        self._height_item = camera_config.height
         self._init_ui()
 
     def _init_ui(self):

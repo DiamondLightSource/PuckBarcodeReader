@@ -3,9 +3,10 @@ import queue
 
 from PyQt4 import QtGui, QtCore
 
-from dls_barcode.config import BarcodeConfig, CameraConfig, BarcodeConfigDialog
+from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
 from dls_barcode.camera import CameraScanner, CameraSwitch
 from dls_util import Beeper
+from dls_util.file import FileManager
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
@@ -17,8 +18,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def __init__(self, config_file):
         super(DiamondBarcodeMainWindow, self).__init__()
 
-        self._config = BarcodeConfig(config_file)
-        self._camera_config = CameraConfig(config_file)
+        self._config = BarcodeConfig(config_file, FileManager())
 
         # UI elements
         self.recordTable = None
@@ -26,12 +26,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.sideBarcodeWindow = None
         self.imageFrame = None
 
+        self._init_ui()
+
         # Queue that holds new results generated in continuous scanning mode
         self._scan_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
         self._initialise_scanner()
-
-        self._init_ui()
 
         # Timer that controls how often new scan results are looked for
         self._result_timer = QtCore.QTimer()
@@ -123,11 +123,15 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _on_options_menu_clicked(self):
         result_ok = self._open_options_dialog()
-        if result_ok:
-            self._on_options_changed()
+        if not result_ok:
+            return
+
+        self._cleanup()
+        self._initialise_scanner()
+        self._camera_switch.restart_live_capture_from_side()
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config, self._camera_config) # pass the object here and trigger when the button is pressed
+        dialog = BarcodeConfigDialog(self._config) # pass the object here and trigger when the button is pressed
         result_ok = dialog.exec_()
         return result_ok
 
@@ -141,13 +145,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._camera_scanner.kill()
 
     def _initialise_scanner(self):
-        self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._camera_config)
-        self._camera_switch = CameraSwitch(self._camera_scanner, self._config)
-
-    def _on_options_changed(self):
-        self._cleanup()
-        self._initialise_scanner()
-        self._camera_switch.restart_live_capture_from_side()
+        self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._config)
+        self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
 
     def on_record_table_clicked(self):
         self._camera_switch.stop_live_capture()

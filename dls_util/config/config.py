@@ -1,13 +1,11 @@
-import os
-
 
 class Config:
     """ Class for making simple persistent config/options for a program. To use, you should subclass
     and call the add() method for each option to be added and then call the initialize_from_file()
     method to load the saved options from the specified config file:
         >>> class MyConfig(Config):
-        >>>     def __init__(self, file):
-        >>>         Config.__init__(self, file)
+        >>>     def __init__(self, file, file_manager):
+        >>>         Config.__init__(self, file, file_manager)
         >>>
         >>>         self.int_option1 = self.add(IntConfigItem, "Int Option", default=35)
         >>>         self.dir_option1 = self.add(DirectoryConfigItem, "Dir Option", default="../my_dir/")
@@ -27,8 +25,9 @@ class Config:
 
     DELIMITER = "="
 
-    def __init__(self, file):
+    def __init__(self, file, file_manager):
         self._file = file
+        self._file_manager = file_manager
         self._items = []
 
     def initialize_from_file(self):
@@ -36,6 +35,10 @@ class Config:
         the relevant ConfigItems hasve been set up by adding them with add(). """
         self.reset_all()
         self._load_from_file(self._file)
+
+    def get_items(self):
+        # Used in unit tests
+        return self._items
 
     def add(self, cls, tag, default, extra_arg=None):
         """ Add a new option of a specified type to this config.
@@ -61,23 +64,21 @@ class Config:
 
     def save_to_file(self):
         """ Save the current options to the config file specified in the constructor. """
-        with open(self._file, 'w') as f:
-            for item in self._items:
-                f.write(item.to_file_string())
+        string_items = [i.to_file_string() for i in self._items]
+        self._file_manager.write_lines(self._file, string_items)
 
     def _load_from_file(self, file):
         """ Load options from the config file specified in the constructor. """
-        if not os.path.isfile(file):
+        if not self._file_manager.exists(file):
             self.save_to_file()
             return
 
-        with open(file) as f:
-            lines = f.readlines()
-            for line in lines:
-                try:
-                    self._parse_line(line)
-                except ValueError:
-                    pass
+        lines = self._file_manager.read_lines(file)
+        for line in lines:
+            try:
+                self._parse_line(line)
+            except ValueError:
+                pass
 
     def _parse_line(self, line):
         """ Parse a line from a config file, setting the value of the relevant option. """
