@@ -69,8 +69,8 @@ class CaptureWorker:
                 try:
                     latest_overlay = overlay_queue.get(False)
                 except queue.Empty:
-                    # Race condition where the scanner worker has stopped and cleared the overlay queue between
-                    # our check for empty and call to queue.get(False)
+                    # Race condition where the scanner worker was stopped and the overlay queue cleared between
+                    # our calls to queue.empty() and queue.get(False)
                     latest_overlay = Overlay(0)
 
             # Draw the overlay on the frame
