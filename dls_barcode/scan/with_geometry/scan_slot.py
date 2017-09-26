@@ -163,8 +163,8 @@ class SlotScanner:
         if not self.DEBUG:
             return
 
-        dir = self.DEBUG_DIR + prefix + "/"
+        dir = os.path.join(self.DEBUG_DIR, prefix)
         if not os.path.exists(dir):
             os.makedirs(dir)
-        filename = dir + prefix + "_" + str(time.time()) + "_slot_" + str(slotnum + 1) + ".png"
+        filename = os.path.join(dir, prefix + "_" + str(time.time()) + "_slot_" + str(slotnum + 1) + ".png")
         image.save_as(filename)

@@ -3,13 +3,13 @@ import queue
 
 from PyQt4 import QtGui, QtCore
 
-from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
-from dls_barcode.config.barcode_config import CameraConfig
+from dls_barcode.config import BarcodeConfig, CameraConfig, BarcodeConfigDialog
 from dls_barcode.camera import CameraScanner, CameraSwitch
 from dls_util import Beeper
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
+
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.
@@ -31,18 +31,18 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._view_queue = multiprocessing.Queue()
         self._initialise_scanner()
 
-        dialog = self._init_ui()
-        if not dialog.isVisible():
-            # Timer that controls how often new scan results are looked for
-            self._result_timer = QtCore.QTimer()
-            self._result_timer.timeout.connect(self._read_scan_queue)
-            self._result_timer.start(1000)
+        self._init_ui()
 
-            self._result_timer1 = QtCore.QTimer()
-            self._result_timer1.timeout.connect(self._read_view_queue)
-            self._result_timer1.start(1)
+        # Timer that controls how often new scan results are looked for
+        self._result_timer = QtCore.QTimer()
+        self._result_timer.timeout.connect(self._read_scan_queue)
+        self._result_timer.start(1000)
 
-            self._camera_switch.restart_live_capture_from_side()
+        self._result_timer1 = QtCore.QTimer()
+        self._result_timer1.timeout.connect(self._read_view_queue)
+        self._result_timer1.start(1)
+
+        self._camera_switch.restart_live_capture_from_side()
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
@@ -64,7 +64,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # Open options first to make sure the cameras are set up correctly.
         # Start live capture of the side as soon as the dialog box is closed
-        dialog = self._open_options_dialog()
+        self._open_options_dialog()
 
         # Create layout
         hbox = QtGui.QHBoxLayout()
@@ -83,7 +83,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.setCentralWidget(main_widget)
 
         self.show()
-        return dialog
 
     def init_menu_bar(self):
         """Create and populate the menu bar.
@@ -105,8 +104,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Options', self)
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
-        options_action.triggered.connect(self._open_options_dialog)
-        options_action.triggered.connect(self._on_options_changed)  # find a better way of doing this
+        options_action.triggered.connect(self._open_options_dialog_from_menu)
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -119,10 +117,15 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         option_menu = menu_bar.addMenu('&Option')
         option_menu.addAction(options_action)
 
+    def _open_options_dialog_from_menu(self):
+        result_ok = self._open_options_dialog()
+        if result_ok:
+            self._on_options_changed()
+
     def _open_options_dialog(self):
         dialog = BarcodeConfigDialog(self._config, self._camera_config) # pass the object here and trigger when the button is pressed
-        dialog.exec_()
-        return dialog
+        result_ok = dialog.exec_()
+        return result_ok
 
     def closeEvent(self, event):
         """This overrides the method from the base class.

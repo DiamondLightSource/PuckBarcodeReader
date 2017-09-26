@@ -1,6 +1,3 @@
-import os
-import sys
-
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QLabel, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QWidget, QCheckBox, QComboBox
 
@@ -11,11 +8,12 @@ class ConfigControl(QWidget):
     """ Base class for config controls. When subclassing, be sure to implement both update_from_config()
     and save_to_config().
     """
-    LABEL_WIDTH = 110
+    LABEL_WIDTH = 115
 
     def __init__(self, item):
         super(ConfigControl, self).__init__()
         self._config_item = item
+        self.is_confirmed = True
         self.setContentsMargins(0, 0, 0, 0)
 
     def update_from_config(self):
@@ -24,6 +22,10 @@ class ConfigControl(QWidget):
 
     def save_to_config(self):
         """ Set the value of the ConfigItem to that displayed in this control. """
+        pass
+
+    def before_apply(self):
+        """ A hook for something to run before any config changes are applied """
         pass
 
 
@@ -136,12 +138,12 @@ class DirectoryConfigControl(ConfigControl):
 
     def _init_ui(self):
         self._txt_dir = QLineEdit()
-        self._txt_dir.setFixedWidth(self.TEXT_WIDTH)
+        self._txt_dir.setMinimumWidth(self.TEXT_WIDTH)
 
         lbl_dir = QLabel(self._config_item.tag())
         lbl_dir.setFixedWidth(self.LABEL_WIDTH)
 
-        btn_show = QPushButton('View Files')
+        btn_show = QPushButton('Browse...')
         btn_show.setFixedWidth(self.BUTTON_WIDTH)
         btn_show.clicked.connect(self._open_directory)
 
@@ -150,7 +152,6 @@ class DirectoryConfigControl(ConfigControl):
         hbox.addWidget(lbl_dir)
         hbox.addWidget(self._txt_dir)
         hbox.addWidget(btn_show)
-        hbox.addStretch()
 
         self.setLayout(hbox)
 
@@ -161,16 +162,9 @@ class DirectoryConfigControl(ConfigControl):
         self._config_item.set(self._txt_dir.text())
 
     def _open_directory(self):
-        path = self._txt_dir.text()
-        path = os.path.abspath(path)
-
-        if sys.platform == 'win32':
-            try:
-                os.startfile(path)
-            except OSError:
-                QMessageBox.critical(self, "File Error", "Unable to find directory: '{}".format(path))
-        else:
-            QMessageBox.critical(self, "File Error", "Only available on Windows")
+        directory = QtGui.QFileDialog.getExistingDirectory(self, 'Select a Directory', self._txt_dir.text())
+        if directory:
+            self._txt_dir.setText(directory)
 
 
 class ColorConfigControl(ConfigControl):
