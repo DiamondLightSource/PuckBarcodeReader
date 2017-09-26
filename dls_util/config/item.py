@@ -82,8 +82,6 @@ class DirectoryConfigItem(ConfigItem):
 
     def _clean(self, value):
         value = str(value).strip()
-        # if not value.endswith("/"):
-        #     value += "/"
         return value
 
 

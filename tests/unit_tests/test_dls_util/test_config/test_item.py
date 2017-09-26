@@ -121,21 +121,21 @@ class TestConfigItem(unittest.TestCase):
 
 class TestDirectoryConfigItem(unittest.TestCase):
 
-    def test_from_file_string_sets_value_as_string_finished_with_slash(self):
+    def test_from_file_string_sets_value_as_stripped_string(self):
         item = DirectoryConfigItem("test_int", 15)
-        item.from_file_string("20")
-        self.assertEquals(item.value(), "20/")
+        item.from_file_string("  20 ")
+        self.assertEquals(item.value(), "20")
 
         item = DirectoryConfigItem("test_int", 15)
         item.from_file_string(20)
-        self.assertEquals(item.value(), "20/")
+        self.assertEquals(item.value(), "20")
 
         item = DirectoryConfigItem("test_int", 15)
         item.from_file_string("test")
-        self.assertEquals(item.value(), "test/")
+        self.assertEquals(item.value(), "test")
 
         item = DirectoryConfigItem("test_int", 15)
-        item.from_file_string("test/")
+        item.from_file_string("test/  ")
         self.assertEquals(item.value(), "test/")
 
 class TestBoolConfigItem(unittest.TestCase):
