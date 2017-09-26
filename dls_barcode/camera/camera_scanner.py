@@ -65,8 +65,7 @@ class CameraScanner:
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
         print("\nMAIN: start triggered")
-        scanner_args = (self._task_q, self._overlay_q, self._result_q, self._scanner_kill_q, self._config,
-                        self._camera_configs[cam_position])
+        scanner_args = (self._task_q, self._overlay_q, self._result_q, self._scanner_kill_q, self._config, cam_position)
         self._scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
         self._capture_command_q.put(CaptureCommand(StreamAction.START, cam_position))
@@ -140,7 +139,7 @@ def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_q
     worker.run(task_queue, view_queue, overlay_queue, command_queue, kill_queue)
 
 
-def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config, camera_config):
+def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config, cam_position):
     """ Function used as the main loop of a worker process. Scan images for barcodes,
     combining partial scans until a full puck is reached.
 
@@ -156,12 +155,10 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
     SlotScanner.DEBUG_DIR = config.slot_image_directory.value()
 
     # TODO: just check for the enum
-    if ("Side" in camera_config.camera_number._tag):
-        # Side camera
+    if cam_position == CameraPosition.SIDE:
         plate_type = "None"
         barcode_sizes = DataMatrix.DEFAULT_SIDE_SIZES
     else:
-        # Top camera
         plate_type = config.plate_type.value()
         barcode_sizes = [config.top_barcode_size.value()]
 
@@ -202,7 +199,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
                 overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
             elif scan_result.any_valid_barcodes():
                 overlay_queue.put(PlateOverlay(plate, config))
-                _plate_beep(plate, config)
+                _plate_beep(plate, config.scan_beep.value())
 
             if scan_result.any_new_barcodes():
                 result_queue.put((plate, image))
@@ -214,8 +211,8 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
     print("SCANNER stop & kill")
 
 
-def _plate_beep(plate, options):
-    if not options.scan_beep.value():
+def _plate_beep(plate, do_beep):
+    if not do_beep:
         return
 
     empty_fraction = (plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots
