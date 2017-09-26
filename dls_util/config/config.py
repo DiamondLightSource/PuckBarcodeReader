@@ -1,5 +1,3 @@
-import os
-from dls_util.file import FileManager
 
 class Config:
     """ Class for making simple persistent config/options for a program. To use, you should subclass
