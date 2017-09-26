@@ -12,6 +12,7 @@ Changes merged into master
 | I04_1-147 | [#24](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/24) | Minor | Cameras initialised only once, switching streams |
 | I04_1-151 | [#21](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/21) | Minor | Popup tells user that Store dir changes only apply at startup |
 | I04_1-171 | [#27](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/27) | Patch | Improve termination of ghost subprocesses |
+| I04_1-153 | [#29](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/29) | Patch | Camera config saved |
 
 Change Types:
 * Major - Backward incompatible change
