@@ -10,11 +10,12 @@ class CameraConfigControl(ConfigControl):
     RES_TEXT_WIDTH = 50
     BUTTON_WIDTH = 100
 
-    def __init__(self, camera_config):
+    def __init__(self, camera_config, to_run_before_test_camera):
         ConfigControl.__init__(self, camera_config)
         self._number_item = camera_config.camera_number
         self._width_item = camera_config.width
         self._height_item = camera_config.height
+        self._to_run_before_test_camera = to_run_before_test_camera
         self._init_ui()
 
     def _init_ui(self):
@@ -94,6 +95,8 @@ class CameraConfigControl(ConfigControl):
         else:
             width_flag = cv2.CAP_PROP_FRAME_WIDTH
             height_flag = cv2.CAP_PROP_FRAME_HEIGHT
+
+        self._to_run_before_test_camera()
 
         cap = cv2.VideoCapture(camera_num)
         cap.set(width_flag, camera_width)

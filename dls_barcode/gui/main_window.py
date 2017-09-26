@@ -26,6 +26,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.sideBarcodeWindow = None
         self.imageFrame = None
 
+        # Scan elements
+        self._camera_scanner = None
+        self._camera_switch = None
+
         self._init_ui()
 
         # Queue that holds new results generated in continuous scanning mode
@@ -119,6 +123,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _on_scan_menu_clicked(self):
         print("MAIN: Scan menu clicked")
+        if self._camera_scanner is None:
+            self._initialise_scanner()
+
         self._camera_switch.restart_live_capture_from_side()
 
     def _on_options_menu_clicked(self):
@@ -131,7 +138,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._camera_switch.restart_live_capture_from_side()
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config) # pass the object here and trigger when the button is pressed
+        dialog = BarcodeConfigDialog(self._config, self._before_test_camera) # pass the object here and trigger when the button is pressed
         result_ok = dialog.exec_()
         return result_ok
 
@@ -142,14 +149,24 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         event.accept()
 
     def _cleanup(self):
+        if self._camera_scanner is None:
+            return
+
         self._camera_scanner.kill()
+        self._camera_scanner = None
+        self._camera_switch = None
 
     def _initialise_scanner(self):
         self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._config)
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
 
     def on_record_table_clicked(self):
-        self._camera_switch.stop_live_capture()
+        if self._camera_switch is not None:
+            self._camera_switch.stop_live_capture()
+
+    def _before_test_camera(self):
+        # We need to stop the cameras otherwise the Test Camera button won't be able to open them
+        self._cleanup()
 
     def _read_view_queue(self):
         if not self._view_queue.empty():
@@ -162,6 +179,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _read_scan_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
         """
+        if self._camera_switch is None:
+            return
+
         if self._camera_switch.is_side():
             self._read_side_scan()
         else:
