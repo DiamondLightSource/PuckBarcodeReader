@@ -25,12 +25,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.sideBarcodeWindow = None
         self.imageFrame = None
 
+        self._init_ui()
+
         # Queue that holds new results generated in continuous scanning mode
         self._scan_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
         self._initialise_scanner()
-
-        self._init_ui()
 
         # Timer that controls how often new scan results are looked for
         self._result_timer = QtCore.QTimer()
@@ -122,8 +122,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _on_options_menu_clicked(self):
         result_ok = self._open_options_dialog()
-        if result_ok:
-            self._on_options_changed()
+        if not result_ok:
+            return
+
+        self._cleanup()
+        self._initialise_scanner()
+        self._camera_switch.restart_live_capture_from_side()
 
     def _open_options_dialog(self):
         dialog = BarcodeConfigDialog(self._config) # pass the object here and trigger when the button is pressed
@@ -142,11 +146,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _initialise_scanner(self):
         self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._config)
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
-
-    def _on_options_changed(self):
-        self._cleanup()
-        self._initialise_scanner()
-        self._camera_switch.restart_live_capture_from_side()
 
     def on_record_table_clicked(self):
         self._camera_switch.stop_live_capture()
