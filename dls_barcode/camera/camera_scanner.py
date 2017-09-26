@@ -172,17 +172,13 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
                 overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
 
     # Flush the queues for which this process is a writer
-    for i in range(0, 2):
-        # Sometimes the queues are not really emptied at the first attempt and the process can't terminate
-        while not result_queue.empty():
-            result_queue.get()
-        print("--- scanner result Q flushed")
+    while not result_queue.empty():
+        result_queue.get()
+    print("--- scanner result Q flushed")
 
-        while not overlay_queue.empty():
-            overlay_queue.get()
-        print("--- scanner overlay Q flushed")
-        time.sleep(0.2)
-
+    while not overlay_queue.empty():
+        overlay_queue.get()
+    print("--- scanner overlay Q flushed")
     print("SCANNER stop & kill")
 
 
