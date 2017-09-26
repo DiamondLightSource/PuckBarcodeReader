@@ -101,12 +101,14 @@ class CameraScanner:
             print("MAIN: scanner rejoined")
 
     def _process_cleanup(self, process, queues):
-        """ Sometimes the processes don't clear the queues completely and they hang. This is because the queue.empty()
-            method may indicate that a queue is empty when in fact it's not. Here we keep trying to empty the queues
-            until the process is dead.
+        """ A sub-process that writes to a queue can't terminate if the queue is not empty.
+            I have tried letting the sub-processes empty the queues by relying on queue.empty() but this method
+            may indicate that a queue is empty when in fact it's not, and the processes can't terminate!
+            Here we keep trying to empty the queues until the process is dead.
             This was adapted from:
             https://stackoverflow.com/questions/31708646/process-join-and-queue-dont-work-with-large-numbers
         """
+        # Put the process in a list so we don't need to check is_alive() every time - supposed to perform better
         live_processes = [process]
         display = True
         while live_processes:
@@ -206,14 +208,6 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
             if time_since_plate > NO_PUCK_TIME:
                 overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
 
-    # Flush the queues for which this process is a writer
-    # while not result_queue.empty():
-    #     result_queue.get()
-    # print("--- scanner result Q flushed")
-    #
-    # while not overlay_queue.empty():
-    #     overlay_queue.get()
-    # print("--- scanner overlay Q flushed")
     print("SCANNER stop & kill")
 
 
