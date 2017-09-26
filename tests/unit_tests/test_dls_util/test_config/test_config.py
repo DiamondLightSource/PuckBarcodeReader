@@ -1,7 +1,6 @@
 import unittest
 import os
 
-from dls_barcode.config import BarcodeConfig
 from dls_util import Config, IntConfigItem
 
 
@@ -11,7 +10,6 @@ class TestConfig(unittest.TestCase):
         cof = Config('test_config.ini')
         items = cof._items
         self.assertEquals(len(items), 0)
-
 
     def test_add_adds_an_item_of_given_class_tag_and_default_to_list_of_items(self):
         conf = Config('test_config.ini')
@@ -31,7 +29,6 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(item._default, -1)
         self.assertEqual(item.units(), "m")
         self.assertEquals(item.value(), None)
-
 
     def test_reset_all_sets_value_of_all_items_to_default(self):
         conf = Config('test_config.ini')
@@ -74,7 +71,6 @@ class TestConfig(unittest.TestCase):
         self.assertTrue("Puck Camera Width=15" in lines[1])
         self.assertTrue("Puck Camera Height=3" in lines[2])
         os.remove(file)
-
 
     #TODO : load saves mixed - need to refactor it at some point
     def test_initialise_from_file_creates_new_file_if_the_given_does_not_exist(self):
