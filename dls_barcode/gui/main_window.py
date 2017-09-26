@@ -6,6 +6,7 @@ from PyQt4 import QtGui, QtCore
 from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
 from dls_barcode.camera import CameraScanner, CameraSwitch
 from dls_util import Beeper
+from dls_util.file import FileManager
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
@@ -17,7 +18,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def __init__(self, config_file):
         super(DiamondBarcodeMainWindow, self).__init__()
 
-        self._config = BarcodeConfig(config_file)
+        self._config = BarcodeConfig(config_file, FileManager())
 
         # UI elements
         self.recordTable = None

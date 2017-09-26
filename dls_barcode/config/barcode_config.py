@@ -15,8 +15,8 @@ class BarcodeConfig(Config):
     """ Handles configuration options that are used throughout the program. The values are persisted to file
     so that the same values are recalled when the program is restarted.
     """
-    def __init__(self, file):
-        Config.__init__(self, file)
+    def __init__(self, file, file_manager):
+        Config.__init__(self, file, file_manager)
 
         add = self.add
 
