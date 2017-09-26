@@ -1,7 +1,5 @@
 import unittest
 from mock import MagicMock
-import os
-
 from dls_util import Config, IntConfigItem
 
 
