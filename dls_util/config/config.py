@@ -38,6 +38,10 @@ class Config:
         self.reset_all()
         self._load_from_file(self._file)
 
+    def get_items(self):
+        # Used in unit tests
+        return self._items
+
     def add(self, cls, tag, default, extra_arg=None):
         """ Add a new option of a specified type to this config.
 
@@ -62,12 +66,13 @@ class Config:
 
     def save_to_file(self):
         """ Save the current options to the config file specified in the constructor. """
-        string_items = [i.to_file_string() for i in self._items]
-        self._file_manager.write_items(self._file, string_items)
+        if self._items:
+            string_items = [i.to_file_string() for i in self._items]
+            self._file_manager.write_lines(self._file, string_items)
 
     def _load_from_file(self, file):
         """ Load options from the config file specified in the constructor. """
-        if not os.path.isfile(file):
+        if not self._file_manager.exists(file):
             self.save_to_file()
             return
 
