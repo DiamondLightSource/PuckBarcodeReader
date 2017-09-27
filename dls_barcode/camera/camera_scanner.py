@@ -84,6 +84,7 @@ class CameraScanner:
         print("MAIN: forcing capture cleanup")
         self._process_cleanup(self._capture_process, [self._task_q, self._view_q])
         self._capture_process.join()
+        self._flush_queue(self._capture_kill_q)
         print("MAIN: KILL COMPLETED")
 
     def _flush_queue(self, queue):

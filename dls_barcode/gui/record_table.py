@@ -17,7 +17,7 @@ class ScanRecordTable(QGroupBox):
     """
     COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
-    def __init__(self, barcode_table, image_frame, options, main_window):
+    def __init__(self, barcode_table, image_frame, options, to_run_on_table_clicked):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
@@ -27,14 +27,12 @@ class ScanRecordTable(QGroupBox):
         self._barcodeTable = barcode_table
         self._imageFrame = image_frame
 
-        self.main_window = main_window
-
         self.setTitle("Scan Records")
-        self._init_ui()
+        self._init_ui(to_run_on_table_clicked)
 
         self._load_store_records()
 
-    def _init_ui(self):
+    def _init_ui(self, to_run_on_table_clicked):
         # Create record table - lists all the records in the store
         self._table = QTableWidget()
         self._table.setFixedWidth(440)
@@ -48,7 +46,7 @@ class ScanRecordTable(QGroupBox):
         self._table.setColumnWidth(4, 60)
         self._table.setColumnWidth(5, 60)
         self._table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self._table.cellPressed.connect(self.main_window.on_record_table_clicked)
+        self._table.cellPressed.connect(to_run_on_table_clicked)
         self._table.cellPressed.connect(self._record_selected)
 
         # Delete button - deletes selected records
@@ -79,7 +77,6 @@ class ScanRecordTable(QGroupBox):
         self._load_store_records()
         if self._options.scan_clipboard.value():
             self._barcodeTable.copy_selected_to_clipboard()
-
 
     def _load_store_records(self):
         """ Populate the record table with all of the records in the store.

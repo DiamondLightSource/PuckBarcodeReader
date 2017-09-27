@@ -7,20 +7,20 @@ class BarcodeConfigDialog(ConfigDialog):
     """ Dialog to edit the configuration options for the program. Provides a custom control for
     setting up the camera.
     """
-    def __init__(self, config):
+    def __init__(self, config, to_run_before_test_camera):
         ConfigDialog.__init__(self, config)
 
-        self._init_ui()
+        self._init_ui(to_run_before_test_camera)
         self.finalize_layout()
 
-    def _init_ui(self):
+    def _init_ui(self, to_run_before_test_camera):
         self.setGeometry(100, 100, 450, 400)
 
         cfg = self._config
         add = self.add_item
 
-        camera_top = CameraConfigControl(cfg.get_top_camera_config())
-        camera_side = CameraConfigControl(cfg.get_side_camera_config())
+        camera_top = CameraConfigControl(cfg.get_top_camera_config(), to_run_before_test_camera)
+        camera_side = CameraConfigControl(cfg.get_side_camera_config(), to_run_before_test_camera)
 
         self.start_group("Colors")
         add(cfg.color_ok)
