@@ -7,8 +7,8 @@ DEFAULT_CAMERA_NUMBER = 0
 class CameraStream:
     """ Class that wraps an OpenCV VideoCapture
     """
-    def __init__(self, camera_number, width, height):
-        self._cap = self._create_capture(camera_number)
+    def __init__(self, camera_number, width, height, use_default_as_backup=True):
+        self._cap = self._create_capture(camera_number, use_default_as_backup)
         self._set_width(width)
         self._set_height(height)
 
@@ -19,18 +19,27 @@ class CameraStream:
     def release_resources(self):
         self._cap.release()
 
+    def get_width(self):
+        return self._cap.get(self._get_width_flag())
+
+    def get_height(self):
+        return self._cap.get(self._get_height_flag())
+
     def _set_width(self, width):
         self._cap.set(self._get_width_flag(), width)
 
     def _set_height(self, height):
         self._cap.set(self._get_height_flag(), height)
 
-    def _create_capture(self, camera_number):
+    def _create_capture(self, camera_number, use_default_as_backup):
         cap = opencv.VideoCapture(camera_number)
         read_ok, _ = cap.read()
         if not read_ok:
-            print("Read on " + str(camera_number) + " failed. Using default index")
-            cap = opencv.VideoCapture(DEFAULT_CAMERA_NUMBER)
+            if use_default_as_backup:
+                print("Read on " + str(camera_number) + " failed. Using default index")
+                cap = opencv.VideoCapture(DEFAULT_CAMERA_NUMBER)
+            else:
+                raise IOError
 
         return cap
 

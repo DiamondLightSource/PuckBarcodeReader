@@ -2,8 +2,7 @@ import cv2
 
 from PyQt4.QtGui import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
 from dls_util.config import ConfigControl
-
-_OPENCV_MAJOR = cv2.__version__[0]
+from dls_barcode.camera import CameraStream
 
 
 class CameraConfigControl(ConfigControl):
@@ -88,28 +87,18 @@ class CameraConfigControl(ConfigControl):
             QMessageBox.critical(self, "Camera Error", "Camera number, width, and height must be integers")
             return
 
-        # Check that we can connect to the camera
-        if _OPENCV_MAJOR == '2':
-            width_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
-            height_flag = cv2.cv.CV_CAP_PROP_FRAME_COUNT
-        else:
-            width_flag = cv2.CAP_PROP_FRAME_WIDTH
-            height_flag = cv2.CAP_PROP_FRAME_HEIGHT
-
         self._to_run_before_test_camera()
 
-        cap = cv2.VideoCapture(camera_num)
-        cap.set(width_flag, camera_width)
-        cap.set(height_flag, camera_height)
-
-        read_ok, _ = cap.read()
-        if not read_ok:
+        # Check that we can connect to the camera
+        try:
+            stream = CameraStream(camera_num, camera_width, camera_height, use_default_as_backup=False)
+        except IOError:
             QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
             return
 
         # Check resolution is acceptable
-        set_width = int(cap.get(width_flag))
-        set_height = int(cap.get(height_flag))
+        set_width = int(stream.get_width())
+        set_height = int(stream.get_height())
         if set_width != camera_width or set_height != camera_height:
             QMessageBox.warning(self, "Camera Error",
                                 "Could not set the camera to the specified resolution: {}x{}.\nThe camera defaulted "
@@ -122,7 +111,7 @@ class CameraConfigControl(ConfigControl):
         breaking_frame = False
         while True:
             # Capture the next frame from the camera
-            read_ok, frame = cap.read()
+            frame = stream.get_frame()
             if frame is None:
                 breaking_frame = True
                 break
@@ -132,8 +121,7 @@ class CameraConfigControl(ConfigControl):
             small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
             cv2.imshow('Camera Preview (Press any key to exit)', small)
 
-
-        cap.release()
+        stream.release_resources()
         cv2.destroyAllWindows()
 
         # Opening the camera controls window stops the camera from working; reopen this window
