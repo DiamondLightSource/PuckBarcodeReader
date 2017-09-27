@@ -9,10 +9,10 @@ class FileManager:
 
         return lines
 
-    def write_lines(self, file_path, items):
+    def write_lines(self, file_path, lines):
         """Calls file.writelines, so doesn't append any new line characters"""
         with open(file_path, 'w') as file:
-            file.writelines(items)
+            file.writelines(lines)
 
     def is_file(self, path):
         return os.path.isfile(path)
