@@ -123,7 +123,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
     def _on_scan_menu_clicked(self):
         print("MAIN: Scan menu clicked")
-        if self._camera_scanner is None:
+        if not self._camera_capture_alive():
             self._initialise_scanner()
 
         self._camera_switch.restart_live_capture_from_side()
@@ -149,7 +149,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         event.accept()
 
     def _cleanup(self):
-        if self._camera_scanner is None:
+        if not self._camera_capture_alive():
             return
 
         self._camera_scanner.kill()
@@ -161,12 +161,15 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
 
     def on_record_table_clicked(self):
-        if self._camera_switch is not None:
+        if self._camera_capture_alive():
             self._camera_switch.stop_live_capture()
 
     def _before_test_camera(self):
         # We need to stop the cameras otherwise the Test Camera button won't be able to open them
         self._cleanup()
+
+    def _camera_capture_alive(self):
+        return self._camera_scanner is not None and self._camera_switch is not None
 
     def _read_view_queue(self):
         if not self._view_queue.empty():
@@ -179,7 +182,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _read_scan_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
         """
-        if self._camera_switch is None:
+        if not self._camera_capture_alive():
             return
 
         if self._camera_switch.is_side():
