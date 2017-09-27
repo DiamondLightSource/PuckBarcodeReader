@@ -13,6 +13,7 @@ Changes merged into master
 | I04_1-151 | [#21](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/21) | Minor | Popup tells user that Store dir changes only apply at startup |
 | I04_1-171 | [#27](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/27) | Patch | Improve termination of ghost subprocesses |
 | I04_1-153 | [#29](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/29) | Patch | Camera config saved |
+| I04_1-164 | [#31](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/31) | Patch | Fixed Test Camera button in Options panel |
 
 Change Types:
 * Major - Backward incompatible change
