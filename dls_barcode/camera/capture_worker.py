@@ -1,10 +1,10 @@
 import time
 import queue
 
-from .camera_stream import CameraStream
 from .overlay import Overlay
 from .stream_action import StreamAction
 from dls_util.image import Image
+from dls_util.cv import CameraStream
 
 Q_LIMIT = 1
 

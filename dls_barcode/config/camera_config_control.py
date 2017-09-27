@@ -2,7 +2,7 @@ import cv2
 
 from PyQt4.QtGui import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
 from dls_util.config import ConfigControl
-from dls_barcode.camera import CameraStream
+from dls_util.cv import CameraStream
 
 
 class CameraConfigControl(ConfigControl):
