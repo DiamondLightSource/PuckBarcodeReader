@@ -64,7 +64,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.imageFrame = ImageFrame(500, 500, "Plate Image")
 
         # Scan record table - lists all the records in the store
-        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config, self)
+        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config, self.on_record_table_clicked)
 
         # Open options first to make sure the cameras are set up correctly.
         # Start live capture of the side as soon as the dialog box is closed
