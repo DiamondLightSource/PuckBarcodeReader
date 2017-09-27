@@ -9,10 +9,19 @@ class FileManager:
 
         return lines
 
-    def write_lines(self, file_path, lines):
+    def write_lines(self, file_path, items):
+        """Calls file.writelines, so doesn't append any new line characters"""
         with open(file_path, 'w') as file:
-            for item in lines:
-                file.write(item)
+            file.writelines(items)
 
-    def exists(self, file):
-        return os.path.isfile(file)
+    def is_file(self, path):
+        return os.path.isfile(path)
+
+    def is_dir(self, path):
+        return os.path.isdir(path)
+
+    def make_dir(self, path):
+        os.makedirs(path)
+
+    def remove(self, path):
+        os.remove(path)

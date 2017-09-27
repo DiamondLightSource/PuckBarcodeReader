@@ -69,7 +69,7 @@ class Config:
 
     def _load_from_file(self, file):
         """ Load options from the config file specified in the constructor. """
-        if not self._file_manager.exists(file):
+        if not self._file_manager.is_file(file):
             self.save_to_file()
             return
 

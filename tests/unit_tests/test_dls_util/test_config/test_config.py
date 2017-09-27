@@ -108,7 +108,7 @@ class TestConfig(unittest.TestCase):
 
     def test_initialise_from_file_creates_new_file_using_default_values_if_the_given_file_does_not_exist(self):
         # Arrange
-        self._mock_file_manager.exists.return_value = False
+        self._mock_file_manager.is_file.return_value = False
         conf = self._create_config()
         default_value = 234
         conf.add(IntConfigItem, "Camera Number", default_value, "m");
@@ -126,7 +126,7 @@ class TestConfig(unittest.TestCase):
 
     def test_initialise_from_file_does_not_write_to_file_if_the_given_file_exists(self):
         # Arrange
-        self._mock_file_manager.exists.return_value = True
+        self._mock_file_manager.is_file.return_value = True
         conf = self._create_config()
         conf.add(IntConfigItem, "Camera Number", 22, "m");
 
@@ -138,7 +138,7 @@ class TestConfig(unittest.TestCase):
 
     def test_initialise_from_file_sets_default_if_pattern_broken_in_the_file(self):
         # Arrange
-        self._mock_file_manager.exists.return_value = True
+        self._mock_file_manager.is_file.return_value = True
         self._mock_file_manager.read_lines.return_value = ["Side Camera Number===1\n"]
         conf = self._create_config()
         default = 33
@@ -155,7 +155,7 @@ class TestConfig(unittest.TestCase):
 
     def test_initialise_from_file_sets_default_if_tags_dont_match(self):
         # Arrange
-        self._mock_file_manager.exists.return_value = True
+        self._mock_file_manager.is_file.return_value = True
         self._mock_file_manager.read_lines.return_value = ["BadTagg=60\n"]
         conf = self._create_config()
         default = 500
@@ -173,7 +173,7 @@ class TestConfig(unittest.TestCase):
     def test_initialize_from_file_sets_value_from_file_if_tags_match(self):
         # Arrange
         expected_value = 10
-        self._mock_file_manager.exists.return_value = True
+        self._mock_file_manager.is_file.return_value = True
         self._mock_file_manager.read_lines.return_value = ["Camera Number=" + str(expected_value) + "\n"]
         conf = self._create_config()
         conf.add(IntConfigItem, "Camera Number", -1)
