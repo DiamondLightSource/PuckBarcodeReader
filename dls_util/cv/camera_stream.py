@@ -55,4 +55,11 @@ class CameraStream:
         else:
             return opencv.CAP_PROP_FRAME_HEIGHT
 
+    @staticmethod
+    def open_camera_controls(self, camera_num):
+        """Open the camera's settings panel.
+         This sometimes crashes but it's out of our control and the CAP_PROP_SETTINGS is not documented"""
+        cap = opencv.VideoCapture(camera_num)
+        cap.set(opencv.CAP_PROP_SETTINGS, 1)
+
 

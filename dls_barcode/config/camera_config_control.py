@@ -131,5 +131,5 @@ class CameraConfigControl(ConfigControl):
     def _open_camera_controls(self):
         camera_num = int(self.txt_number.text())
         self._to_run_before_test_camera()
-        cap = cv2.VideoCapture(camera_num)
-        cap.set(cv2.CAP_PROP_SETTINGS, 1)
+        CameraStream.open_camera_controls(camera_num)
+
