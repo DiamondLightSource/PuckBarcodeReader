@@ -5,6 +5,7 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
 
 from dls_barcode.data_store import Store
+from dls_util.file import FileManager
 
 # todo: allow delete key to be used for deletion
 # todo: allow record selection with arrow keys
@@ -21,7 +22,7 @@ class ScanRecordTable(QGroupBox):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
-        self._store = Store(options.store_directory.value(), options)
+        self._store = Store(options.store_directory.value(), options, FileManager())
         self._options = options
 
         self._barcodeTable = barcode_table

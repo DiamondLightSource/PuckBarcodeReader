@@ -8,19 +8,18 @@ class Store:
     """ Maintains a list of records of previous barcodes scans. Any changes (additions
     or deletions) are automatically written to the backing file.
     """
-    def __init__(self, directory, options):
-        """ Initializes a new instance of Store. Users of the class should use the
-        static 'from_file' as the __init__ function does not read from the existing
-        file, it only stores the path for later writing.
+    def __init__(self, directory, options, file_manager):
+        """ Initializes a new instance of Store.
         """
         self._options = options
         self._directory = directory
+        self._file_manager = file_manager
         self._file = os.path.join(directory, "store.txt")
         self._csv_file = os.path.join(directory, "store.csv")
         self._img_dir = os.path.join(directory, "img_dir")
 
-        if not os.path.exists(self._img_dir):
-            os.makedirs(self._img_dir)
+        if not self._file_manager.is_dir(self._img_dir):
+            self._file_manager.make_dir(self._img_dir)
 
         self.records = []
         self._load_records_from_file()
@@ -30,18 +29,16 @@ class Store:
         """ Clear the current record store and load a new set of records from the specified file. """
         self.records = []
 
-        if not os.path.isfile(self._file):
+        if not self._file_manager.is_file(self._file):
             return
 
-        with open(self._file, mode="rt") as file:
-            lines = [line for line in file]
-
-            for line in lines:
-                try:
-                    record = Record.from_string(line)
-                    self.records.append(record)
-                except Exception:
-                    print("Failed to parse store Record: {}".format(line))
+        lines = self._file_manager.read_lines(self._file)
+        for line in lines:
+            try:
+                record = Record.from_string(line)
+                self.records.append(record)
+            except Exception:
+                print("Failed to parse store Record: {}".format(line))
 
         self._truncate_record_list()
 
@@ -85,8 +82,9 @@ class Store:
         """
         for record in records:
             self.records.remove(record)
-            if os.path.isfile(record.image_path):
-                os.remove(record.image_path)
+            if self._file_manager.is_file(record.image_path):
+                self._file_manager.remove(record.image_path)
+
         self._process_change()
 
     def _truncate_record_list(self):
@@ -112,18 +110,14 @@ class Store:
     def _to_file(self):
         """ Save the contents of the store to the backing file
         """
-        record_lines = [rec.to_string() for rec in self.records]
-        file_contents = "\n".join(record_lines)
-        with open(self._file, mode="wt") as file:
-            file.writelines(file_contents)
-
+        record_lines = [rec.to_string() + "\n" for rec in self.records]
+        self._file_manager.write_lines(self._file, record_lines)
 
     def _to_csv_file(self):
-            """ Save the contents of the store to the backing csv file
-            """
-            record_lines = [rec.to_csv_string() for rec in self.records]
-            file_contents = "\n".join(record_lines)
-            with open(self._csv_file, mode="wt") as file:
-                file.writelines(file_contents)
+        """ Save the contents of the store to the backing csv file
+        """
+        record_lines = [rec.to_csv_string() + "\n" for rec in self.records]
+        self._file_manager.write_lines(self._csv_file, record_lines)
+
 
 
