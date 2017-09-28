@@ -4,8 +4,10 @@ import multiprocessing
 import time
 import queue
 
+# TODO: tidy up
 from dls_util.image import Image, Color
 from dls_util import Beeper
+from dls_util.message import MessageType, Message
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
 from .overlay import PlateOverlay, TextOverlay
@@ -196,7 +198,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, message_queue, kill
             plate = scan_result.plate()
 
             if scan_result.already_scanned():
-                message_queue.put(SCANNED_TAG)
+                message_queue.put(Message(MessageType.INFO, SCANNED_TAG))
                 # overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
             elif scan_result.any_valid_barcodes():
                 overlay_queue.put(PlateOverlay(plate, config))
@@ -207,7 +209,7 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, message_queue, kill
         elif scan_result.error() is not None:
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
-                message_queue.put(scan_result.error())
+                message_queue.put(Message(MessageType.WARNING, scan_result.error()))
                 # overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
 
     print("SCANNER stop & kill")

@@ -10,6 +10,7 @@ from dls_util.file import FileManager
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
+from .message_display import MessageDisplay
 
 
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
@@ -21,10 +22,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._config = BarcodeConfig(config_file, FileManager())
 
         # UI elements
-        self.recordTable = None
-        self.barcodeTable = None
+        self._record_table = None
+        self._barcode_table = None
         self.sideBarcodeWindow = None
-        self.imageFrame = None
+        self._image_frame = None
 
         # Scan elements
         self._camera_scanner = None
@@ -63,13 +64,16 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.init_menu_bar()
 
         # Barcode table - lists all the barcodes in a record
-        self.barcodeTable = BarcodeTable(self._config)
+        self._barcode_table = BarcodeTable(self._config)
 
         # Image frame - displays image of the currently selected scan record
-        self.imageFrame = ImageFrame(500, 500, "Plate Image")
+        self._image_frame = ImageFrame(500, 500, "Plate Image")
 
         # Scan record table - lists all the records in the store
-        self.recordTable = ScanRecordTable(self.barcodeTable, self.imageFrame, self._config, self.on_record_table_clicked)
+        self._record_table = ScanRecordTable(self._barcode_table, self._image_frame, self._config, self.on_record_table_clicked)
+
+        # Message display
+        self._message_display = MessageDisplay()
 
         # Open options first to make sure the cameras are set up correctly.
         # Start live capture of the side as soon as the dialog box is closed
@@ -78,11 +82,13 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Create layout
         hbox = QtGui.QHBoxLayout()
         hbox.setSpacing(10)
-        hbox.addWidget(self.recordTable)
-        hbox.addWidget(self.barcodeTable)
-        vbox_new = QtGui.QVBoxLayout()
-        vbox_new.addWidget(self.imageFrame)
-        hbox.addLayout(vbox_new)
+        hbox.addWidget(self._record_table)
+        hbox.addWidget(self._barcode_table)
+
+        img_vbox = QtGui.QVBoxLayout()
+        img_vbox.addWidget(self._image_frame)
+        img_vbox.addWidget(self._message_display)
+        hbox.addLayout(img_vbox)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox)
@@ -180,17 +186,18 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._view_queue.empty():
             try:
                 image = self._view_queue.get(False)
-                self.imageFrame.display_puck_image(image)
+                self._image_frame.display_puck_image(image)
             except queue.Empty:
                 pass
 
+    # todo: refactor this uglyness (above too)
     def _read_message_queue(self):
         if not self._message_queue.empty():
             try:
                 message = self._message_queue.get(False)
-                print("******************************************************" + message)
+                self._message_display.display_message(message)
             except queue.Empty:
-                pass
+                return
 
     def _read_result_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
@@ -215,7 +222,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Barcode successfully read
         Beeper.beep()
         print("MAIN: side barcode recorded")
-        if self.recordTable.unique_side_barcode(plate): # if new side barcode
+        if self._record_table.unique_side_barcode(plate): # if new side barcode
             self._camera_switch.restart_live_capture_from_top()
             self.original_plate = plate
             self._latest_holder_image = holder_image
@@ -231,7 +238,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         plate, pins_image = self._result_queue.get(False)
 
         # Add new record to the table - side is the original_plate read first, top is the plate
-        self.recordTable.add_record_frame(self.original_plate, plate, self._latest_holder_image, pins_image)
+        self._record_table.add_record_frame(self.original_plate, plate, self._latest_holder_image, pins_image)
         if not plate.is_full_valid():
             return
 
