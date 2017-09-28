@@ -1,4 +1,4 @@
-from ..result import ScanResult
+from ..scan_result import ScanResult
 
 
 class OpenScanResult(ScanResult):

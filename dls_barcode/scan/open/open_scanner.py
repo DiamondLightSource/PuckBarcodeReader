@@ -2,7 +2,7 @@ from dls_barcode.datamatrix import DataMatrix
 
 from dls_barcode.plate import Plate
 from dls_barcode.geometry import Geometry
-from .result import OpenScanResult
+from .open_scan_result import OpenScanResult
 
 
 class NoBarcodesError(Exception):

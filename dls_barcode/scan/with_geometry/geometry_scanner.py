@@ -7,7 +7,7 @@ from dls_barcode.geometry import Geometry, GeometryException
 from .empty_detector import EmptySlotDetector
 from .plate_scanner import PlateScanner
 from .slot_scanner import SlotScanner
-from ..result import ScanResult
+from ..scan_result import ScanResult
 
 
 class NoBarcodesError(Exception):
