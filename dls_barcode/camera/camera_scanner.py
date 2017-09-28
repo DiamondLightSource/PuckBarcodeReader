@@ -5,16 +5,16 @@ import time
 import queue
 
 # TODO: tidy up
-from dls_util.image import Image, Color
+from dls_util.image import Image
 from dls_util import Beeper
 from dls_util.message import MessageType, Message
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
-from .overlay import PlateOverlay, TextOverlay
 from .capture_worker import CaptureWorker
 from .camera_position import CameraPosition
 from .stream_action import StreamAction
 from .capture_command import CaptureCommand
+from .plate_overlay import PlateOverlay
 
 Q_LIMIT = 1
 SCANNED_TAG = "Scan Complete"

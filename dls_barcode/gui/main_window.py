@@ -7,6 +7,7 @@ from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
 from dls_barcode.camera import CameraScanner, CameraSwitch
 from dls_util import Beeper
 from dls_util.file import FileManager
+from dls_util.message import MessageType, Message
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
@@ -190,7 +191,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             except queue.Empty:
                 pass
 
-    # todo: refactor this uglyness (above too)
     def _read_message_queue(self):
         if not self._message_queue.empty():
             try:
@@ -230,6 +230,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _read_top_scan(self):
         if self._result_queue.empty():
             if self._camera_switch.is_top_scan_timeout():
+                self._message_display.display_message(Message(MessageType.INFO, "Scan timeout"))
                 print("\n*** Scan timeout ***")
                 self._camera_switch.restart_live_capture_from_side()
             return
