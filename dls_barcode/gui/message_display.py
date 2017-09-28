@@ -1,10 +1,8 @@
-import time
 from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout
 from PyQt4 import QtCore
 
 from dls_util.message import MessageType
 
-MSG_LIFETIME = 2
 
 class MessageDisplay(QGroupBox):
     """GUI component. Displays messages for the user."""
@@ -35,11 +33,11 @@ class MessageDisplay(QGroupBox):
         self.setLayout(vbox)
 
     def display_message(self, message):
-        self._message_lbl.setText(message.content())
-        self._message_lbl.setStyleSheet("color: " + self._colors[message.type()])
-        self._latest_message_time = time.time()
+        self._message = message
+        self._message_lbl.setText(self._message.content())
+        self._message_lbl.setStyleSheet("color: " + self._colors[self._message.type()])
 
     def _clear_old_message(self):
-        now = time.time()
-        if self._message_lbl.text() and now - self._latest_message_time > MSG_LIFETIME:
+        if self._message_lbl.text() and self._message.has_expired():
             self._message_lbl.clear()
+            self._message = None

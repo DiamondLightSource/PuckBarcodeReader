@@ -230,7 +230,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _read_top_scan(self):
         if self._result_queue.empty():
             if self._camera_switch.is_top_scan_timeout():
-                self._message_display.display_message(Message(MessageType.INFO, "Scan timeout"))
+                self._message_display.display_message(Message(MessageType.INFO, "Scan timeout", lifetime=4))
                 print("\n*** Scan timeout ***")
                 self._camera_switch.restart_live_capture_from_side()
             return
