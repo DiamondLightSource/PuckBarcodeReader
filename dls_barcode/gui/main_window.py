@@ -75,6 +75,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # Message display
         self._message_display = MessageDisplay()
+        self._message_display.setFixedHeight(64)
 
         # Open options first to make sure the cameras are set up correctly.
         # Start live capture of the side as soon as the dialog box is closed
@@ -221,11 +222,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # Barcode successfully read
         Beeper.beep()
-        print("MAIN: side barcode recorded")
+        print("MAIN: holder barcode recorded")
         if self._record_table.unique_side_barcode(plate): # if new side barcode
-            self._camera_switch.restart_live_capture_from_top()
             self.original_plate = plate
             self._latest_holder_image = holder_image
+            self._message_display.display_message(Message(MessageType.INFO, "Plate barcode recorded"))
+            self._camera_switch.restart_live_capture_from_top()
 
     def _read_top_scan(self):
         if self._result_queue.empty():
@@ -245,6 +247,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # Barcodes successfully read
         Beeper.beep()
-        print("Scan Recorded")
+        print("Scan Completed")
+        self._message_display.display_message(Message(MessageType.INFO, "Scan completed"))
         self._camera_switch.restart_live_capture_from_side()
 

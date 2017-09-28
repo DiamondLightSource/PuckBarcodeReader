@@ -198,7 +198,8 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, message_queue, kill
             plate = scan_result.plate()
 
             if scan_result.already_scanned():
-                message_queue.put(Message(MessageType.INFO, SCANNED_TAG))
+                pass
+                # message_queue.put(Message(MessageType.INFO, SCANNED_TAG))
                 # overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
             elif scan_result.any_valid_barcodes():
                 overlay_queue.put(PlateOverlay(plate, config))
