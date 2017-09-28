@@ -195,7 +195,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             return
 
         # Get the result
-        plate, cv_image = self._scan_queue.get(False)
+        plate, holder_image = self._scan_queue.get(False)
         if not plate.is_full_valid():
             return
 
@@ -205,7 +205,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if self.recordTable.unique_side_barcode(plate): # if new side barcode
             self._camera_switch.restart_live_capture_from_top()
             self.original_plate = plate
-            self.original_cv_image = cv_image # for merging
+            self._latest_holder_image = holder_image
 
     def _read_top_scan(self):
         if self._scan_queue.empty():
@@ -215,18 +215,14 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             return
 
         # Get the result
-        plate, cv_image = self._scan_queue.get(False)
+        plate, pins_image = self._scan_queue.get(False)
 
-        # TODO:merge images
-        # Store scan results and display in GUI
-        # new_image = self.original_cv_image.mage_cv_ima ge(cv_image)
-
-        # add new record to the table - side is the original_plate read first, top is the plate
-        self.recordTable.add_record_frame(self.original_plate, plate, cv_image)
+        # Add new record to the table - side is the original_plate read first, top is the plate
+        self.recordTable.add_record_frame(self.original_plate, plate, self._latest_holder_image, pins_image)
         if not plate.is_full_valid():
             return
 
-        # Barcode successfully read
+        # Barcodes successfully read
         Beeper.beep()
         print("Scan Recorded")
         self._camera_switch.restart_live_capture_from_side()
