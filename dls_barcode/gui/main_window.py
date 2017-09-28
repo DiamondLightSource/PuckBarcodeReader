@@ -33,18 +33,23 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._init_ui()
 
         # Queue that holds new results generated in continuous scanning mode
-        self._scan_queue = multiprocessing.Queue()
+        self._result_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
+        self._message_queue = multiprocessing.Queue()
         self._initialise_scanner()
 
         # Timer that controls how often new scan results are looked for
         self._result_timer = QtCore.QTimer()
-        self._result_timer.timeout.connect(self._read_scan_queue)
+        self._result_timer.timeout.connect(self._read_result_queue)
         self._result_timer.start(1000)
 
-        self._result_timer1 = QtCore.QTimer()
-        self._result_timer1.timeout.connect(self._read_view_queue)
-        self._result_timer1.start(1)
+        self._view_timer = QtCore.QTimer()
+        self._view_timer.timeout.connect(self._read_view_queue)
+        self._view_timer.start(1)
+
+        self._message_timer = QtCore.QTimer()
+        self._message_timer.timeout.connect(self._read_message_queue)
+        self._message_timer.start(1)
 
         self._camera_switch.restart_live_capture_from_side()
 
@@ -157,7 +162,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._camera_switch = None
 
     def _initialise_scanner(self):
-        self._camera_scanner = CameraScanner(self._scan_queue, self._view_queue, self._config)
+        self._camera_scanner = CameraScanner(self._result_queue, self._view_queue, self._message_queue, self._config)
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
 
     def on_record_table_clicked(self):
@@ -179,7 +184,15 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             except queue.Empty:
                 pass
 
-    def _read_scan_queue(self):
+    def _read_message_queue(self):
+        if not self._message_queue.empty():
+            try:
+                message = self._message_queue.get(False)
+                print("******************************************************" + message)
+            except queue.Empty:
+                pass
+
+    def _read_result_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
         """
         if not self._camera_capture_alive():
@@ -191,11 +204,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._read_top_scan()
 
     def _read_side_scan(self):
-        if self._scan_queue.empty():
+        if self._result_queue.empty():
             return
 
         # Get the result
-        plate, holder_image = self._scan_queue.get(False)
+        plate, holder_image = self._result_queue.get(False)
         if not plate.is_full_valid():
             return
 
@@ -208,14 +221,14 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._latest_holder_image = holder_image
 
     def _read_top_scan(self):
-        if self._scan_queue.empty():
+        if self._result_queue.empty():
             if self._camera_switch.is_top_scan_timeout():
                 print("\n*** Scan timeout ***")
                 self._camera_switch.restart_live_capture_from_side()
             return
 
         # Get the result
-        plate, pins_image = self._scan_queue.get(False)
+        plate, pins_image = self._result_queue.get(False)
 
         # Add new record to the table - side is the original_plate read first, top is the plate
         self.recordTable.add_record_frame(self.original_plate, plate, self._latest_holder_image, pins_image)

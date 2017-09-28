@@ -33,7 +33,7 @@ class CameraScanner:
     Two separate processes are spawned, one to handle capturing and displaying images from the cameras,
     and the other to handle processing (scanning) of those images.
     """
-    def __init__(self, result_queue, view_queue, config):
+    def __init__(self, result_queue, view_queue, message_queue, config):
         """ The task queue is used to store a queue of captured frames to be processed; the overlay
         queue stores Overlay objects which are drawn on to the image displayed to the user to highlight
         certain features; and the result queue is used to pass on the results of successful scans to
@@ -46,6 +46,7 @@ class CameraScanner:
         self._scanner_kill_q = multiprocessing.Queue()
         self._result_q = result_queue
         self._view_q = view_queue
+        self._message_q = message_queue
 
         self._config = config
         self._camera_configs = {CameraPosition.SIDE: self._config.get_side_camera_config(),
@@ -64,7 +65,7 @@ class CameraScanner:
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
         print("\nMAIN: start triggered")
-        scanner_args = (self._task_q, self._overlay_q, self._result_q, self._scanner_kill_q, self._config, cam_position)
+        scanner_args = (self._task_q, self._overlay_q, self._result_q, self._message_q, self._scanner_kill_q, self._config, cam_position)
         self._scanner_process = multiprocessing.Process(target=_scanner_worker, args=scanner_args)
 
         self._capture_command_q.put(CaptureCommand(StreamAction.START, cam_position))
@@ -95,7 +96,7 @@ class CameraScanner:
         if self._scanner_process is not None:
             self._scanner_kill_q.put(None)
             print("MAIN: forcing scanner cleanup")
-            self._process_cleanup(self._scanner_process, [self._result_q, self._overlay_q])
+            self._process_cleanup(self._scanner_process, [self._result_q, self._overlay_q, self._message_q])
             self._scanner_process.join()
             self._flush_queue(self._scanner_kill_q)
             self._scanner_process = None
@@ -139,7 +140,7 @@ def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_q
     worker.run(task_queue, view_queue, overlay_queue, command_queue, kill_queue)
 
 
-def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config, cam_position):
+def _scanner_worker(task_queue, overlay_queue, result_queue, message_queue, kill_queue, config, cam_position):
     """ Function used as the main loop of a worker process. Scan images for barcodes,
     combining partial scans until a full puck is reached.
 
@@ -195,17 +196,19 @@ def _scanner_worker(task_queue, overlay_queue, result_queue, kill_queue, config,
             plate = scan_result.plate()
 
             if scan_result.already_scanned():
-                overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
+                message_queue.put(SCANNED_TAG)
+                # overlay_queue.put(TextOverlay(SCANNED_TAG, Color.Green()))
             elif scan_result.any_valid_barcodes():
                 overlay_queue.put(PlateOverlay(plate, config))
                 _plate_beep(plate, config.scan_beep.value())
 
             if scan_result.any_new_barcodes():
                 result_queue.put((plate, image))
-        else:
+        elif scan_result.error() is not None:
             time_since_plate = time.time() - last_plate_time
             if time_since_plate > NO_PUCK_TIME:
-                overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
+                message_queue.put(scan_result.error())
+                # overlay_queue.put(TextOverlay(scan_result.error(), Color.Red()))
 
     print("SCANNER stop & kill")
 
