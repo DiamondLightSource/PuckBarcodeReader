@@ -38,7 +38,6 @@ class GeometryScanner:
         try:
             self._perform_frame_scan()
             self._frame_result.set_plate(self._plate)
-
         except (NoBarcodesError, GeometryException, GeometryAdjustmentError) as ex:
             self._frame_result.set_error(str(ex))
 
