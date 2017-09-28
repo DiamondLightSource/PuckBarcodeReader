@@ -5,8 +5,8 @@ from dls_barcode.plate import Plate, Slot
 from dls_barcode.plate.geometry_adjuster import UnipuckGeometryAdjuster, GeometryAdjustmentError
 from dls_barcode.geometry import Geometry, GeometryException
 from .empty_detector import EmptySlotDetector
-from .scan_plate import PlateScanner
-from .scan_slot import SlotScanner
+from .plate_scanner import PlateScanner
+from .slot_scanner import SlotScanner
 from ..result import ScanResult
 
 
