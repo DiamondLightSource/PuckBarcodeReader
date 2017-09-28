@@ -14,6 +14,8 @@ Changes merged into master
 | I04_1-171 | [#27](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/27) | Patch | Improve termination of ghost subprocesses |
 | I04_1-153 | [#29](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/29) | Patch | Camera config saved |
 | I04_1-164 | [#31](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/31) | Patch | Fixed Test Camera button in Options panel |
+| I04_1-144 | [#35](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/35) | Minor | Holder image merged into saved pins image |
+
 
 Change Types:
 * Major - Backward incompatible change
