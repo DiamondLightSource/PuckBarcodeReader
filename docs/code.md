@@ -57,5 +57,5 @@ NOTE: when creating the executable on a 64bit machine (using Python 3.5.1 32bit)
 
 Continuous Integration
 ======================
-[Travis CI](https://travis-ci.org/) was setup as the Continuous Integration server for this repository. You should be able to login with your GitHub credentials.
+[Travis CI](https://travis-ci.org/) was setup as the Continuous Integration server for this repository. You should be able to login with your GitHub credentials and see the repository there.
 
