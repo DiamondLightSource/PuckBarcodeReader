@@ -1,1 +1,1 @@
-from .scan import OpenScanner
+from .open_scanner import OpenScanner

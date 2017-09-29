@@ -2,7 +2,7 @@ from dls_barcode.datamatrix import DataMatrix
 
 from dls_barcode.plate import Plate
 from dls_barcode.geometry import Geometry
-from .result import OpenScanResult
+from .open_scan_result import OpenScanResult
 
 
 class NoBarcodesError(Exception):
@@ -32,7 +32,6 @@ class OpenScanner:
         try:
             barcodes = self._perform_frame_scan()
             result.set_barcodes(barcodes)
-
         except NoBarcodesError as ex:
             result.set_error(str(ex))
 

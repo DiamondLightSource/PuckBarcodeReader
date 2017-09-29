@@ -28,9 +28,9 @@ class ImageFrame(QGroupBox):
 
         self.setLayout(vbox)
 
-    def clear_frame(self):
+    def clear_frame(self, message):
         self._frame.clear()
-        self._frame.setText("No Scan Selected")
+        self._frame.setText(message)
 
     def display_puck_image(self, image):
         """ Called when a new row is selected on the record table. Displays the specified
