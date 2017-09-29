@@ -9,8 +9,6 @@ BASIC_STYLE_SHEET = "font-size: 14pt"
 
 class MessageDisplay(QGroupBox):
     """GUI component. Displays messages for the user."""
-
-
     def __init__(self):
         super(MessageDisplay, self).__init__()
 
