@@ -27,6 +27,8 @@ The following steps will help you prepare an appropriate Python environment to r
     * opencv_python-3.1.0-cp35-cp35m-win32.whl
     * scipy-0.17.1-cp35-cp35m-win32.whl
     * PyQt4-4.11.4-cp35-none-win32.whl
+
+NOTE: there is a requirements.txt file that was created for use by the CI server Travis. It works in Travis but it wasn't tested locally. It contains all of the above dependencies except for enum and PyQt4.
     
 * Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
 
@@ -52,3 +54,8 @@ For example: "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\pyt
 The result exec file is created in subdirectrory called dist.
 
 NOTE: when creating the executable on a 64bit machine (using Python 3.5.1 32bit) you might get the error ‘No module named pywintypes’. To fix this, try `pip install pypiwin32`.
+
+Continuous Integration
+======================
+[Travis CI](https://travis-ci.org/) was setup as the Continuous Integration server for this repository. You should be able to login with your GitHub credentials and see the repository there. The configuration file for Travis is .travis.yml in the root directory.
+

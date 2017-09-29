@@ -1,0 +1,6 @@
+pyperclip
+numpy
+scipy
+opencv-python
+mock
+
