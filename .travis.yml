@@ -3,6 +3,7 @@ sudo: required
 python:
   - "3.5"
 
+# All of the following up until pip install -r requirements.txt is to install PyQt4
 before_install:
   - sudo mkdir -p /downloads
   - sudo chmod a+rw /downloads
