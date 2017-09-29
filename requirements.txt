@@ -1,6 +1,7 @@
 pyperclip
 numpy
 scipy
+PyQt4
 
 mock
 
