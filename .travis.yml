@@ -4,6 +4,7 @@ python:
   - "3.5"
 
 # All of the following up until pip install -r requirements.txt is to install PyQt4
+# and was taken from https://stackoverflow.com/questions/35513019/install-pyqt4-with-python3-on-travis-ci
 before_install:
   - sudo mkdir -p /downloads
   - sudo chmod a+rw /downloads
