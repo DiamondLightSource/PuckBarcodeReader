@@ -15,6 +15,7 @@ Changes merged into master
 | I04_1-153 | [#29](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/29) | Patch | Camera config saved |
 | I04_1-164 | [#31](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/31) | Patch | Fixed Test Camera button in Options panel |
 | I04_1-144 | [#35](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/35) | Minor | Holder image merged into saved pins image |
+| I04_1-156 | [#37](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/37) | Minor | Messages displayed separately from image |
 
 
 Change Types:
