@@ -113,7 +113,7 @@ class ScanRecordTable(QGroupBox):
             self._imageFrame.display_puck_image(marked_image)
         except IndexError:
             self._barcodeTable.populate([])
-            self._imageFrame.clear_frame("Record table is empty\nNothing to display")
+            self._imageFrame.clear_frame("Record table empty\nNothing to display")
 
     def _delete_selected_records(self):
         """ Called when the 'Delete' button is pressed. Deletes all of the selected records
