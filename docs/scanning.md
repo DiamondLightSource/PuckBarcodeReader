@@ -12,6 +12,8 @@ The Capture Process acquires frames from the camera; all the frames are pushed t
 
 The Scanner Process also generates the overlays that must be super-imposed to the image and displayed to the user in the GUI. The Scanner Process pushes the overlays in the Overlay Queue. The Capture Process pulls the overlays and draws them on the latest image, which is then pushed to the View Queue. The main thread pulls the images from the View Queue and displays them to the user.
 
+The Scanner Process may also generate some messages that can be displayed to the user in the Message Display. These messages are pushed to the Message Queue, and pulled by the main thread in a similar way to the View Queue.
+
 Messages Between Processes
 --------------------------
 Below is a schematic of how the Camera Scanner in the main thread communicates with the Capture and Scanner sub-processes.
