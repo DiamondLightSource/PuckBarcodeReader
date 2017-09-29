@@ -35,13 +35,14 @@ TEST_CASES.extend(puck2_testcases)
 TEST_OUTPUT_PATH = '../test-output/'
 
 CONFIG_FILE = "../config.ini"
-OPTIONS = BarcodeConfig(CONFIG_FILE)
+# TODO: restore the four commented lines below
+# OPTIONS = BarcodeConfig(CONFIG_FILE)
 
-STORE = Store(OPTIONS.store_directory.value(), OPTIONS)
+# STORE = Store(OPTIONS.store_directory.value(), OPTIONS)
 
 # TODO: this needs an extra plate argument, or the tests have an error
-def store_scan(plate, img):
-    STORE.add_record(plate, img)
+# def store_scan(plate, img):
+#     STORE.add_record(plate, img)
 
 
 def run_tests():
