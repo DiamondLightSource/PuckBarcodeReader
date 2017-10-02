@@ -7,6 +7,7 @@ from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
 from .camera_position import CameraPosition
 from .plate_overlay import PlateOverlay
+from .scanner_message import NoNewBarcodeMessage, ScanErrorMessage
 
 NO_PUCK_TIME = 2
 
@@ -20,7 +21,7 @@ class ScannerWorker:
     """
     def run(self, task_queue, overlay_queue, result_queue, message_queue, kill_queue, config, cam_position):
         print("SCANNER start")
-        self._last_plate_time = time.time()
+        self._last_puck_time = time.time()
 
         SlotScanner.DEBUG = config.slot_images.value()
         SlotScanner.DEBUG_DIR = config.slot_image_directory.value()
@@ -54,8 +55,8 @@ class ScannerWorker:
             scan_result.print_summary()
 
         if scan_result.success():
-            # Record the time so we can see how long its been since we last saw a plate
-            self._last_plate_time = time.time()
+            # Record the time so we can see how long its been since we last saw a puck
+            self._last_puck_time = time.time()
 
             plate = scan_result.plate()
             if scan_result.any_valid_barcodes():
@@ -64,8 +65,12 @@ class ScannerWorker:
 
             if scan_result.any_new_barcodes():
                 result_queue.put((plate, image))
-        elif scan_result.error() is not None and (time.time() - self._last_plate_time > NO_PUCK_TIME):
-            message_queue.put(Message(MessageType.WARNING, scan_result.error(), lifetime=1))
+        elif scan_result.any_valid_barcodes():
+            # We have read valid barcodes but they are not new
+            self._last_puck_time = time.time()
+            message_queue.put(NoNewBarcodeMessage())
+        elif scan_result.error() is not None and (time.time() - self._last_puck_time > NO_PUCK_TIME):
+            message_queue.put(ScanErrorMessage(scan_result.error()))
 
     def _create_scanner(self, cam_position, config):
         if cam_position == CameraPosition.SIDE:
