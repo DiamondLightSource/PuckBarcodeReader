@@ -66,7 +66,7 @@ class ScannerWorker:
             if scan_result.any_new_barcodes():
                 result_queue.put((plate, image))
         elif scan_result.any_valid_barcodes():
-            # We have read valid barcodes but they are not new
+            # We have read valid barcodes but they are not new, so the scanner didn't even output a plate
             self._last_puck_time = time.time()
             message_queue.put(NoNewBarcodeMessage())
         elif scan_result.error() is not None and (time.time() - self._last_puck_time > NO_PUCK_TIME):

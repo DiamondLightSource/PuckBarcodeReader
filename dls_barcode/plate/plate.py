@@ -18,7 +18,6 @@ class Plate:
         self.type = geometry_name
         self._geometry = None
 
-
         # Initialize slots
         self._slots = [Slot(i) for i in range(1, self.num_slots+1)]
 
@@ -36,7 +35,6 @@ class Plate:
         """ Returns a list of barcode strings. Empty slots are represented by the empty string.
         """
         return [slot.barcode_data() for slot in self._slots]
-
 
     def geometry(self):
         return self._geometry
