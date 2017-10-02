@@ -76,7 +76,7 @@ class OpenScanner:
             barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
 
         if len(barcodes) == 0:
-            raise NoBarcodesError("No Barcodes Detected In Image")
+            raise NoBarcodesError("No barcode detected")
         return barcodes
 
     def _is_barcode_new(self, barcode):
