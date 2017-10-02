@@ -2,11 +2,8 @@ from dls_barcode.datamatrix import DataMatrix
 
 from dls_barcode.plate import Plate
 from dls_barcode.geometry import Geometry
+from ..no_barcodes_detected_error import NoBarcodesDetectedError
 from .open_scan_result import OpenScanResult
-
-
-class NoBarcodesError(Exception):
-    pass
 
 
 class OpenScanner:
@@ -32,7 +29,7 @@ class OpenScanner:
         try:
             barcodes = self._perform_frame_scan()
             result.set_barcodes(barcodes)
-        except NoBarcodesError as ex:
+        except NoBarcodesDetectedError as ex:
             result.set_error(str(ex))
 
         # Create a 'blank' geometry object to store the barcode locations
@@ -76,7 +73,7 @@ class OpenScanner:
             barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
 
         if len(barcodes) == 0:
-            raise NoBarcodesError("No barcode detected")
+            raise NoBarcodesDetectedError()
         return barcodes
 
     def _is_barcode_new(self, barcode):
