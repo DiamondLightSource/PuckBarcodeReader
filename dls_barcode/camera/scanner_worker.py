@@ -1,7 +1,6 @@
 import time
 
 from dls_util.image import Image
-from dls_util.message import MessageType, Message
 from dls_util import Beeper
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix

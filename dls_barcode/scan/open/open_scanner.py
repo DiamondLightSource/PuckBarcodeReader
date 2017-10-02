@@ -34,12 +34,12 @@ class OpenScanner:
 
         # Create a 'blank' geometry object to store the barcode locations
         new_barcodes = result.new_barcodes()
-        num_barcodes = len(new_barcodes)
+        num_new_barcodes = len(new_barcodes)
         geometry = self._create_geometry(new_barcodes)
 
         # Create the plate
         if any(new_barcodes):
-            plate = Plate(self.plate_type, num_slots=num_barcodes)
+            plate = Plate(self.plate_type, num_slots=num_new_barcodes)
             plate.set_geometry(geometry)
             for s, barcode in enumerate(new_barcodes):
                 plate.slot(s).set_barcode(barcode)
