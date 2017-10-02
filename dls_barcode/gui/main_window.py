@@ -192,27 +192,32 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         return self._camera_scanner is not None and self._camera_switch is not None
 
     def _read_view_queue(self):
-        if not self._view_queue.empty():
-            try:
-                image = self._view_queue.get(False)
-                self._image_frame.display_puck_image(image)
-            except queue.Empty:
-                pass
+        if self._view_queue.empty():
+            return
+
+        try:
+            image = self._view_queue.get(False)
+            self._image_frame.display_puck_image(image)
+        except queue.Empty:
+            pass
 
     def _read_message_queue(self):
-        if not self._message_queue.empty():
-            try:
-                scanner_msg = self._message_queue.get(False)
-                if self._camera_switch.is_side() and isinstance(scanner_msg, NoNewBarcodeMessage):
-                    if not self._test_timer_is_running():
-                        self._start_test_timer()
-                    elif self._has_test_timer_timeout():
-                        self._message_box.display(MessageFactory.duplicate_barcode_message())
-                else:
-                    self._reset_test_timer()
-                    self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
-            except queue.Empty:
-                return
+        if self._message_queue.empty():
+            return
+
+        try:
+            scanner_msg = self._message_queue.get(False)
+            if self._camera_switch.is_side() and isinstance(scanner_msg, NoNewBarcodeMessage):
+                if not self._test_timer_is_running():
+                    # The result queue is read at a slower rate - give it time to process a new barcode
+                    self._start_test_timer()
+                elif self._has_test_timer_timeout():
+                    self._message_box.display(MessageFactory.duplicate_barcode_message())
+            else:
+                self._reset_test_timer()
+                self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
+        except queue.Empty:
+            return
 
     def _reset_test_timer(self):
         self._test_timer = None
