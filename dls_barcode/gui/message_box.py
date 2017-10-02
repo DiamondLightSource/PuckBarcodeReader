@@ -7,10 +7,10 @@ RED = "; color: red"
 BLACK = "; color: black"
 BASIC_STYLE_SHEET = "font-size: 14pt"
 
-class MessageDisplay(QGroupBox):
+class MessageBox(QGroupBox):
     """GUI component. Displays messages for the user."""
     def __init__(self):
-        super(MessageDisplay, self).__init__()
+        super(MessageBox, self).__init__()
 
         self.setTitle("Information")
 
@@ -32,7 +32,7 @@ class MessageDisplay(QGroupBox):
         vbox.addStretch()
         self.setLayout(vbox)
 
-    def display_message(self, message):
+    def display(self, message):
         self._message = message
         self._message_lbl.setText(self._message.content())
         self._message_lbl.setStyleSheet(self._style_sheets[self._message.type()])

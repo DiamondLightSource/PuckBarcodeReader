@@ -11,7 +11,7 @@ from dls_util.file import FileManager
 from .barcode_table import BarcodeTable
 from .image_frame import ImageFrame
 from .record_table import ScanRecordTable
-from .message_display import MessageDisplay
+from .message_box import MessageBox
 from .message_factory import MessageFactory
 
 
@@ -81,8 +81,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._record_table = ScanRecordTable(self._barcode_table, self._image_frame, self._config, self.on_record_table_clicked)
 
         # Message display
-        self._message_display = MessageDisplay()
-        self._message_display.setFixedHeight(64)
+        self._message_box = MessageBox()
+        self._message_box.setFixedHeight(64)
 
         # Open options first to make sure the cameras are set up correctly.
         # Start live capture of the side as soon as the dialog box is closed
@@ -96,7 +96,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         img_vbox = QtGui.QVBoxLayout()
         img_vbox.addWidget(self._image_frame)
-        img_vbox.addWidget(self._message_display)
+        img_vbox.addWidget(self._message_box)
         hbox.addLayout(img_vbox)
 
         vbox = QtGui.QVBoxLayout()
@@ -207,10 +207,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                     if not self._test_timer_is_running():
                         self._start_test_timer()
                     elif self._has_test_timer_timeout():
-                        self._message_display.display_message(MessageFactory.duplicate_barcode_message())
+                        self._message_box.display(MessageFactory.duplicate_barcode_message())
                 else:
                     self._reset_test_timer()
-                    self._message_display.display_message(MessageFactory.from_scanner_message(scanner_msg))
+                    self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
             except queue.Empty:
                 return
 
@@ -252,15 +252,15 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if self._record_table.unique_side_barcode(plate): # if new side barcode
             self.original_plate = plate
             self._latest_holder_image = holder_image
-            self._message_display.display_message(MessageFactory.puck_recorded_message())
+            self._message_box.display(MessageFactory.puck_recorded_message())
             self._camera_switch.restart_live_capture_from_top()
         else:
-            self._message_display.display_message(MessageFactory.duplicate_barcode_message())
+            self._message_box.display(MessageFactory.duplicate_barcode_message())
 
     def _read_top_scan(self):
         if self._result_queue.empty():
             if self._camera_switch.is_top_scan_timeout():
-                self._message_display.display_message(MessageFactory.scan_timeout_message())
+                self._message_box.display(MessageFactory.scan_timeout_message())
                 print("\n*** Scan timeout ***")
                 self._camera_switch.restart_live_capture_from_side()
             return
@@ -276,6 +276,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Barcodes successfully read
         Beeper.beep()
         print("Scan Completed")
-        self._message_display.display_message(MessageFactory.scan_completed_message())
+        self._message_box.display(MessageFactory.scan_completed_message())
         self._camera_switch.restart_live_capture_from_side()
 
