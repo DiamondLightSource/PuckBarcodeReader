@@ -197,9 +197,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         try:
             image = self._view_queue.get(False)
-            self._image_frame.display_puck_image(image)
         except queue.Empty:
-            pass
+            return
+
+        self._image_frame.display_puck_image(image)
 
     def _read_message_queue(self):
         if self._message_queue.empty():
@@ -207,17 +208,18 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         try:
             scanner_msg = self._message_queue.get(False)
-            if self._camera_switch.is_side() and isinstance(scanner_msg, NoNewBarcodeMessage):
-                if not self._msg_timer_is_running():
-                    # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
-                    self._start_msg_timer()
-                elif self._has_msg_timer_timeout():
-                    self._message_box.display(MessageFactory.duplicate_barcode_message())
-            else:
-                self._reset_msg_timer()
-                self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
         except queue.Empty:
             return
+
+        if self._camera_switch.is_side() and isinstance(scanner_msg, NoNewBarcodeMessage):
+            if not self._msg_timer_is_running():
+                # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
+                self._start_msg_timer()
+            elif self._has_msg_timer_timeout():
+                self._message_box.display(MessageFactory.duplicate_barcode_message())
+        else:
+            self._reset_msg_timer()
+            self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
 
     def _reset_msg_timer(self):
         self._duplicate_msg_timer = None
