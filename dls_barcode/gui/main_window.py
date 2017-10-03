@@ -45,7 +45,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._view_queue = multiprocessing.Queue()
         self._message_queue = multiprocessing.Queue()
         self._initialise_scanner()
-        self._reset_test_timer()
+        self._reset_msg_timer()
 
         # Timer that controls how often new scan results are looked for
         self._result_timer = QtCore.QTimer()
@@ -208,28 +208,28 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         try:
             scanner_msg = self._message_queue.get(False)
             if self._camera_switch.is_side() and isinstance(scanner_msg, NoNewBarcodeMessage):
-                if not self._test_timer_is_running():
-                    # The result queue is read at a slower rate - give it time to process a new barcode
-                    self._start_test_timer()
-                elif self._has_test_timer_timeout():
+                if not self._msg_timer_is_running():
+                    # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
+                    self._start_msg_timer()
+                elif self._has_msg_timer_timeout():
                     self._message_box.display(MessageFactory.duplicate_barcode_message())
             else:
-                self._reset_test_timer()
+                self._reset_msg_timer()
                 self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
         except queue.Empty:
             return
 
-    def _reset_test_timer(self):
-        self._test_timer = None
+    def _reset_msg_timer(self):
+        self._duplicate_msg_timer = None
 
-    def _start_test_timer(self):
-        self._test_timer = time.time()
+    def _start_msg_timer(self):
+        self._duplicate_msg_timer = time.time()
 
-    def _test_timer_is_running(self):
-        return self._test_timer is not None
+    def _msg_timer_is_running(self):
+        return self._duplicate_msg_timer is not None
 
-    def _has_test_timer_timeout(self):
-        return self._test_timer_is_running() and time.time() - self._test_timer > 2*RESULT_TIMER_PERIOD/1000
+    def _has_msg_timer_timeout(self):
+        return self._msg_timer_is_running() and time.time() - self._duplicate_msg_timer > 2 * RESULT_TIMER_PERIOD / 1000
 
     def _read_result_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
