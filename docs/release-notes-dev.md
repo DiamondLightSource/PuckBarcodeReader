@@ -17,6 +17,7 @@ Changes merged into master
 | I04_1-144 | [#35](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/35) | Minor | Holder image merged into saved pins image |
 | I04_1-156 | [#37](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/37) | Minor | Messages displayed separately from image |
 | I04_1-150 | [#40](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/40) | Minor | Message displayed for duplicate barcode |
+| I04_1-168 | [#42](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/42) | Minor | Program accepts config file path as argument |
 
 
 Change Types:
