@@ -5,6 +5,7 @@ test-output
 demo-resources
 *.pyc
 config.ini
+launch_barcode.bat
 
 build
 dist
