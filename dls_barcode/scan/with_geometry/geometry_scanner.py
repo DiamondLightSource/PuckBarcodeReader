@@ -8,11 +8,7 @@ from .empty_detector import EmptySlotDetector
 from .plate_scanner import PlateScanner
 from .slot_scanner import SlotScanner
 from ..scan_result import ScanResult
-
-
-class NoBarcodesError(Exception):
-    pass
-
+from ..no_barcodes_detected_error import NoBarcodesDetectedError
 
 class GeometryScanner:
     def __init__(self, plate_type, barcode_sizes):
@@ -38,7 +34,7 @@ class GeometryScanner:
         try:
             self._perform_frame_scan()
             self._frame_result.set_plate(self._plate)
-        except (NoBarcodesError, GeometryException, GeometryAdjustmentError) as ex:
+        except (NoBarcodesDetectedError, GeometryException, GeometryAdjustmentError) as ex:
             self._frame_result.set_error(str(ex))
 
         self._frame_result.end_timer()
@@ -87,7 +83,7 @@ class GeometryScanner:
             barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
 
         if len(barcodes) == 0:
-            raise NoBarcodesError("No Barcodes Detected In Image")
+            raise NoBarcodesDetectedError()
 
         return barcodes
 

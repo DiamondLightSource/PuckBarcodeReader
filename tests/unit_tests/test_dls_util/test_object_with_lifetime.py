@@ -24,3 +24,14 @@ class TestObjectWithLifetime(unittest.TestCase):
 
         # Assert
         self.assertTrue(obj.has_expired())
+
+    def test_zero_lifetime_does_not_expire(self):
+        # Arrange
+        lifetime = 0
+
+        # Act
+        obj = ObjectWithLifetime(lifetime)
+        time.sleep(lifetime)
+
+        # Assert
+        self.assertFalse(obj.has_expired())

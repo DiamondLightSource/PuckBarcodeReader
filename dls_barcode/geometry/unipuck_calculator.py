@@ -34,10 +34,9 @@ class UnipuckCalculator:
         num_points = len(self._slot_centers)
 
         if num_points > self._num_slots:
-            raise GeometryAlignmentError("Too many points to perform Unipuck alignment")
-
+            raise GeometryAlignmentError("Too many slots detected to perform Unipuck alignment")
         elif num_points < MIN_POINTS_FOR_ALIGNMENT:
-            raise GeometryAlignmentError("Not enough points to perform Unipuck alignment")
+            raise GeometryAlignmentError("Not enough slots detected to perform Unipuck alignment")
 
         puck = self._calculate_puck_alignment()
         return puck
@@ -57,8 +56,8 @@ class UnipuckCalculator:
 
             return puck
 
-        except Exception as ex:
-            raise GeometryAlignmentError("Unipuck Alignment failed")
+        except Exception:
+            raise GeometryAlignmentError("Unipuck alignment failed")
 
     @staticmethod
     def _find_puck_center(pin_centers):
