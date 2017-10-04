@@ -36,7 +36,7 @@ TEST_OUTPUT_PATH = '../test-output/'
 
 CONFIG_FILE = "../config.ini"
 # TODO: restore the four commented lines below
-# OPTIONS = BarcodeConfig(DEFAULT_CONFIG_FILE)
+# OPTIONS = BarcodeConfig(CONFIG_FILE)
 
 # STORE = Store(OPTIONS.store_directory.value(), OPTIONS)
 
