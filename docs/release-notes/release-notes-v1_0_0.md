@@ -1,8 +1,8 @@
-Release Notes (Development)
+Release Notes (v1.0.0)
 ===========================
 
-Changes merged into master
---------------------------
+Summary of all changes
+----------------------
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
 | I04_1-143 | [#8](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/8) | Patch | Ghost subprocesses closed when exiting application |

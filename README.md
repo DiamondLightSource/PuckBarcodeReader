@@ -27,4 +27,5 @@ This section serves as an introduction for developers who are interested in main
 
 Release Notes
 -------------
-* [ReleaseNotes (development)](docs/release-notes-dev.md)
+* [ReleaseNotes (development)](docs/release-notes/release-notes-dev.md)
+* [ReleaseNotes (v1.0.0)](docs/release-notes/release-notes-v1_0_0.md)
