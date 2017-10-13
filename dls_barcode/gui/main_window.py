@@ -32,7 +32,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # UI elements
         self._record_table = None
         self._barcode_table = None
-        self.sideBarcodeWindow = None
         self._image_frame = None
 
         # Scan elements
