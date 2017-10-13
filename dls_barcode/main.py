@@ -8,8 +8,9 @@ path.append(dirname(path[0]))
 from dls_util import multiprocessing_support
 
 from PyQt4 import QtGui
-from gui import DiamondBarcodeMainWindow
 import argparse
+from gui import DiamondBarcodeMainWindow
+from version import VERSION
 
 # Detect if the program is running from source or has been bundled
 IS_BUNDLED = getattr(sys, 'frozen', False)
@@ -19,9 +20,9 @@ else:
     DEFAULT_CONFIG_FILE = "../config.ini"
 
 
-def main(config_file):
+def main(config_file, version):
     app = QtGui.QApplication(sys.argv)
-    ex = DiamondBarcodeMainWindow(config_file)
+    ex = DiamondBarcodeMainWindow(config_file, version)
     sys.exit(app.exec_())
 
 
@@ -37,4 +38,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print("CONFIG: " + args.config_file)
 
-    main(args.config_file)
+    main(args.config_file, VERSION)

@@ -23,10 +23,11 @@ MESSAGE_TIMER_PERIOD = 1 # ms
 class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.
     """
-    def __init__(self, config_file):
+    def __init__(self, config_file, version):
         super(DiamondBarcodeMainWindow, self).__init__()
 
         self._config = BarcodeConfig(config_file, FileManager())
+        self._version = version
 
         # UI elements
         self._record_table = None
@@ -115,7 +116,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
         live_action.setStatusTip('Capture continuously from camera')
-        live_action.triggered.connect(self._on_scan_menu_clicked)
+        live_action.triggered.connect(self._on_scan_action_clicked)
 
         # Exit Application
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -128,7 +129,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         options_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Options', self)
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
-        options_action.triggered.connect(self._on_options_menu_clicked)
+        options_action.triggered.connect(self._on_options_action_clicked)
+
+        # Show version number
+        about_action = QtGui.QAction("About", self)
+        about_action.triggered.connect(self._on_about_action_clicked)
 
         # Create menu bar
         menu_bar = self.menuBar()
@@ -141,14 +146,20 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         option_menu = menu_bar.addMenu('&Option')
         option_menu.addAction(options_action)
 
-    def _on_scan_menu_clicked(self):
+        help_menu = menu_bar.addMenu('?')
+        help_menu.addAction(about_action)
+
+    def _on_about_action_clicked(self):
+        QtGui.QMessageBox.about(self, 'About', "Version: " + self._version)
+
+    def _on_scan_action_clicked(self):
         print("MAIN: Scan menu clicked")
         if not self._camera_capture_alive():
             self._initialise_scanner()
 
         self._camera_switch.restart_live_capture_from_side()
 
-    def _on_options_menu_clicked(self):
+    def _on_options_action_clicked(self):
         result_ok = self._open_options_dialog()
         if not result_ok:
             return
