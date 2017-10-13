@@ -5,6 +5,7 @@ Changes merged into master
 --------------------------
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
+| I04_1-167 | [#44](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/44) | Minor | Added version number display |
 
 
 Change Types:
