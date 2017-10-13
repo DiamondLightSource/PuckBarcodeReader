@@ -38,6 +38,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Scan elements
         self._camera_scanner = None
         self._camera_switch = None
+        self._latest_holder_plate = None
 
         self._init_ui()
 
@@ -267,13 +268,19 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Barcode successfully read
         Beeper.beep()
         print("MAIN: puck barcode recorded")
-        if self._record_table.unique_side_barcode(plate): # if new side barcode
-            self.original_plate = plate
+        if not self._is_latest_holder_plate(plate):
+            self._latest_holder_plate = plate
             self._latest_holder_image = holder_image
             self._message_box.display(MessageFactory.puck_recorded_message())
             self._camera_switch.restart_live_capture_from_top()
         else:
             self._message_box.display(MessageFactory.duplicate_barcode_message())
+
+    def _is_latest_holder_plate(self, plate):
+        if self._latest_holder_plate is None:
+            return False
+
+        return self._latest_holder_plate.barcodes()[0] == plate.barcodes()[0]
 
     def _read_top_scan(self):
         if self._result_queue.empty():
@@ -286,8 +293,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Get the result
         plate, pins_image = self._result_queue.get(False)
 
-        # Add new record to the table - side is the original_plate read first, top is the plate
-        self._record_table.add_record_frame(self.original_plate, plate, self._latest_holder_image, pins_image)
+        # Add new record to the table - side is the _latest_holder_plate read first, top is the plate
+        self._record_table.add_record_frame(self._latest_holder_plate, plate, self._latest_holder_image, pins_image)
         if not plate.is_full_valid():
             return
 

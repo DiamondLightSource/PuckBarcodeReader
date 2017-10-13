@@ -136,14 +136,4 @@ class ScanRecordTable(QGroupBox):
             self._store.delete_records(records_to_delete)
             self._load_store_records()
 
-    def unique_side_barcode(self, plate):
-        barcodes = []
-        plate_barcodes = plate.barcodes()
-        store = self._store
-        rec = store.records
-        for m,record in enumerate(rec):
-            barcodes = barcodes + record.barcodes[:]
-        if plate_barcodes[0] in barcodes:
-            return False
-        return True
 
