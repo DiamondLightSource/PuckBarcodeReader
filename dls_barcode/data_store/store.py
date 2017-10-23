@@ -8,10 +8,10 @@ class Store:
     """ Maintains a list of records of previous barcodes scans. Any changes (additions
     or deletions) are automatically written to the backing file.
     """
-    def __init__(self, directory, options, file_manager):
+    def __init__(self, directory, store_capacity, file_manager):
         """ Initializes a new instance of Store.
         """
-        self._options = options
+        self._store_capacity = store_capacity
         self._directory = directory
         self._file_manager = file_manager
         self._file = os.path.join(directory, "store.txt")
@@ -52,7 +52,7 @@ class Store:
         """
         return self.records[index] if self.records else None
 
-    def add_record(self, plate, second_plate, holder_img, pins_img):
+    def _add_record(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new record to the store and save to the backing file.
         """
         merged_img = self._merge_holder_image_into_pins_image(holder_img, pins_img)
@@ -60,26 +60,25 @@ class Store:
         filename = os.path.abspath(os.path.join(self._img_dir, guid + '.png'))
         merged_img.save_as(filename)
 
-        record = Record.from_plate(plate, second_plate, filename)
+        record = Record.from_plate(holder_barcode, plate, filename)
 
         self.records.append(record)
         self._process_change()
         self._truncate_record_list()
 
-    def merge_record(self, plate, second_plate, holder_img, pins_img):
-        """ Create new record or replace existing record if it has the same barcodes as the most
+    def merge_record(self, holder_barcode, plate, holder_img, pins_img):
+        """ Create new record or replace existing record if it has the same holder barcode as the most
         recent record. Save to backing store. """
-        #Checking only holder barcodes is sufficient
-        if len(self.records) > 0 and self.records[0].any_barcode_matches(plate.barcodes()):
+        if self.records and self.records[0].holder_barcode == holder_barcode:
             self.delete_records([self.records[0]])
 
-        self.add_record(plate, second_plate, holder_img, pins_img)
+        self._add_record(holder_barcode, plate, holder_img, pins_img)
 
-    def delete_records(self, records):
+    def delete_records(self, records_to_delete):
         """ Remove all of the records in the supplied list from the store and
         save changes to the backing file.
         """
-        for record in records:
+        for record in records_to_delete:
             self.records.remove(record)
             if self._file_manager.is_file(record.image_path):
                 self._file_manager.remove(record.image_path)
@@ -87,7 +86,7 @@ class Store:
         self._process_change()
 
     def _truncate_record_list(self):
-        number = self._options.store_capacity.value()
+        number = self._store_capacity.value()
         number = max(number, 2)
 
         if len(self.records) > number:
@@ -102,7 +101,7 @@ class Store:
         self._to_csv_file()
 
     def _sort_records(self):
-        """ Sort the records in descending date order (must recent first).
+        """ Sort the records in descending date order (most recent first).
         """
         self.records.sort(reverse=True, key=lambda record: record.timestamp)
 

@@ -29,9 +29,10 @@ class Record:
 
     BAD_SYMBOLS = [EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL]
 
-    def __init__(self, plate_type, barcodes, image_path, geometry, timestamp=0.0, id=0):
+    def __init__(self, plate_type, holder_barcode, barcodes, image_path, geometry, timestamp=0.0, id=0):
         """
         :param plate_type: the type of the sample holder plate (string)
+        :param holder_barcode: the barcode of the holder plate
         :param barcodes: ordered array of strings giving the barcodes in each slot
             of the plate in order. Empty slots should be denoted by empty strings.
         :param image_path: the absolute path of the image.
@@ -43,8 +44,10 @@ class Record:
             self.timestamp = float(timestamp)
         except ValueError:
             self.timestamp = 0.0
+
         self.image_path = image_path
         self.plate_type = plate_type
+        self.holder_barcode = holder_barcode
         self.barcodes = barcodes
         self.geometry = geometry
         self.id = str(id)
@@ -57,27 +60,25 @@ class Record:
         # Generate timestamp and uid if none are supplied
         if timestamp == 0:
             self.timestamp = time.time()
+
         if id == 0:
             self.id = str(uuid.uuid4())
 
-        # Separate Data and Time
+        # Separate Date and Time
         dt = self._formatted_date().split(" ")
         self.date = dt[0]
         self.time = dt[1]
 
         # Counts of numbers slots and barcodes
-        self.num_slots = len(barcodes)
-        self.num_empty_slots = len([b for b in barcodes if b == EMPTY_SLOT_SYMBOL])
-        self.num_unread_slots = len([b for b in barcodes if b == NOT_FOUND_SLOT_SYMBOL])
+        self.num_slots = len(self.barcodes)
+        self.num_empty_slots = len([b for b in self.barcodes if b == EMPTY_SLOT_SYMBOL])
+        self.num_unread_slots = len([b for b in self.barcodes if b == NOT_FOUND_SLOT_SYMBOL])
         self.num_valid_barcodes = self.num_slots - self.num_unread_slots - self.num_empty_slots
 
     @staticmethod
-    def from_plate(plate, second_plate, image_path):
-        plate_type = second_plate.type
-        geometry = second_plate.geometry()
-        barcodes = plate.barcodes() + second_plate.barcodes()
-
-        return Record(plate_type=plate_type, barcodes=barcodes, image_path=image_path, geometry=geometry)
+    def from_plate(holder_barcode, plate, image_path):
+        return Record(plate_type=plate.type, holder_barcode=holder_barcode, barcodes=plate.barcodes(),
+                      image_path=image_path, geometry=plate.geometry())
 
     @staticmethod
     def from_string(string):
@@ -89,21 +90,24 @@ class Record:
         timestamp = items[Record.IND_TIMESTAMP] #used to convert into float twice
         image = items[Record.IND_IMAGE]
         plate_type = items[Record.IND_PLATE]
-        barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
+        all_barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
+        holder_barcode = all_barcodes[0]
+        pin_barcodes = all_barcodes[1:]
 
         geo_class = Geometry.get_class(plate_type)
         geometry = geo_class.deserialize(items[Record.IND_GEOMETRY])
 
-        return Record(plate_type=plate_type, barcodes=barcodes, timestamp=timestamp,
+        return Record(plate_type=plate_type, holder_barcode=holder_barcode, barcodes=pin_barcodes, timestamp=timestamp,
                       image_path=image, id=id, geometry=geometry)
 
     def to_csv_string(self):
         """ Converts a scan record object into a string that can be stored in a csv file.
         """
-        items = [0] * 3
-        items[0] = str(self.id)
-        items[1] = str(self._formatted_date())
-        items[2] = Record.BC_SEPARATOR.join(self.barcodes)
+        items = list()
+        items.append(str(self.id))
+        items.append(str(self._formatted_date()))
+        items.append(self.holder_barcode)
+        items.append(Record.BC_SEPARATOR.join(self.barcodes))
         return Record.BC_SEPARATOR.join(items)
 
     def to_string(self):
@@ -115,7 +119,7 @@ class Record:
         items[Record.IND_TIMESTAMP] = str(self.timestamp)
         items[Record.IND_IMAGE] = self.image_path
         items[Record.IND_PLATE] = self.plate_type
-        items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self.barcodes)
+        items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self._all_barcodes())
         items[Record.IND_GEOMETRY] = self.geometry.serialize()
         return Record.ITEM_SEPARATOR.join(items)
 
@@ -123,21 +127,20 @@ class Record:
         """ Returns true if the record contains any barcode which is also
         contained in the specified list
         """
-        barcodes = [bc for bc in barcodes if bc not in Record.BAD_SYMBOLS]
-        for bc in barcodes:
-            if bc in self.barcodes:
+        valid_barcodes = [bc for bc in barcodes if bc not in Record.BAD_SYMBOLS]
+        for bc in valid_barcodes:
+            if bc in self._all_barcodes():
                 return True
 
         return False
 
-    #TODO: modify when two images merged
-    # only the image of the top for the time being
+    def _all_barcodes(self):
+        return [self.holder_barcode] + self.barcodes
+
     def image(self):
         image = Image.from_file(self.image_path)
         return image
 
-    #TODO: modify when two images merged
-    # only the image of the top for the time being
     def marked_image(self, options):
         geo = self.geometry
         image = self.image()
@@ -155,9 +158,7 @@ class Record:
 
     # marking the top image
     def _draw_pins(self, image, geometry, options):
-        top_barcodes = list(self.barcodes) #copy of the list
-        top_barcodes.pop(0)# remove the first element (side barcode)
-        for i, bc in enumerate(top_barcodes):
+        for i, bc in enumerate(self.barcodes):
             if bc == NOT_FOUND_SLOT_SYMBOL:
                 color = options.col_bad()
             elif bc == EMPTY_SLOT_SYMBOL:
