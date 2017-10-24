@@ -3,7 +3,7 @@ mkdir bin
 
 cd dls_barcode
 
-pyinstaller --onefile --windowed main.py
+pyinstaller --onefile --windowed --icon=..\resources\icons\qr_code.ico --clean main.py
 
 move dist\main.exe ..\bin\barcode.exe
 rd /S /Q build

@@ -66,9 +66,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _init_ui(self):
         """ Create the basic elements of the user interface.
         """
+        self._init_icons()
+
         self.setGeometry(100, 100, 1020, 650)
         self.setWindowTitle('Diamond Puck Barcode Scanner')
-        self.setWindowIcon(QtGui.QIcon('web.png'))
+        self.setWindowIcon(self._window_icon)
 
         self.init_menu_bar()
 
@@ -109,30 +111,37 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self.show()
 
+    def _init_icons(self):
+        self._window_icon = QtGui.QIcon("..\\resources\\icons\\qr_code_32.png")
+        self._start_capture_icon = self.style().standardIcon(QtGui.QStyle.SP_MediaPlay)
+        self._exit_icon = self.style().standardIcon(QtGui.QStyle.SP_DialogCloseButton)
+        self._config_icon = self.style().standardIcon(QtGui.QStyle.SP_FileDialogDetailedView)
+        self._about_icon = self.style().standardIcon(QtGui.QStyle.SP_FileDialogInfoView)
+
     def init_menu_bar(self):
         """Create and populate the menu bar.
         """
         # Continuous scanner mode
-        live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
+        live_action = QtGui.QAction(self._start_capture_icon, '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
         live_action.setStatusTip('Capture continuously from camera')
         live_action.triggered.connect(self._on_scan_action_clicked)
 
         # Exit Application
-        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+        exit_action = QtGui.QAction(self._exit_icon, '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self._cleanup)
         exit_action.triggered.connect(QtGui.qApp.quit)
 
         # Open options dialog
-        options_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Options', self)
+        options_action = QtGui.QAction(self._config_icon, '&Config', self)
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
         options_action.triggered.connect(self._on_options_action_clicked)
 
         # Show version number
-        about_action = QtGui.QAction("About", self)
+        about_action = QtGui.QAction(self._about_icon, "About", self)
         about_action.triggered.connect(self._on_about_action_clicked)
 
         # Create menu bar
@@ -143,7 +152,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         scan_menu = menu_bar.addMenu('&Scan')
         scan_menu.addAction(live_action)
 
-        option_menu = menu_bar.addMenu('&Option')
+        option_menu = menu_bar.addMenu('&Options')
         option_menu.addAction(options_action)
 
         help_menu = menu_bar.addMenu('?')
@@ -169,7 +178,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._camera_switch.restart_live_capture_from_side()
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config, self._before_test_camera) # pass the object here and trigger when the button is pressed
+        dialog = BarcodeConfigDialog(self._config, self._before_test_camera)
+        dialog.setWindowIcon(self._config_icon)
         result_ok = dialog.exec_()
         return result_ok
 
