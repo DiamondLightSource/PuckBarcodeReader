@@ -227,23 +227,23 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
                 self._start_msg_timer()
             elif self._has_msg_timer_timeout():
-                self._message_box.display(MessageFactory.duplicate_barcode_message())
+                self._message_box.display(MessageFactory.latest_barcode_message())
         else:
             self._reset_msg_timer()
             self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
 
     def _reset_msg_timer(self):
-        self._duplicate_msg_timer = None
+        self._duplicate_record_msg_timer = None
 
     def _start_msg_timer(self):
-        self._duplicate_msg_timer = time.time()
+        self._duplicate_record_msg_timer = time.time()
 
     def _msg_timer_is_running(self):
-        return self._duplicate_msg_timer is not None
+        return self._duplicate_record_msg_timer is not None
 
     def _has_msg_timer_timeout(self):
         timeout = 2 * RESULT_TIMER_PERIOD / 1000
-        return self._msg_timer_is_running() and time.time() - self._duplicate_msg_timer > timeout
+        return self._msg_timer_is_running() and time.time() - self._duplicate_record_msg_timer > timeout
 
     def _read_result_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
@@ -274,7 +274,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._message_box.display(MessageFactory.puck_recorded_message())
             self._restart_live_capture_from_top()
         else:
-            self._message_box.display(MessageFactory.duplicate_barcode_message())
+            self._message_box.display(MessageFactory.latest_barcode_message())
 
     def _read_top_scan(self):
         if self._result_queue.empty():
