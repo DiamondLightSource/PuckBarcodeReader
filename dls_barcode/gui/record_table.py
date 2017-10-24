@@ -136,4 +136,12 @@ class ScanRecordTable(QGroupBox):
             self._store.delete_records(records_to_delete)
             self._load_store_records()
 
+    def is_latest_holder_barcode(self, plate):
+        latest_record = self._store.get_record(0)
+
+        if latest_record is not None and plate.barcodes()[0] in latest_record.barcodes:
+            return True
+
+        return False
+
 

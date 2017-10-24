@@ -61,7 +61,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._message_timer.timeout.connect(self._read_message_queue)
         self._message_timer.start(MESSAGE_TIMER_PERIOD)
 
-        self._camera_switch.restart_live_capture_from_side()
+        self._restart_live_capture_from_side()
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
@@ -157,7 +157,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._camera_capture_alive():
             self._initialise_scanner()
 
-        self._camera_switch.restart_live_capture_from_side()
+        self._restart_live_capture_from_side()
 
     def _on_options_action_clicked(self):
         result_ok = self._open_options_dialog()
@@ -166,7 +166,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self._cleanup()
         self._initialise_scanner()
-        self._camera_switch.restart_live_capture_from_side()
+        self._restart_live_capture_from_side()
 
     def _open_options_dialog(self):
         dialog = BarcodeConfigDialog(self._config, self._before_test_camera) # pass the object here and trigger when the button is pressed
@@ -242,7 +242,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         return self._duplicate_msg_timer is not None
 
     def _has_msg_timer_timeout(self):
-        return self._msg_timer_is_running() and time.time() - self._duplicate_msg_timer > 2 * RESULT_TIMER_PERIOD / 1000
+        timeout = 2 * RESULT_TIMER_PERIOD / 1000
+        return self._msg_timer_is_running() and time.time() - self._duplicate_msg_timer > timeout
 
     def _read_result_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
@@ -267,26 +268,20 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Barcode successfully read
         Beeper.beep()
         print("MAIN: puck barcode recorded")
-        if not self._is_latest_holder_plate(plate):
+        if not self._record_table.is_latest_holder_barcode(plate):
             self._latest_holder_plate = plate
             self._latest_holder_image = holder_image
             self._message_box.display(MessageFactory.puck_recorded_message())
-            self._camera_switch.restart_live_capture_from_top()
+            self._restart_live_capture_from_top()
         else:
             self._message_box.display(MessageFactory.duplicate_barcode_message())
-
-    def _is_latest_holder_plate(self, plate):
-        if self._latest_holder_plate is None:
-            return False
-
-        return self._latest_holder_plate.barcodes()[0] == plate.barcodes()[0]
 
     def _read_top_scan(self):
         if self._result_queue.empty():
             if self._camera_switch.is_top_scan_timeout():
                 self._message_box.display(MessageFactory.scan_timeout_message())
                 print("\n*** Scan timeout ***")
-                self._camera_switch.restart_live_capture_from_side()
+                self._restart_live_capture_from_side()
             return
 
         # Get the result
@@ -301,5 +296,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         Beeper.beep()
         print("Scan Completed")
         self._message_box.display(MessageFactory.scan_completed_message())
+        self._restart_live_capture_from_side()
+
+    def _restart_live_capture_from_top(self):
+        self._camera_switch.restart_live_capture_from_top()
+
+    def _restart_live_capture_from_side(self):
+        self._reset_msg_timer()
         self._camera_switch.restart_live_capture_from_side()
 
