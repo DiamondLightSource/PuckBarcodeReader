@@ -16,13 +16,13 @@ class ScanRecordTable(QGroupBox):
     details of the scan to appear in other GUI components (list of barcodes in the barcode
     table and image of the puck in the image frame).
     """
-    COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
+    COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
     def __init__(self, barcode_table, image_frame, options, to_run_on_table_clicked):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
-        self._store = Store(options.store_directory.value(), options, FileManager())
+        self._store = Store(options.store_directory.value(), options.store_capacity, FileManager())
         self._options = options
 
         self._barcodeTable = barcode_table
@@ -43,9 +43,10 @@ class ScanRecordTable(QGroupBox):
         self._table.setColumnWidth(0, 70)
         self._table.setColumnWidth(1, 55)
         self._table.setColumnWidth(2, 85)
-        self._table.setColumnWidth(3, 60)
-        self._table.setColumnWidth(4, 60)
-        self._table.setColumnWidth(5, 60)
+        self._table.setColumnWidth(3, 70)
+        self._table.setColumnWidth(4, 45)
+        self._table.setColumnWidth(5, 50)
+        self._table.setColumnWidth(6, 45)
         self._table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self._table.cellPressed.connect(to_run_on_table_clicked)
         self._table.cellPressed.connect(self._record_selected)
@@ -81,7 +82,7 @@ class ScanRecordTable(QGroupBox):
         self._table.setRowCount(self._store.size())
 
         for n, record in enumerate(self._store.records):
-            items = [record.date, record.time, record.plate_type, record.num_valid_barcodes,
+            items = [record.date, record.time, record.holder_barcode, record.plate_type, record.num_valid_barcodes,
                      record.num_unread_slots, record.num_empty_slots]
 
             if (record.num_valid_barcodes + record.num_empty_slots) == record.num_slots:
@@ -136,14 +137,7 @@ class ScanRecordTable(QGroupBox):
             self._store.delete_records(records_to_delete)
             self._load_store_records()
 
-    def unique_side_barcode(self, plate):
-        barcodes = []
-        plate_barcodes = plate.barcodes()
-        store = self._store
-        rec = store.records
-        for m,record in enumerate(rec):
-            barcodes = barcodes + record.barcodes[:]
-        if plate_barcodes[0] in barcodes:
-            return False
-        return True
+    def is_new_holder_barcode(self, holder_barcode):
+        return self._store.is_new_holder_barcode(holder_barcode)
+
 
