@@ -3,8 +3,8 @@ from dls_util.message import MessageType, Message
 
 class MessageFactory:
     @staticmethod
-    def duplicate_barcode_message():
-        return Message(MessageType.WARNING, "Puck barcode already in database", lifetime=3)
+    def latest_barcode_message():
+        return Message(MessageType.WARNING, "Puck barcode already in latest record", lifetime=3)
 
     @staticmethod
     def from_scanner_message(scanner_msg):

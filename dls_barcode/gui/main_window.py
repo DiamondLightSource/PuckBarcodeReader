@@ -32,7 +32,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # UI elements
         self._record_table = None
         self._barcode_table = None
-        self.sideBarcodeWindow = None
         self._image_frame = None
 
         # Scan elements
@@ -61,14 +60,16 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._message_timer.timeout.connect(self._read_message_queue)
         self._message_timer.start(MESSAGE_TIMER_PERIOD)
 
-        self._camera_switch.restart_live_capture_from_side()
+        self._restart_live_capture_from_side()
 
     def _init_ui(self):
         """ Create the basic elements of the user interface.
         """
+        self._init_icons()
+
         self.setGeometry(100, 100, 1020, 650)
         self.setWindowTitle('Diamond Puck Barcode Scanner')
-        self.setWindowIcon(QtGui.QIcon('web.png'))
+        self.setWindowIcon(self._window_icon)
 
         self.init_menu_bar()
 
@@ -109,30 +110,37 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self.show()
 
+    def _init_icons(self):
+        self._window_icon = QtGui.QIcon("..\\resources\\icons\\qr_code_32.png")
+        self._start_capture_icon = self.style().standardIcon(QtGui.QStyle.SP_MediaPlay)
+        self._exit_icon = self.style().standardIcon(QtGui.QStyle.SP_DialogCloseButton)
+        self._config_icon = self.style().standardIcon(QtGui.QStyle.SP_FileDialogDetailedView)
+        self._about_icon = self.style().standardIcon(QtGui.QStyle.SP_FileDialogInfoView)
+
     def init_menu_bar(self):
         """Create and populate the menu bar.
         """
         # Continuous scanner mode
-        live_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Camera Capture', self)
+        live_action = QtGui.QAction(self._start_capture_icon, '&Camera Capture', self)
         live_action.setShortcut('Ctrl+W')
         live_action.setStatusTip('Capture continuously from camera')
         live_action.triggered.connect(self._on_scan_action_clicked)
 
         # Exit Application
-        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+        exit_action = QtGui.QAction(self._exit_icon, '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self._cleanup)
         exit_action.triggered.connect(QtGui.qApp.quit)
 
         # Open options dialog
-        options_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Options', self)
+        options_action = QtGui.QAction(self._config_icon, '&Config', self)
         options_action.setShortcut('Ctrl+O')
         options_action.setStatusTip('Open Options Dialog')
         options_action.triggered.connect(self._on_options_action_clicked)
 
         # Show version number
-        about_action = QtGui.QAction("About", self)
+        about_action = QtGui.QAction(self._about_icon, "About", self)
         about_action.triggered.connect(self._on_about_action_clicked)
 
         # Create menu bar
@@ -143,7 +151,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         scan_menu = menu_bar.addMenu('&Scan')
         scan_menu.addAction(live_action)
 
-        option_menu = menu_bar.addMenu('&Option')
+        option_menu = menu_bar.addMenu('&Options')
         option_menu.addAction(options_action)
 
         help_menu = menu_bar.addMenu('?')
@@ -157,7 +165,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._camera_capture_alive():
             self._initialise_scanner()
 
-        self._camera_switch.restart_live_capture_from_side()
+        self._restart_live_capture_from_side()
 
     def _on_options_action_clicked(self):
         result_ok = self._open_options_dialog()
@@ -166,10 +174,11 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         self._cleanup()
         self._initialise_scanner()
-        self._camera_switch.restart_live_capture_from_side()
+        self._restart_live_capture_from_side()
 
     def _open_options_dialog(self):
-        dialog = BarcodeConfigDialog(self._config, self._before_test_camera) # pass the object here and trigger when the button is pressed
+        dialog = BarcodeConfigDialog(self._config, self._before_test_camera)
+        dialog.setWindowIcon(self._config_icon)
         result_ok = dialog.exec_()
         return result_ok
 
@@ -227,22 +236,23 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
                 self._start_msg_timer()
             elif self._has_msg_timer_timeout():
-                self._message_box.display(MessageFactory.duplicate_barcode_message())
+                self._message_box.display(MessageFactory.latest_barcode_message())
         else:
             self._reset_msg_timer()
             self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
 
     def _reset_msg_timer(self):
-        self._duplicate_msg_timer = None
+        self._duplicate_record_msg_timer = None
 
     def _start_msg_timer(self):
-        self._duplicate_msg_timer = time.time()
+        self._duplicate_record_msg_timer = time.time()
 
     def _msg_timer_is_running(self):
-        return self._duplicate_msg_timer is not None
+        return self._duplicate_record_msg_timer is not None
 
     def _has_msg_timer_timeout(self):
-        return self._msg_timer_is_running() and time.time() - self._duplicate_msg_timer > 2 * RESULT_TIMER_PERIOD / 1000
+        timeout = 2 * RESULT_TIMER_PERIOD / 1000
+        return self._msg_timer_is_running() and time.time() - self._duplicate_record_msg_timer > timeout
 
     def _read_result_queue(self):
         """ Called every second; read any new results from the scan results queue, store them and display them.
@@ -268,27 +278,27 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         Beeper.beep()
         print("MAIN: puck barcode recorded")
         holder_barcode = plate.barcodes()[0]
-        if self._record_table.is_new_holder_barcode (holder_barcode):
-            self._current_holder_barcode = holder_barcode
+        if not self._record_table.is_latest_holder_barcode(holder_barcode):
+            self._latest_holder_barcode = holder_barcode
             self._latest_holder_image = holder_image
             self._message_box.display(MessageFactory.puck_recorded_message())
-            self._camera_switch.restart_live_capture_from_top()
+            self._restart_live_capture_from_top()
         else:
-            self._message_box.display(MessageFactory.duplicate_barcode_message())
+            self._message_box.display(MessageFactory.latest_barcode_message())
 
     def _read_top_scan(self):
         if self._result_queue.empty():
             if self._camera_switch.is_top_scan_timeout():
                 self._message_box.display(MessageFactory.scan_timeout_message())
                 print("\n*** Scan timeout ***")
-                self._camera_switch.restart_live_capture_from_side()
+                self._restart_live_capture_from_side()
             return
 
         # Get the result
         plate, pins_image = self._result_queue.get(False)
 
-        # Add new record to the table - side is the _current_holder_barcode read first, top is the plate
-        self._record_table.add_record_frame(self._current_holder_barcode, plate, self._latest_holder_image, pins_image)
+        # Add new record to the table - side is the _latest_holder_barcode read first, top is the plate
+        self._record_table.add_record_frame(self._latest_holder_barcode, plate, self._latest_holder_image, pins_image)
         if not plate.is_full_valid():
             return
 
@@ -296,5 +306,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         Beeper.beep()
         print("Scan Completed")
         self._message_box.display(MessageFactory.scan_completed_message())
+        self._restart_live_capture_from_side()
+
+    def _restart_live_capture_from_top(self):
+        self._camera_switch.restart_live_capture_from_top()
+
+    def _restart_live_capture_from_side(self):
+        self._reset_msg_timer()
         self._camera_switch.restart_live_capture_from_side()
 

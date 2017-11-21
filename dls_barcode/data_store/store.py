@@ -125,6 +125,6 @@ class Store:
         merged_img.paste(small_holder_img, 0, 0)
         return merged_img
 
-    def is_new_holder_barcode(self, holder_barcode):
-        known_holder_barcodes = [r.holder_barcode for r in self.records]
-        return not holder_barcode in known_holder_barcodes
+    def is_latest_holder_barcode(self, holder_barcode):
+        latest_record = self.get_record(0)
+        return latest_record is not None and holder_barcode == latest_record.holder_barcode
