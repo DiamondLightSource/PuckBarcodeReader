@@ -126,13 +126,13 @@ class Record:
     def _all_barcodes(self):
         return [self.holder_barcode] + self.barcodes
 
-    def image(self):
+    def _image(self):
         image = Image.from_file(self.image_path)
         return image
 
     def marked_image(self, options):
         geo = self.geometry
-        image = self.image()
+        image = self._image()
 
         if options.image_puck.value():
             geo.draw_plate(image, Color.Blue())

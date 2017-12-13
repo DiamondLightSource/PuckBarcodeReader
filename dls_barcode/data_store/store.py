@@ -64,7 +64,6 @@ class Store:
 
         self.records.append(record)
         self._process_change()
-        self._truncate_record_list()
 
     def merge_record(self, holder_barcode, plate, holder_img, pins_img):
         """ Create new record or replace existing record if it has the same holder barcode as the most
@@ -86,17 +85,18 @@ class Store:
         self._process_change()
 
     def _truncate_record_list(self):
-        number = self._store_capacity.value()
-        number = max(number, 2)
+        min_store_capacity = 2
+        actual_store_capacity = max(self._store_capacity.value(), min_store_capacity)
 
-        if len(self.records) > number:
-            to_delete = self.records[number:]
+        if len(self.records) > actual_store_capacity:
+            to_delete = self.records[actual_store_capacity:]
             self.delete_records(to_delete)
 
     def _process_change(self):
         """ Sort the records and save to file.
         """
         self._sort_records()
+        self._truncate_record_list()
         self._to_file()
         self._to_csv_file()
 
