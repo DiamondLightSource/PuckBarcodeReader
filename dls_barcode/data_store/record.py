@@ -123,17 +123,6 @@ class Record:
         items[Record.IND_GEOMETRY] = self.geometry.serialize()
         return Record.ITEM_SEPARATOR.join(items)
 
-    def any_barcode_matches(self, barcodes):
-        """ Returns true if the record contains any barcode which is also
-        contained in the specified list
-        """
-        valid_barcodes = [bc for bc in barcodes if bc not in Record.BAD_SYMBOLS]
-        for bc in valid_barcodes:
-            if bc in self._all_barcodes():
-                return True
-
-        return False
-
     def _all_barcodes(self):
         return [self.holder_barcode] + self.barcodes
 

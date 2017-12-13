@@ -56,30 +56,6 @@ class TestRecord(unittest.TestCase):
         for i in range(len(list_str) - 1):
             self.assertTrue(list_str[i] == list_new_str[i])
 
-    def test_any_barcode_matches_returns_true_if_only_one_barcode_matches(self):
-        # Arrange
-        str = "f59c92c1;1494238920.0;test.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
-        r = Record.from_string(str)
-
-        # Act-Assert
-        self.assertTrue(r.any_barcode_matches(['DLSL-010','DLSL-011111']))
-
-    def test_any_barcode_matches_returns_false_if_no_barcode_matches(self):
-        # Arrange
-        str = "f59c92c1;1494238920.0;test.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
-        r = Record.from_string(str)
-
-        # Act-Assert
-        self.assertFalse(r.any_barcode_matches(['DLSL', 'DLSL3']))
-
-    def test_any_barcode_matches_returns_false_if_no_barcodes_passed(self):
-        # Arrange
-        str = "f59c92c1;1494238920.0;test.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
-        r = Record.from_string(str)
-
-        # Act=Assert
-        self.assertFalse(r.any_barcode_matches([]))
-
     def test_csv_string_contains_time_in_human_readable_format(self):
         # Arrange
         timestamp = 1505913516.3836024
