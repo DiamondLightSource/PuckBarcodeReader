@@ -73,7 +73,7 @@ class ScanRecordTable(QGroupBox):
         self._store.merge_record(holder_barcode, plate, holder_img, pins_img)
         self._load_store_records()
         if self._options.scan_clipboard.value():
-            self._barcodeTable.copy_selected_to_clipboard()
+            self._barcodeTable.copy_to_clipboard()
 
     def _load_store_records(self):
         """ Populate the record table with all of the records in the store.
@@ -109,11 +109,11 @@ class ScanRecordTable(QGroupBox):
         try:
             row = self._table.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
-            self._barcodeTable.populate(record.barcodes)
+            self._barcodeTable.populate(record.holder_barcode, record.barcodes)
             marked_image = record.marked_image(self._options)
             self._imageFrame.display_puck_image(marked_image)
         except IndexError:
-            self._barcodeTable.populate([])
+            self._barcodeTable.clear()
             self._imageFrame.clear_frame("Record table empty\nNothing to display")
 
     def _delete_selected_records(self):
