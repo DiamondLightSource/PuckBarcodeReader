@@ -4,10 +4,10 @@ from mock import call
 import os
 from dls_barcode.data_store import Store
 
-ID0 = "id1"
-ID1 = "id2"
-ID2 = "id3"
-ID3 = "id4"
+ID0 = "id0"
+ID1 = "id1"
+ID2 = "id2"
+ID3 = "id3"
 
 class TestStore(unittest.TestCase):
 
@@ -52,6 +52,7 @@ class TestStore(unittest.TestCase):
 
         # Assert
         self.assertFalse(store.records)
+        self.assert
         self.assertEquals(store.size(), 0)
 
     def test_new_store_loads_records_from_existing_store_file(self):
@@ -65,6 +66,10 @@ class TestStore(unittest.TestCase):
         # Assert
         self.assertEquals(len(store.records), len(record_strings))
         self.assertEquals(store.size(), len(record_strings))
+        self.assertEquals(store.records[0].id, ID0)
+        self.assertEquals(store.records[1].id, ID1)
+        self.assertEquals(store.records[2].id, ID2)
+        self.assertEquals(store.records[3].id, ID3)
 
     def test_new_store_skips_invalid_lines_when_loading_records_from_file(self):
         # Arrange
@@ -75,6 +80,8 @@ class TestStore(unittest.TestCase):
 
         # Assert
         self.assertEquals(len(store.records), 2)
+        self.assertEquals(store.records[0].id, ID0)
+        self.assertEquals(store.records[1].id, ID2)
 
     def test_max_number_of_stored_records_is_the_store_capacity(self):
         # Arrange
@@ -108,7 +115,7 @@ class TestStore(unittest.TestCase):
 
     def test_new_store_has_records_sorted_most_recent_first(self):
         # Arrange
-        self._file_manager.read_lines.return_value = self._get_record_strings()
+        self._file_manager.read_lines.return_value = self._get_unordered_record_strings()
 
         # Act
         store = self._create_store()
@@ -152,7 +159,7 @@ class TestStore(unittest.TestCase):
         # Assert
         self._pins_img_copy.save_as.assert_called_once()
         ((image_filename_used,), kwargs) = self._pins_img_copy.save_as.call_args
-        self.assertTrue(self._expected_img_dir in image_filename_used)
+        self.assertIn(self._expected_img_dir, image_filename_used)
 
     def test_given_an_empty_store_when_merging_a_record_then_the_record_is_added_to_the_store(self):
         # Arrange
@@ -238,7 +245,7 @@ class TestStore(unittest.TestCase):
         self._file_manager.write_lines.assert_called()
         ((filename_used, record_lines_used), kwargs) = self._file_manager.write_lines.call_args_list[0]
         self.assertEquals(filename_used, self._expected_store_file)
-        self.assertTrue(holder_barcode in record_lines_used[0])
+        self.assertIn(holder_barcode, record_lines_used[0])
 
     def test_given_a_store_when_merging_a_record_then_store_is_saved_to_csv_file(self):
         # Arrange
@@ -253,7 +260,7 @@ class TestStore(unittest.TestCase):
         self._file_manager.write_lines.assert_called()
         ((filename_used, record_lines_used), kwargs) = self._file_manager.write_lines.call_args_list[1]
         self.assertEquals(filename_used, self._expected_csv_file)
-        self.assertTrue(holder_barcode in record_lines_used[0])
+        self.assertIn(holder_barcode, record_lines_used[0])
 
     def test_given_a_non_empty_store_of_size_equal_to_capacity_when_a_new_record_is_merged_then_oldest_record_is_deleted(self):
         # Arrange
@@ -264,6 +271,7 @@ class TestStore(unittest.TestCase):
         old_store_size = store.size()
         self.assertEquals(old_store_size, capacity)
         holder_barcode = "asd"
+        oldest_record = store.records[-1]
 
         # Act
         store.merge_record(holder_barcode, self._plate, self._holder_img, self._pins_img)
@@ -272,15 +280,14 @@ class TestStore(unittest.TestCase):
         self.assertEquals(store.size(), old_store_size)
         latest_rec = store.get_record(0)
         self.assertEquals(latest_rec.holder_barcode, holder_barcode)
-        ids = [r.id for r in store.records]
-        self.assertFalse(ID3 in ids)
+        self.assertNotIn(oldest_record, store.records)
 
     def test_multiple_records_can_be_deleted(self):
         # Arrange
         self._file_manager.read_lines.return_value = self._get_record_strings()
         store = self._create_store()
         old_store_size = store.size()
-        records_to_delete = [r for r in store.records if r.id == ID1 or r.id == ID3]
+        records_to_delete =[r for r in store.records if r.id == ID1 or r.id == ID3]
         self.assertTrue(records_to_delete)
 
         # Act
@@ -347,6 +354,51 @@ class TestStore(unittest.TestCase):
         for r, l in zip(store.records, record_lines_used):
             self.assertIn(r.to_csv_string(), l)
 
+    def test_given_a_non_empty_store_when_capacity_is_reduced_then_records_are_truncated_at_next_merge(self):
+        # Arrange
+        old_capacity = 4
+        self._store_capacity.value.return_value = old_capacity
+        self._file_manager.read_lines.return_value = self._get_record_strings()
+        store = self._create_store()
+        self.assertEquals(store.size(), old_capacity)
+
+        new_capacity = 2
+        self._store_capacity.value.return_value = new_capacity
+        holder_barcode = "asd"
+        expected_truncated_records = store.records[1:3]
+        self.assertTrue(expected_truncated_records)
+
+        # Act
+        store.merge_record(holder_barcode, self._plate, self._holder_img, self._pins_img)
+
+        # Assert
+        self.assertEquals(store.size(), new_capacity)
+        latest_rec = store.get_record(0)
+        self.assertEquals(latest_rec.holder_barcode, holder_barcode)
+        for r in expected_truncated_records:
+            self.assertNotIn(r, store.records)
+
+    def test_given_a_non_empty_store_when_capacity_is_reduced_then_records_are_truncated_at_next_delete(self):
+        # Arrange
+        old_capacity = 4
+        self._store_capacity.value.return_value = old_capacity
+        self._file_manager.read_lines.return_value = self._get_record_strings()
+        store = self._create_store()
+        self.assertEquals(store.size(), old_capacity)
+
+        new_capacity = 2
+        self._store_capacity.value.return_value = new_capacity
+        record_to_delete = store.records[1]
+        expected_truncated_record = store.records[3]
+
+        # Act
+        store.delete_records([record_to_delete])
+
+        # Assert
+        self.assertEquals(store.size(), new_capacity)
+        self.assertNotIn(record_to_delete, store.records)
+        self.assertNotIn(expected_truncated_record, store.records)
+
     def _create_store(self):
         return Store(self._directory, self._store_capacity, self._file_manager)
 
@@ -358,10 +410,18 @@ class TestStore(unittest.TestCase):
         str_rep.append(ID3 + ";1494238920.0;test" + ID3 + ".png;None;DLSL-004,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
         return str_rep
 
+    def _get_unordered_record_strings(self):
+        str_rep = list()
+        str_rep.append(ID0 + ";1494238905.0;test" + ID0 + ".png;None;DLSL-001,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID1 + ";1494238921.0;test" + ID1 + ".png;None;DLSL-002,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID2 + ";1494238901.0;test" + ID2 + ".png;None;DLSL-003,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID3 + ";1494238930.0;test" + ID3 + ".png;None;DLSL-004,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        return str_rep
+
     def _invalid_record_strings(self):
         str_rep = list()
-        str_rep.append("f59c92c1;1494238920.0;test.png;None;DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
-        str_rep.append("Invalid record string")
-        str_rep.append("f59c92c2;1494238921.0;test.png;None;DLSL-008,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID0 + ";1494238925.0;test.png;None;DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID1 + ";Invalid record string")
+        str_rep.append(ID2 + ";1494238921.0;test.png;None;DLSL-008,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
         return str_rep
 
