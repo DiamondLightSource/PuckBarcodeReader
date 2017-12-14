@@ -16,13 +16,13 @@ class ScanRecordTable(QGroupBox):
     details of the scan to appear in other GUI components (list of barcodes in the barcode
     table and image of the puck in the image frame).
     """
-    COLUMNS = ['Date', 'Time', 'Plate Type', 'Valid', 'Invalid', 'Empty']
+    COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
     def __init__(self, barcode_table, image_frame, options, to_run_on_table_clicked):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
-        self._store = Store(options.store_directory.value(), options, FileManager())
+        self._store = Store(options.store_directory.value(), options.store_capacity, FileManager())
         self._options = options
 
         self._barcodeTable = barcode_table
@@ -43,9 +43,10 @@ class ScanRecordTable(QGroupBox):
         self._table.setColumnWidth(0, 70)
         self._table.setColumnWidth(1, 55)
         self._table.setColumnWidth(2, 85)
-        self._table.setColumnWidth(3, 60)
-        self._table.setColumnWidth(4, 60)
-        self._table.setColumnWidth(5, 60)
+        self._table.setColumnWidth(3, 70)
+        self._table.setColumnWidth(4, 45)
+        self._table.setColumnWidth(5, 50)
+        self._table.setColumnWidth(6, 45)
         self._table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self._table.cellPressed.connect(to_run_on_table_clicked)
         self._table.cellPressed.connect(self._record_selected)
@@ -67,12 +68,12 @@ class ScanRecordTable(QGroupBox):
 
         self.setLayout(vbox)
 
-    def add_record_frame(self, plate, second_plate, holder_img, pins_img):
+    def add_record_frame(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
-        self._store.merge_record(plate, second_plate, holder_img, pins_img)
+        self._store.merge_record(holder_barcode, plate, holder_img, pins_img)
         self._load_store_records()
         if self._options.scan_clipboard.value():
-            self._barcodeTable.copy_selected_to_clipboard()
+            self._barcodeTable.copy_to_clipboard()
 
     def _load_store_records(self):
         """ Populate the record table with all of the records in the store.
@@ -81,7 +82,7 @@ class ScanRecordTable(QGroupBox):
         self._table.setRowCount(self._store.size())
 
         for n, record in enumerate(self._store.records):
-            items = [record.date, record.time, record.plate_type, record.num_valid_barcodes,
+            items = [record.date, record.time, record.holder_barcode, record.plate_type, record.num_valid_barcodes,
                      record.num_unread_slots, record.num_empty_slots]
 
             if (record.num_valid_barcodes + record.num_empty_slots) == record.num_slots:
@@ -108,11 +109,11 @@ class ScanRecordTable(QGroupBox):
         try:
             row = self._table.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
-            self._barcodeTable.populate(record.barcodes)
+            self._barcodeTable.populate(record.holder_barcode, record.barcodes)
             marked_image = record.marked_image(self._options)
             self._imageFrame.display_puck_image(marked_image)
         except IndexError:
-            self._barcodeTable.populate([])
+            self._barcodeTable.clear()
             self._imageFrame.clear_frame("Record table empty\nNothing to display")
 
     def _delete_selected_records(self):
@@ -136,12 +137,7 @@ class ScanRecordTable(QGroupBox):
             self._store.delete_records(records_to_delete)
             self._load_store_records()
 
-    def is_latest_holder_barcode(self, plate):
-        latest_record = self._store.get_record(0)
-
-        if latest_record is not None and plate.barcodes()[0] in latest_record.barcodes:
-            return True
-
-        return False
+    def is_latest_holder_barcode(self, holder_barcode):
+        return self._store.is_latest_holder_barcode(holder_barcode)
 
 

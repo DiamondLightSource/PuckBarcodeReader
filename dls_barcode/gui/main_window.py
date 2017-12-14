@@ -277,8 +277,9 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Barcode successfully read
         Beeper.beep()
         print("MAIN: puck barcode recorded")
-        if not self._record_table.is_latest_holder_barcode(plate):
-            self._latest_holder_plate = plate
+        holder_barcode = plate.barcodes()[0]
+        if not self._record_table.is_latest_holder_barcode(holder_barcode):
+            self._latest_holder_barcode = holder_barcode
             self._latest_holder_image = holder_image
             self._message_box.display(MessageFactory.puck_recorded_message())
             self._restart_live_capture_from_top()
@@ -296,8 +297,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Get the result
         plate, pins_image = self._result_queue.get(False)
 
-        # Add new record to the table - side is the _latest_holder_plate read first, top is the plate
-        self._record_table.add_record_frame(self._latest_holder_plate, plate, self._latest_holder_image, pins_image)
+        # Add new record to the table - side is the _latest_holder_barcode read first, top is the plate
+        self._record_table.add_record_frame(self._latest_holder_barcode, plate, self._latest_holder_image, pins_image)
         if not plate.is_full_valid():
             return
 
