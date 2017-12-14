@@ -52,7 +52,6 @@ class TestStore(unittest.TestCase):
 
         # Assert
         self.assertFalse(store.records)
-        self.assert
         self.assertEquals(store.size(), 0)
 
     def test_new_store_loads_records_from_existing_store_file(self):
