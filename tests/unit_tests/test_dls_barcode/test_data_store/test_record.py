@@ -10,7 +10,7 @@ class TestRecord(unittest.TestCase):
         # Arrange
         str = "f59c92c1;1494238920.0;test.png;None;DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
 
-        # ACt
+        # Act
         r = Record.from_string(str)
 
         # Assert
