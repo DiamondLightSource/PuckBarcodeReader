@@ -1,1 +1,1 @@
-VERSION = "vX.x.p"
+VERSION = "v1.1.0"
