@@ -55,22 +55,22 @@ def run_scans(img_file, expected_codes):
 
 def generate_test_cases():
     # Barcode data that is expected to appear in each image of the pucks
-    PUCK1_CODES = [['DF150E0101', 1], ['DF150E0144', 3], ['DF150E0016', 4], ['DF150E0156', 7], ['DF150E0129', 8],
+    puck1_codes = [['DF150E0101', 1], ['DF150E0144', 3], ['DF150E0016', 4], ['DF150E0156', 7], ['DF150E0129', 8],
                    ['DF150E0323', 9], ['DF150E0042', 10], ['DF150E0443', 12], ['DF150E0370', 14], ['DF150E0250', 16]]
 
-    PUCK2_CODES = [['DF150E0101', 1], ['DF150E0073', 2], ['DF150E0144', 3], ['DF150E0016', 4], ['DF150E0135', 5],
+    puck2_codes = [['DF150E0101', 1], ['DF150E0073', 2], ['DF150E0144', 3], ['DF150E0016', 4], ['DF150E0135', 5],
                    ['DF150E0342', 6], ['DF150E0156', 7], ['DF150E0129', 8], ['DF150E0323', 9], ['DF150E0042', 10],
                    ['DF150E0453', 11], ['DF150E0443', 12], ['DF150E0074', 13], ['DF150E0370', 14], ['DF150E0066', 15],
                    ['DF150E0250', 16]]
 
     # List of files for Puck type 1
     puck1_files = ['puck1_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(1, 26)]
-    puck1_testcases = [(file, PUCK1_CODES) for file in puck1_files]
+    puck1_testcases = [(file, puck1_codes) for file in puck1_files]
 
     # List of files for Puck type 2
     # *** NOTE *** range starts from 2: puck2_01.png fails the test
     puck2_files = ['puck2_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(2, 5)]
-    puck2_testcases = [(file, PUCK2_CODES) for file in puck2_files]
+    puck2_testcases = [(file, puck2_codes) for file in puck2_files]
 
     # Create a list of test cases
     test_cases = []
