@@ -9,7 +9,7 @@ from dls_util.file import FileManager
 # SHOULD BE OPEN CV 2.4.10
 
 # Directory storing all of the test images
-TEST_IMG_DIR = '../tests/test-resources/'
+TEST_IMG_DIR = '../../tests/test-resources/'
 
 # Barcode data that is expected to appear in each image of the pucks
 PUCK1_CODES = [['DF150E0101', 1], ['DF150E0144', 3], ['DF150E0016', 4], ['DF150E0156', 7], ['DF150E0129', 8],
@@ -40,62 +40,36 @@ print("Store dir: " + OPTIONS.store_directory.value())
 STORE = Store(OPTIONS.store_directory.value(), OPTIONS.store_capacity, FILE_MANAGER)
 
 
+def test_generator():
+    for params in TEST_CASES:
+        yield run_scans, params[0], params[1]
+
+
+def run_scans(img_file, expected_codes):
+    filepath = os.path.join(TEST_IMG_DIR, img_file)
+    cv_image = Image.from_file(filepath)
+    gray_image = cv_image.to_grayscale()
+    results = GeometryScanner("Unipuck", [14]).scan_next_frame(gray_image, is_single_image=True)
+    plate = results.plate()
+    store_scan(plate, cv_image)
+
+    correctly_read_count = 0
+    slots = [plate.slot(i) for i in range(16)]
+    num_found = len([s for s in slots if s.state() == s.VALID])
+    assert num_found == len(expected_codes)
+
+    for expected_code in expected_codes:
+        expected_code_text = expected_code[0]
+        slot = expected_code[1]
+
+        barcode_read = plate.slot(slot).barcode_data()
+        if barcode_read == expected_code_text:
+            correctly_read_count += 1
+
+    assert correctly_read_count == len(expected_codes)
+
+
 def store_scan(plate, pins_img):
     holder_barcode = "dummy"
     holder_img = pins_img.copy()
     STORE.merge_record(holder_barcode, plate, holder_img, pins_img)
-
-
-param_list = [('a', 'a'), ('b', 'c'), ('b', 'b')]
-
-def test_generator():
-    for params in param_list:
-        yield check_em, params[0], params[1]
-
-def check_em(a, b):
-    assert a == b
-
-
-def run_scans():
-    # Run all of the test cases
-    total = 0
-    correct = 0
-    found = 0
-    start = time.clock()
-    for case in TEST_CASES:
-        file = case[0]
-        expected_codes = case[1]
-        total += len(expected_codes)
-
-        filename = TEST_IMG_DIR + file
-        cv_image = Image.from_file(filename)
-        gray_image = cv_image.to_grayscale()
-        results = GeometryScanner("Unipuck", [14]).scan_next_frame(gray_image, is_single_image=True)
-        plate = results.plate()
-        store_scan(plate, cv_image)
-
-        pass_count = 0
-        slots = [plate.slot(i) for i in range(16)]
-        num_found = len([s for s in slots if s.state() == s.VALID])
-        for expected_code in expected_codes:
-            text = expected_code[0]
-            slot = expected_code[1]
-
-            data = plate.slot(slot).barcode_data()
-            if data == text:
-                pass_count += 1
-
-        test_result = "pass" if pass_count == len(expected_codes) else "FAIL"
-        print("{0} - {1}  -  {2}/{3} matches ({4} found)".format(file, test_result, pass_count, len(expected_codes), num_found))
-
-        correct += pass_count
-        found += num_found
-
-    end = time.clock()
-    print("Summary | {0} secs | {1} correct | {2} found | {3} total".format(end-start, correct,found,total))
-
-#
-# if __name__ == '__main__':
-#     run_tests()
-#
-#
