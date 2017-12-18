@@ -1,9 +1,10 @@
-import time
+import time, os
 
 from dls_barcode.config.barcode_config import BarcodeConfig
 from dls_barcode.data_store import Store
 from dls_barcode.scan import GeometryScanner
 from dls_util.image import Image
+from dls_util.file import FileManager
 
 # SHOULD BE OPEN CV 2.4.10
 
@@ -32,23 +33,20 @@ TEST_CASES = []
 TEST_CASES.extend(puck1_testcases)
 TEST_CASES.extend(puck2_testcases)
 
-TEST_OUTPUT_PATH = '../test-output/'
+CONFIG_FILE = os.path.join(TEST_IMG_DIR, "system_test_config.ini")
+FILE_MANAGER = FileManager()
+OPTIONS = BarcodeConfig(CONFIG_FILE, FILE_MANAGER)
+print("Store dir: " + OPTIONS.store_directory.value())
+STORE = Store(OPTIONS.store_directory.value(), OPTIONS.store_capacity, FILE_MANAGER)
 
-CONFIG_FILE = "../config.ini"
-# TODO: restore the four commented lines below
-# OPTIONS = BarcodeConfig(CONFIG_FILE)
 
-# STORE = Store(OPTIONS.store_directory.value(), OPTIONS)
-
-# TODO: this needs an extra plate argument, or the tests have an error
-# def store_scan(plate, img):
-#     STORE.add_record(plate, img)
+def store_scan(plate, pins_img):
+    holder_barcode = "dummy"
+    holder_img = pins_img.copy()
+    STORE.merge_record(holder_barcode, plate, holder_img, pins_img)
 
 
 def run_tests():
-    # TODO: once the test can pass, restore it by deleting this return statement
-    return
-
     # Run all of the test cases
     total = 0
     correct = 0
@@ -77,8 +75,8 @@ def run_tests():
             if data == text:
                 pass_count += 1
 
-        result = "pass" if pass_count == len(expected_codes) else "FAIL"
-        print("{0} - {1}  -  {2}/{3} matches ({4} found)".format(file, result, pass_count, len(expected_codes), num_found))
+        test_result = "pass" if pass_count == len(expected_codes) else "FAIL"
+        print("{0} - {1}  -  {2}/{3} matches ({4} found)".format(file, test_result, pass_count, len(expected_codes), num_found))
 
         correct += pass_count
         found += num_found
