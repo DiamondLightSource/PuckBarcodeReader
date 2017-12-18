@@ -46,7 +46,17 @@ def store_scan(plate, pins_img):
     STORE.merge_record(holder_barcode, plate, holder_img, pins_img)
 
 
-def run_tests():
+param_list = [('a', 'a'), ('b', 'c'), ('b', 'b')]
+
+def test_generator():
+    for params in param_list:
+        yield check_em, params[0], params[1]
+
+def check_em(a, b):
+    assert a == b
+
+
+def run_scans():
     # Run all of the test cases
     total = 0
     correct = 0
@@ -84,8 +94,8 @@ def run_tests():
     end = time.clock()
     print("Summary | {0} secs | {1} correct | {2} found | {3} total".format(end-start, correct,found,total))
 
-
-if __name__ == '__main__':
-    run_tests()
-
-
+#
+# if __name__ == '__main__':
+#     run_tests()
+#
+#
