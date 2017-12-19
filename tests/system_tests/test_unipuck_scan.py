@@ -1,4 +1,4 @@
-import time, os, shutil
+import os, shutil
 
 from dls_barcode.config.barcode_config import BarcodeConfig
 from dls_barcode.data_store import Store
