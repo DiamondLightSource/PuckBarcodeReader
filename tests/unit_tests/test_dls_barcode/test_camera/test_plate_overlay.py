@@ -41,7 +41,7 @@ class TestPlateOverlay(unittest.TestCase):
         overlay = PlateOverlay(self._plate, self._options, lifetime)
 
         # Act
-        time.sleep(lifetime)
+        time.sleep(2*lifetime)
         overlay.draw_on_image(self._image)
 
         # Assert
