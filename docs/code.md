@@ -38,6 +38,14 @@ NOTE: there is a requirements.txt file that was created for use by the CI server
    * `pip install nose`
    * `pip install mock`
 
+Running the System Tests
+========================
+For the paths in the system tests to work with nosetests, the working directory must be the top project folder (i.e. that's how Travis CI runs them).
+
+Unfortunately I can't get Pycharm to give me a Nosetests option when I right-click on the top Project directory in the Project tree. The way around this is to manually edit the working directory in the Pycharm Run configuration for "Nosetests in tests" (Run -> Edit Configurations, then look at the entried in the Python tests tree) to be the top Project directory, so when we right-click on the tests/ directory and select "Nosetests in tests" it's pointing at the right path! 
+
+Alternatively, we can simply run "nosetests" from the command line, in the top Project directory.
+
 Creating a Self-Contained Executable
 ====================================
 A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used to create a stand-alone windows executable (.exe) file.
