@@ -42,7 +42,7 @@ Running the System Tests
 ========================
 For the paths in the system tests to work with nosetests, the working directory must be the top project folder (i.e. that's how the Travis CI server runs them - see below).
 
-Unfortunately I can't get Pycharm to give me a Nosetests option when I right-click on the top Project directory in the Project tree. The way around this is to manually edit the working directory in the Pycharm Run configuration for "Nosetests in tests" (Run -> Edit Configurations, then look at the entries in the Python tests tree) to be the top Project directory, so when we right-click on the tests/ directory and select "Nosetests in tests" it's pointing at the right path! 
+Unfortunately I can't get Pycharm to give me a Nosetests option when I right-click on the top Project directory in the Project tree. The way around this is to manually edit the working directory in the Pycharm Run configuration for "Nosetests in tests" (Run -> Edit Configurations, then look at the entries in the "Python tests" tree) to be the top Project directory, so when we right-click on the tests/ directory and select "Nosetests in tests" it's pointing at the right path! 
 
 Alternatively, we can simply run "nosetests" from the command line, in the top Project directory.
 
