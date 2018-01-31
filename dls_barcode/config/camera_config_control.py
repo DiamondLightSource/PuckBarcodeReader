@@ -115,7 +115,7 @@ class CameraConfigControl(ConfigControl):
             if frame is None:
                 breaking_frame = True
                 break
-            elif cv2.waitKey(1) != -1:
+            elif cv2.waitKey(1) not in (255, -1): #function returns 255 or -1 depending on a machine/operation system
                 break
 
             small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
