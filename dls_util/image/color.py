@@ -8,6 +8,7 @@ class Color:
     CONSTRUCTOR_ERROR = "Values must be integers in range 0-255"
     STRING_PARSE_ERROR = "Input string must be 3 or 4 integers (0-255) separated by '{}'".format(SEP)
 
+
     def __init__(self, r, g, b, a=255):
         try:
             r, g, b, a = int(r), int(g), int(b), int(a)
