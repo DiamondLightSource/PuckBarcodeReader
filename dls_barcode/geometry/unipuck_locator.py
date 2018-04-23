@@ -101,7 +101,8 @@ class UnipuckLocator:
 
     def _find_feature(self, features_cnt):  # do this better
         # compares the feature from the image with the features found on the edge of the puck
-        f_path = os.path.join('..', 'resources', 'features', 'fit.png')
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        f_path = os.path.join(dir_path, '..', '..', 'resources', 'features', 'fit.png')
         img_feature_cnt = ContoursManager(255 - self._read_feature_image(f_path))
         img_feature_cnt.find_all()
 

@@ -16,7 +16,7 @@ from dls_util.file import FileManager
 # Directory storing all of the test images
 from dls_util.shape import Point
 
-TEST_IMG_DIR = 'test-resources/blue_stand/'
+TEST_IMG_DIR = 'tests/test-resources/blue_stand/'
 CONFIG_FILE = os.path.join(TEST_IMG_DIR, "system_test_config.ini")
 FILE_MANAGER = FileManager()
 OPTIONS = BarcodeConfig(CONFIG_FILE, FILE_MANAGER)

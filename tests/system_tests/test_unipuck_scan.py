@@ -9,7 +9,7 @@ from dls_util.file import FileManager
 # SHOULD BE OPEN CV 2.4.10
 
 # Directory storing all of the test images
-TEST_IMG_DIR = 'test-resources/'
+TEST_IMG_DIR = 'tests/test-resources/'
 CONFIG_FILE = os.path.join(TEST_IMG_DIR, "system_test_config.ini")
 FILE_MANAGER = FileManager()
 OPTIONS = BarcodeConfig(CONFIG_FILE, FILE_MANAGER)
