@@ -193,7 +193,7 @@ def _partition(numbers):
     than the average of the first.
     """
     if len(numbers) < 3:
-        return numbers, None
+        raise Exception("Not enought elements to run partition")
 
     numbers.sort()
     s = 0

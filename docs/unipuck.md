@@ -33,6 +33,34 @@ To establish which barcode belongs in which numbered slot, it is therefore simpl
 
 Given all of the information about the puck template above, we can uniquely define the location and layout of a puck in an image as long as we know: i) the center location (x,y) in pixel coordinates; ii) the puck radius in pixels; and iii) the puck orientation, where 0 degrees is defined as the position with slots 1 and 6 pointing straight up. If we can work out all 3 of these, it is trivial to calculate the position of each numbered slot and therefore which barcode corresponds to which slot. 
 
+To work out the thee values we can either use optimisation calculations (geometry/unipuck_calculator.py) or image processing (geometry/unipuck_locator.py).
+
+Both of the methods are in use at the moment. The image processing works even when there is only one non-empty slot in the puck. It can quickly find the position of the puck
+when the image quality is good.
+The optimisation calculations require at least 8 slots of the puck to be non-empty but don't depend as heavily on the image quality.
+Hence we start with the image processing and only if it fails finding the feature we use the optimisation calculations.
+
+Image Processing
+----------------
+
+Center and Puck Radius Detection
+--------------------------------
+The center and the radius of a puck can be detected in the puck image using a build in opencv method called minEnclosingCircle. The function returns minum enclosing circle of a given contour in a image. It returns both the radius and the center of the circle.
+
+Orientation Detection
+---------------------
+We observed that the puck has a characteristic round cut on the edge, which is further called feature.
+Once we detect the position of the feature we can calculate the position of the puck. The feature is positioned pi/2 rad from the puck orientation.
+The feature can be detected in the image relatively easy if the image background is even:
+ * create an empty black image of sie of the original image
+ * draw white circle in the black image using the detected center and radius of the puck
+ * draw the largest contour found in the image in black
+ * use open morphology filter to remove small white artifacts from the image
+ * the result is a mask showing small white features on black background
+ * use build in opencv method called match shape to find the shape of the feature (uses a simplified image of the feature)
+
+Optimisation Calculations
+-------------------------
 
 Center Calculation
 ------------------

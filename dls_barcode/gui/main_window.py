@@ -304,7 +304,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # Barcodes successfully read
         Beeper.beep()
-        print("Scan Completed")
+        print("Scan Completed",  self._camera_switch.get_scan_time())
         self._message_box.display(MessageFactory.scan_completed_message())
         self._restart_live_capture_from_side()
 

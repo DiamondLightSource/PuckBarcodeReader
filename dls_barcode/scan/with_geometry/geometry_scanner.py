@@ -1,6 +1,8 @@
 from __future__ import division
 
 from dls_barcode.datamatrix import DataMatrix
+from dls_barcode.geometry.exception import GeometryAlignmentError
+from dls_barcode.geometry.unipuck_locator import UnipuckLocator
 from dls_barcode.plate import Plate, Slot
 from dls_barcode.plate.geometry_adjuster import UnipuckGeometryAdjuster, GeometryAdjustmentError
 from dls_barcode.geometry import Geometry, GeometryException
@@ -55,8 +57,11 @@ class GeometryScanner:
     def _perform_frame_scan(self):
         self._barcodes = self._locate_all_barcodes_in_image()
         self._frame_result.set_barcodes(self._barcodes)
+        if self.plate_type == Geometry.UNIPUCK:
+            self._geometry = UnipuckLocator(self._frame_img).find_location()
+        if self._geometry == None:
+            self._geometry = self._calculate_geometry()
 
-        self._geometry = self._calculate_geometry()
         self._frame_result.set_geometry(self._geometry)
 
         # Determine if the previous plate scan has any barcodes in common with this one.
@@ -76,11 +81,7 @@ class GeometryScanner:
             self._merge_frame_into_plate()
 
     def _locate_all_barcodes_in_image(self):
-        if self._is_single_image:
-            # barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img, self.barcode_sizes)
-            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
-        else:
-            barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
+        barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
 
         if len(barcodes) == 0:
             raise NoBarcodesDetectedError()
@@ -89,8 +90,6 @@ class GeometryScanner:
 
     def _calculate_geometry(self):
         slot_centers = [bc.center() for bc in self._barcodes]
-
-        # Use empty slots as points if not enough barcodes
         if self.plate_type == Geometry.UNIPUCK:
             use_emptys = len(self._barcodes) < 8
             if use_emptys:
@@ -110,6 +109,7 @@ class GeometryScanner:
             self._plate = Plate(self.plate_type)
             self._plate_scan = PlateScanner(self._plate, self._is_single_image)
             self._plate_scan.new_frame(self._geometry, self._barcodes, slot_scanner)
+
 
     def _merge_frame_into_plate(self):
         # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
@@ -170,7 +170,8 @@ class GeometryScanner:
         slotted_bcs = [None] * geometry.num_slots()
         for bc in barcodes:
             slot_num = geometry.containing_slot(bc.center())
-            slotted_bcs[slot_num - 1] = bc
+            if(slot_num != None):
+                slotted_bcs[slot_num -  1] = bc
 
         return slotted_bcs
 
