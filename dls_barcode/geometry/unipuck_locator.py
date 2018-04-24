@@ -12,8 +12,8 @@ from dls_util.shape import Point
 OPENCV_MAJOR = cv2.__version__[0]
 # factores's values found during tests
 FEATURE_MATCH_FACTOR = 0.07  # the lowest the number the closer the match
-FEATURE_HULL_MATCH_FACTOR = 0.96  # maximum value is 1, highier value better match
-PUCK_FEATURE_AREA_FACTOR_MIN = 0.2  # discard too large ements
+FEATURE_HULL_MATCH_FACTOR = 0.96  # maximum value is 1, higher value better match
+PUCK_FEATURE_AREA_FACTOR_MIN = 0.1  # discard small elements
 
 
 class UnipuckLocator:

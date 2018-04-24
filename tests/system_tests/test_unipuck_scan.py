@@ -65,13 +65,13 @@ def generate_test_cases():
                    ['DF150E0250', 16]]
 
     # List of files for Puck type 1
-    puck1_files = ['puck1_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(2, 26)] #TODO change to 26 after you finish working on it
+    puck1_files = ['puck1_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(2, 26)]
     puck1_testcases = [(file, puck1_codes) for file in puck1_files]
 
     # List of files for Puck type 2
     # *** NOTE *** range starts from 2: puck2_01.png fails the test
-    puck2_files = ['puck2_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(2, 5)]#TODO add back
-    puck2_testcases = [(file, puck2_codes) for file in puck2_files]#TODO add back
+    puck2_files = ['puck2_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(2, 5)]
+    puck2_testcases = [(file, puck2_codes) for file in puck2_files]
 
 
     # Create a list of test cases
