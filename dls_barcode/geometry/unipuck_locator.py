@@ -13,7 +13,7 @@ OPENCV_MAJOR = cv2.__version__[0]
 # factores's values found during tests
 FEATURE_MATCH_FACTOR = 0.07  # the lowest the number the closer the match
 FEATURE_HULL_MATCH_FACTOR = 0.96  # maximum value is 1, higher value better match
-PUCK_FEATURE_AREA_FACTOR_MIN = 0.1  # discard small elements
+#PUCK_FEATURE_AREA_FACTOR_MIN = 0.05  # discard small elements
 
 
 class UnipuckLocator:
@@ -42,8 +42,8 @@ class UnipuckLocator:
             feature_area = cv2.contourArea(match_cnt)
             puck_area = math.pi * math.sqrt(radius)
             area_factor = feature_area / hull_area
-            puck_area_factor = feature_area / puck_area
-            if round(area_factor, 2) > FEATURE_HULL_MATCH_FACTOR and puck_area_factor > PUCK_FEATURE_AREA_FACTOR_MIN:
+            #puck_area_factor = feature_area / puck_area
+            if round(area_factor, 2) > FEATURE_HULL_MATCH_FACTOR:# and puck_area_factor > PUCK_FEATURE_AREA_FACTOR_MIN:
                 # take the features which have only small convexity defects
 
                 (cx, cy) = self._find_contour_momentum(match_cnt)
