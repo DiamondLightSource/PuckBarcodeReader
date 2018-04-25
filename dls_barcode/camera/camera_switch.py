@@ -29,6 +29,11 @@ class CameraSwitch:
     def is_side(self):
         return self._is_side
 
+    def get_scan_time(self):
+        now = time.time()
+        if self._top_scan_time_start is not None:
+            return round(now - self._top_scan_time_start, 2)
+
     def is_top_scan_timeout(self):
         now = time.time()
         return (self._top_scan_time_start is not None) and (now - self._top_scan_time_start > self._timeout.value())

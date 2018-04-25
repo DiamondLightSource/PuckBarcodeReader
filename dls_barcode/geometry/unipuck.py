@@ -15,13 +15,15 @@ class Unipuck:
     TYPE_NAME = "Unipuck"
     NUM_SLOTS = Template.NUM_SLOTS
 
-    def __init__(self, center, radius, rotation=0.0):
+    def __init__(self, center, radius, rotation=0.0, feature_center=None, feature_boarder=None):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
         """
         self._center = center
         self._radius = radius
         self._rotation = rotation
+        self._feature_center = feature_center
+        self._feature_boarder = feature_boarder
 
         self._slot_bounds = []
         self.set_rotation(rotation)
@@ -75,6 +77,12 @@ class Unipuck:
         self._rotation = angle
         self._reset_slot_bounds()
 
+    def set_feature_center(self, feature_center):
+        self._feature_center = feature_center
+
+    def set_feature_boarder(self, feature_boarder):
+        self._feature_boarder = feature_boarder
+
     def _reset_slot_bounds(self):
         self._slot_bounds = self.calculate_slot_bounds(self._center, self._radius, self._rotation)
 
@@ -106,9 +114,13 @@ class Unipuck:
     ############################
     def draw_plate(self, img, color):
         """ Draws an outline of the puck on the supplied image including the locations of the slots. """
+        th = int(0.05 * self._radius)
         img.draw_dot(self._center, color)
-        img.draw_circle(self.bounds(), color, thickness=int(0.05 * self._radius))
+        img.draw_circle(self.bounds(), color, thickness=th)
         img.draw_circle(self.center_bounds(), color)
+        if(self._feature_center != None):
+            img.draw_dot(self._feature_center, color)
+            img.draw_feature_outline(self._feature_boarder, color, thickness=th)
         for bounds in self._slot_bounds:
             img.draw_dot(bounds.center(), color)
             img.draw_circle(bounds, color)

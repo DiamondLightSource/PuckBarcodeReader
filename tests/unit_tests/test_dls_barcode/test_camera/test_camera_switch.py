@@ -23,7 +23,7 @@ class TestCameraSwitch(unittest.TestCase):
         switch = self._create_switch()
 
         # Assert
-        self.assertFalse(switch.is_top_scan_timeout())
+        self.assertFalse(switch.is_top_scan_timeout()) #returns false as _top_scan_time_start is None
 
     def test_a_new_switch_points_to_the_side(self):
         # Act

@@ -46,6 +46,9 @@ class Color:
 
         return hex_str
 
+    def rgb(self):
+        return self.r, self.g, self.b
+
     @staticmethod
     def from_qt(qt_color):
         return Color(qt_color.red(), qt_color.green(), qt_color.blue(), qt_color.alpha())

@@ -17,6 +17,7 @@ class Image:
         size = self.img.shape
         self.width = size[1]
         self.height = size[0]
+        self.size = size
 
         if len(size) > 2:
             self.channels = size[2]
@@ -25,6 +26,9 @@ class Image:
 
         # All draw requests will be offset by this amount
         self.draw_offset = Point(0, 0)
+
+    def size(self):
+        return self.size()
 
     def is_valid(self):
         return self.width > 0 and self.height > 0
@@ -243,6 +247,9 @@ class Image:
         """ Draw the specified dot on the image (in place). """
         center = self._format_point(center)
         opencv.circle(self.img, center.tuple(), radius=0, color=color.bgra(), thickness=thickness)
+
+    def draw_feature_outline(self, outline, color, thickness=5):
+        opencv.drawContours(self.img, [outline], -1, color=color.bgra(), thickness=thickness)
 
     def draw_line(self, p1, p2, color, thickness=2):
         """ Draw the specified line on the image (in place). """

@@ -36,9 +36,11 @@ def run_scans(img_file, expected_codes):
     plate = results.plate()
     store_scan(img_file, plate, cv_image)
 
+
     correctly_read_count = 0
     slots = [plate.slot(i) for i in range(16)]
     num_found = len([s for s in slots if s.state() == s.VALID])
+    barcodes_for_debug = [s.barcode_data() for s in slots]
     assert num_found == len(expected_codes)
 
     for expected_code in expected_codes:
@@ -63,13 +65,14 @@ def generate_test_cases():
                    ['DF150E0250', 16]]
 
     # List of files for Puck type 1
-    puck1_files = ['puck1_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(1, 26)]
+    puck1_files = ['puck1_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(2, 26)]
     puck1_testcases = [(file, puck1_codes) for file in puck1_files]
 
     # List of files for Puck type 2
     # *** NOTE *** range starts from 2: puck2_01.png fails the test
     puck2_files = ['puck2_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(2, 5)]
     puck2_testcases = [(file, puck2_codes) for file in puck2_files]
+
 
     # Create a list of test cases
     test_cases = []
