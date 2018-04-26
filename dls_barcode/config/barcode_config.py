@@ -26,6 +26,7 @@ class BarcodeConfig(Config):
             default_store = "../store/"
 
         self.color_ok = add(ColorConfigItem, "Read Color", Color.Green())
+        self.color_accept = add(ColorConfigItem, "Partially Read Color", Color.Yellow())
         self.color_unreadable = add(ColorConfigItem, "Not Read Color", Color.Red())
         self.color_empty = add(ColorConfigItem, "Empty Color", Color.Grey())
 
@@ -60,6 +61,9 @@ class BarcodeConfig(Config):
 
     def col_ok(self):
         return self.color_ok.value()
+
+    def col_accept(self):
+        return self.color_accept.value()
 
     def col_bad(self):
         return self.color_unreadable.value()
