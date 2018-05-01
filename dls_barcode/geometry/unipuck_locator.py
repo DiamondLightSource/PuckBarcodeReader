@@ -89,7 +89,8 @@ class UnipuckLocator:
         # compares the feature from the image with the features found on the edge of the puck
         if getattr(sys, 'frozen', False): # for the .exe bundle
             #see: #see https://pythonhosted.org/PyInstaller/runtime-information.html
-            f_path = os.path.join('..', 'resources', 'features', 'fit.png')
+            #f_path = os.path.join('..', 'resources', 'features', 'fit.png')
+            f_path = os.path.join('resources', 'features', 'fit.png')
         else:
             dir_path = os.path.dirname(os.path.abspath(__file__))
             f_path = os.path.join(dir_path, '..', '..', 'resources', 'features', 'fit.png')
