@@ -49,11 +49,6 @@ class UnipuckLocator:
                 # take the features which have only small convexity defects
 
                 (cx, cy) = self._find_contour_momentum(match_cnt)
-                #blank_image = np.zeros([1000, 1000, 3], np.uint8)
-                #cv2.drawContours(blank_image, [match_cnt], -1, (255, 255, 255), -1)
-                #cv2.drawContours(self.image, [hull], -1, (255, 255, 255), 5)
-                #self.popup_image(255- blank_image, 'cnt1')
-                #self.save_image('C:/Users/rqq82173/PycharmProjects/PuckBarcodeReader/test_' + str(cx) + '.png', 255-blank_image)
 
                 feature_orientation = math.atan2(cy - y, cx - x) # feature orientation
                 puck_orientation = feature_orientation - math.pi / 2  # puck orientation shifted -pi/2 rad from feature orientation
@@ -61,10 +56,6 @@ class UnipuckLocator:
                 uni.set_rotation(puck_orientation)
                 uni.set_feature_center(Point(cx, cy))
                 uni.set_feature_boarder(match_cnt)
-
-                #uni.calculate_slot_bounds(uni.center(), uni.radius(), uni.angle())
-                #uni.draw_plate(Image(self.image), Color.White())
-                #self.popup_image(self.image, 'test')
 
         return uni
 
@@ -74,9 +65,6 @@ class UnipuckLocator:
         edged = cv2.adaptiveThreshold(blurred, 255.0, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 35, 16)
         cnt = ContoursManager(255 - edged)
         cnt.find_all()
-
-        # self.popup_image(blurred, 'bl')
-        # self.popup_image(edged, 'ero')
 
         return cnt
 
@@ -91,13 +79,9 @@ class UnipuckLocator:
 
         self.unipuck_contours.draw_largest_cnt(blank_image, Color.Black(), -1)
 
-        # self.popup_image(blank_image, 'cn2')
-
         img_open = ImageMorphology(blank_image).do_open_morph(8)  # removes some white artifacts
         img_open_cnt = ContoursManager(img_open)
         img_open_cnt.find_all()
-
-        # self.popup_image(img_open, 'morph2')
 
         return img_open_cnt
 
@@ -135,6 +119,4 @@ class UnipuckLocator:
         cv2.imshow(name, ima)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-    #
-    # def save_image(self, name, img):
-    #     cv2.imwrite(name, img)
+

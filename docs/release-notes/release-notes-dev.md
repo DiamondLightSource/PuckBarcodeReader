@@ -5,7 +5,7 @@ Changes merged into master
 --------------------------
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
-
+| I04_1-143 | [#63](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/62) | Minor | Record summary table color changes. |
 
 Change Types:
 * Major - Backward incompatible change
