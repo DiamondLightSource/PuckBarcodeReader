@@ -9,18 +9,20 @@ class BarcodeConfigDialog(ConfigDialog):
     """
     def __init__(self, config, to_run_before_test_camera):
         ConfigDialog.__init__(self, config)
-
+        self._to_run_before_test_camera = to_run_before_test_camera
         self._init_ui(to_run_before_test_camera)
         self.finalize_layout()
 
     def _init_ui(self, to_run_before_test_camera):
         self.setGeometry(100, 100, 450, 400)
 
+        self._to_run_before_test_camera()
+
         cfg = self._config
         add = self.add_item
 
-        camera_top = CameraConfigControl(cfg.get_top_camera_config(), to_run_before_test_camera)
-        camera_side = CameraConfigControl(cfg.get_side_camera_config(), to_run_before_test_camera)
+        camera_top = CameraConfigControl(cfg.get_top_camera_config())
+        camera_side = CameraConfigControl(cfg.get_side_camera_config())
 
         self.start_group("Colors")
         add(cfg.color_ok)

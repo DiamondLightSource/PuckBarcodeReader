@@ -9,12 +9,11 @@ class CameraConfigControl(ConfigControl):
     RES_TEXT_WIDTH = 50
     BUTTON_WIDTH = 100
 
-    def __init__(self, camera_config, to_run_before_test_camera):
+    def __init__(self, camera_config):
         ConfigControl.__init__(self, camera_config)
         self._number_item = camera_config.camera_number
         self._width_item = camera_config.width
         self._height_item = camera_config.height
-        self._to_run_before_test_camera = to_run_before_test_camera
         self._init_ui()
 
     def _init_ui(self):
@@ -87,8 +86,6 @@ class CameraConfigControl(ConfigControl):
             QMessageBox.critical(self, "Camera Error", "Camera number, width, and height must be integers")
             return
 
-        self._to_run_before_test_camera()
-
         # Check that we can connect to the camera
         try:
             stream = CameraStream(camera_num, camera_width, camera_height, use_default_as_backup=False)
@@ -130,6 +127,5 @@ class CameraConfigControl(ConfigControl):
 
     def _open_camera_controls(self):
         camera_num = int(self.txt_number.text())
-        self._to_run_before_test_camera()
         CameraStream.open_camera_controls(camera_num)
 

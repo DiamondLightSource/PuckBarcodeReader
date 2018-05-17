@@ -11,17 +11,17 @@ class CameraSwitch:
         self._reset_top_scan_timer()
         self._switch_to_side()
 
-    def stop_live_capture(self):
+    def _stop_live_capture(self):
         self._scanner.stop_scan()
         self._reset_top_scan_timer()
 
     def restart_live_capture_from_side(self):
-        self.stop_live_capture()
+        self._stop_live_capture()
         self._switch_to_side()
         self._scanner.start_scan(CameraPosition.SIDE)
 
     def restart_live_capture_from_top(self):
-        self.stop_live_capture()
+        self._stop_live_capture()
         self._switch_to_top()
         self._start_top_scan_timer()
         self._scanner.start_scan(CameraPosition.TOP)
