@@ -1,18 +1,18 @@
 from __future__ import division
 
 
-from PyQt4.QtGui import QPushButton, QGroupBox, QVBoxLayout
+from PyQt4.QtGui import QPushButton, QGroupBox, QVBoxLayout, QStyle
 from PyQt4.QtCore import Qt
 
 
 class ScanButton(QGroupBox):
     """ GUI component. Displays a start/stop button
     """
-    def __init__(self, title, icon_stop, icon_start, on_scan_action_clicked):
+    def __init__(self, title, on_scan_action_clicked):
         super(ScanButton, self).__init__()
         self._on_scan_action_clicked = on_scan_action_clicked
-        self._stop_capture_icon = icon_stop
-        self._start_capture_icon = icon_start
+        self._start_capture_icon = self.style().standardIcon(QStyle.SP_MediaPlay)
+        self._stop_capture_icon = self.style().standardIcon(QStyle.SP_MediaStop)
         self.setTitle(title)
 
         self._init_ui()

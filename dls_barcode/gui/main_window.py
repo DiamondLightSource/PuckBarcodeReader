@@ -67,21 +67,19 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _init_ui(self):
         """ Create the basic elements of the user interface.
         """
-        self._init_icons()
+        self._window_icon = QtGui.QIcon("..\\resources\\icons\\qr_code_32.png")
 
         self.setGeometry(100, 100, 1020, 650)
         self.setWindowTitle('Diamond Puck Barcode Scanner')
         self.setWindowIcon(self._window_icon)
 
-        self._menu_bar = MenuBar(self.menuBar(), self._version, self._cleanup, self._on_options_action_clicked,
-                                 self._on_about_action_clicked, self._exit_icon, self._config_icon, self._about_icon)
+        self._menu_bar = MenuBar(self.menuBar(), self._version, self._cleanup, self._on_options_action_clicked,self._on_about_action_clicked)
 
         # Barcode table - lists all the barcodes in a record
         self._barcode_table = BarcodeTable(self._config)
 
         # Scan button - start/stop scan
-        self._scan_button = ScanButton('Start/stop scan', self._stop_capture_icon, self._start_capture_icon,
-                                       self._on_scan_action_clicked)
+        self._scan_button = ScanButton('Start/stop scan', self._on_scan_action_clicked)
 
         # Image frame - displays image of the currently selected scan record
         self._image_frame = ImageFrame("Plate Image")
@@ -117,14 +115,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.setCentralWidget(main_widget)
 
         self.show()
-
-    def _init_icons(self):
-        self._window_icon = QtGui.QIcon("..\\resources\\icons\\qr_code_32.png")
-        self._start_capture_icon = self.style().standardIcon(QtGui.QStyle.SP_MediaPlay)
-        self._stop_capture_icon = self.style().standardIcon(QtGui.QStyle.SP_MediaStop)
-        self._exit_icon = self.style().standardIcon(QtGui.QStyle.SP_DialogCloseButton)
-        self._config_icon = self.style().standardIcon(QtGui.QStyle.SP_FileDialogDetailedView)
-        self._about_icon = self.style().standardIcon(QtGui.QStyle.SP_FileDialogInfoView)
 
     def _on_about_action_clicked(self):
         QtGui.QMessageBox.about(self, 'About', "Version: " + self._version)

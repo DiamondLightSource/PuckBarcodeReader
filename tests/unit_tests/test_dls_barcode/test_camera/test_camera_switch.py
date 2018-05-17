@@ -37,7 +37,7 @@ class TestCameraSwitch(unittest.TestCase):
         switch = self._create_switch()
 
         # Act
-        switch.stop_live_capture()
+        switch._stop_live_capture()
 
         # Assert
         self._mock_scanner.stop_scan.assert_called_once()
@@ -47,7 +47,7 @@ class TestCameraSwitch(unittest.TestCase):
         switch = self._create_switch()
 
         # Act
-        switch.stop_live_capture()
+        switch._stop_live_capture()
 
         # Assert
         self.assertFalse(switch.is_top_scan_timeout())
@@ -162,7 +162,7 @@ class TestCameraSwitch(unittest.TestCase):
         switch.restart_live_capture_from_top()
 
         # Act
-        switch.stop_live_capture()
+        switch._stop_live_capture()
 
         # Assert
         time.sleep(timeout)

@@ -1,22 +1,23 @@
 from __future__ import division
 
-from PyQt4.QtGui import qApp, QAction, QMainWindow
+from PyQt4.QtGui import qApp, QAction, QMainWindow, QStyle
 
 
 class MenuBar(QMainWindow):
     """ GUI component. Displays a start/stop button
     """
 
-    def __init__(self, mainMenu, version, clean_up, on_options_action_clicked, on_about_action_clicked, exit_icon, config_icon,
-                 about_icon):
+    def __init__(self, mainMenu, version, clean_up, on_options_action_clicked, on_about_action_clicked):
         super(MenuBar, self).__init__()
         self._version = version
         self._cleanup = clean_up
         self._on_options_action_clicked = on_options_action_clicked
         self._on_about_action_clicked = on_about_action_clicked
-        self._exit_icon = exit_icon
-        self._config_icon = config_icon
-        self._about_icon = about_icon
+
+        self._exit_icon = self.style().standardIcon(QStyle.SP_DialogCloseButton)
+        self._config_icon = self.style().standardIcon(QStyle.SP_FileDialogDetailedView)
+        self._about_icon = self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+
         self._mainMenu = mainMenu
 
         self._init_ui()
