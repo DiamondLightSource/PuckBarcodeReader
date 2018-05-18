@@ -13,9 +13,5 @@ Change Types:
 * Minor - Backward compatible change in API/functionality
 * Patch - Bug fix, no change in functionality
 
-A new start/stop scan button has been added to the gui.
-The button allows users to start/stop the scan.
-The layout of the button changes accordingly to the state of the scanner:
-- green start for when the scanner is stopped
-- red stop for when the scaner is running
+
 
