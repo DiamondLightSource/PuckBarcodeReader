@@ -2,6 +2,8 @@ from dls_util.config import ConfigDialog
 from .camera_config_control import CameraConfigControl
 from .store_directory_config_control import StoreDirectoryConfigControl
 
+from PyQt4.QtGui import QStyle
+
 
 class BarcodeConfigDialog(ConfigDialog):
     """ Dialog to edit the configuration options for the program. Provides a custom control for
@@ -10,11 +12,14 @@ class BarcodeConfigDialog(ConfigDialog):
     def __init__(self, config, to_run_before_test_camera):
         ConfigDialog.__init__(self, config)
         self._to_run_before_test_camera = to_run_before_test_camera
-        self._init_ui(to_run_before_test_camera)
+        self._config_icon = self.style().standardIcon(QStyle.SP_FileDialogDetailedView)
+        self._init_ui()
         self.finalize_layout()
 
-    def _init_ui(self, to_run_before_test_camera):
+    def _init_ui(self):
         self.setGeometry(100, 100, 450, 400)
+
+        self.setWindowIcon(self._config_icon)
 
         self._to_run_before_test_camera()
 

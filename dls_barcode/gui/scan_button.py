@@ -1,8 +1,7 @@
 from __future__ import division
 
-
+from PyQt4.QtCore import QTime, QTimer
 from PyQt4.QtGui import QPushButton, QGroupBox, QVBoxLayout, QStyle
-from PyQt4.QtCore import Qt
 
 
 class ScanButton(QGroupBox):
@@ -29,9 +28,16 @@ class ScanButton(QGroupBox):
         vbox.addWidget(self._scan_button)
         self.setLayout(vbox)
 
+    # A small delay in the button layout change - process restart is slow at the moment
+    def setDelayedStopLayout(self):
+        self._scan_button.setDisabled(True)
+        timer = QTimer()
+        timer.singleShot(6000, self.setStopLayout) # 6sec delay
+
     def setStopLayout(self):
         self._scan_button.setIcon(self._stop_capture_icon)
         self._scan_button.setStyleSheet("background-color: rgb(255, 0, 0)")
+        self._scan_button.setDisabled(False)
 
     def setStartLayout(self):
         self._scan_button.setIcon(self._start_capture_icon)

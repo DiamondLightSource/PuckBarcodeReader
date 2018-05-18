@@ -124,12 +124,14 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._camera_capture_alive():
             self._initialise_scanner()
             self._restart_live_capture_from_side()
+            self._scan_button.setDelayedStopLayout()
         else:
             self._cleanup()
+            self._scan_button.setStartLayout()
 
     def _on_options_action_clicked(self):
         dialog = BarcodeConfigDialog(self._config, self._cleanup)
-        dialog.setWindowIcon(self._config_icon)
+        self._scan_button.setStartLayout()
         dialog.exec_()
 
     def closeEvent(self, event):
@@ -145,7 +147,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._camera_scanner.kill()
         self._camera_scanner = None
         self._camera_switch = None
-        self._scan_button.setStartLayout()
 
     def _initialise_scanner(self):
         self._camera_scanner = CameraScanner(self._result_queue, self._view_queue, self._message_queue, self._config)
@@ -257,4 +258,6 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
     def _restart_live_capture_from_side(self):
         self._reset_msg_timer()
         self._camera_switch.restart_live_capture_from_side()
-        self._scan_button.setStopLayout()
+
+
+
