@@ -36,7 +36,6 @@ class GeometryScanner:
         try:
             self._perform_frame_scan()
             self._frame_result.set_plate(self._plate)
-        #TODO: use logs
         except (NoBarcodesDetectedError, GeometryException, GeometryAdjustmentError) as ex:
             self._frame_result.set_error(str(ex))
 
@@ -83,7 +82,7 @@ class GeometryScanner:
 
     def _locate_all_barcodes_in_image(self):
         barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
-        #TODO: log this
+
         if len(barcodes) == 0:
             raise NoBarcodesDetectedError()
 

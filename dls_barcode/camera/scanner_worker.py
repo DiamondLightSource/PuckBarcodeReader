@@ -67,10 +67,9 @@ class ScannerWorker:
         elif scan_result.any_valid_barcodes():
             # We have read valid barcodes but they are not new, so the scanner didn't even output a plate
             self._last_puck_time = time.time()
-            message_queue.put(NoNewBarcodeMessage()) #important used in the message logic
+            message_queue.put(NoNewBarcodeMessage())
         elif scan_result.error() is not None and (time.time() - self._last_puck_time > NO_PUCK_TIME):
-            #TODO use log
-            print(ScanErrorMessage(scan_result.error()))
+            message_queue.put(ScanErrorMessage(scan_result.error()))
 
     def _create_scanner(self, cam_position, config):
         if cam_position == CameraPosition.SIDE:

@@ -184,9 +184,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
                 # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
                 self._start_msg_timer()
             elif self._has_msg_timer_timeout():
-                self._message_box.display(MessageFactory.scan_completed_message())
+                self._message_box.display(MessageFactory.latest_barcode_message())
         else:
             self._reset_msg_timer()
+            self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
 
     def _reset_msg_timer(self):
         self._record_msg_timer = None
@@ -228,9 +229,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         if not self._record_table.is_latest_holder_barcode(holder_barcode):
             self._latest_holder_barcode = holder_barcode
             self._latest_holder_image = holder_image
+            self._message_box.display(MessageFactory.puck_recorded_message())
             self._restart_live_capture_from_top()
         else:
-            self._message_box.display(MessageFactory.scan_completed_message())
+            self._message_box.display(MessageFactory.latest_barcode_message())
 
     def _read_top_scan(self):
         if self._result_queue.empty():

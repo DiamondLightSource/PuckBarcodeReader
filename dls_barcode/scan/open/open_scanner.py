@@ -30,7 +30,6 @@ class OpenScanner:
             barcodes = self._perform_frame_scan()
             result.set_barcodes(barcodes)
         except NoBarcodesDetectedError as ex:
-            # TODO: logging the error
             result.set_error(str(ex))
 
         # Create a 'blank' geometry object to store the barcode locations
@@ -72,7 +71,7 @@ class OpenScanner:
             barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img, self.barcode_sizes)
         else:
             barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
-        # TODO: log the error
+
         if len(barcodes) == 0:
             raise NoBarcodesDetectedError()
         return barcodes
