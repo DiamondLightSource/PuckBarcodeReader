@@ -7,7 +7,7 @@ from dls_util.cv import CameraStream
 
 class CameraConfigControl(ConfigControl):
     RES_TEXT_WIDTH = 50
-    BUTTON_WIDTH = 100
+    BUTTON_WIDTH = 150
 
     def __init__(self, camera_config):
         ConfigControl.__init__(self, camera_config)

@@ -8,7 +8,7 @@ class ConfigControl(QWidget):
     """ Base class for config controls. When subclassing, be sure to implement both update_from_config()
     and save_to_config().
     """
-    LABEL_WIDTH = 115
+    LABEL_WIDTH = 155
 
     def __init__(self, item):
         super(ConfigControl, self).__init__()

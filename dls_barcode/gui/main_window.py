@@ -85,7 +85,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._image_frame = ImageFrame("Plate Image")
 
         # Scan record table - lists all the records in the store
-        self._record_table = ScanRecordTable(self._barcode_table, self._image_frame, self._config, self._cleanup)
+        self._record_table = ScanRecordTable(self._barcode_table, self._image_frame, self._config, self._to_run_on_table_clicked)
 
         # Message display
         self._message_box = MessageBox()
@@ -115,6 +115,10 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.setCentralWidget(main_widget)
 
         self.show()
+
+    def _to_run_on_table_clicked(self):
+        self._cleanup()
+        self._scan_button.setStartLayout()
 
     def _on_about_action_clicked(self):
         QtGui.QMessageBox.about(self, 'About', "Version: " + self._version)

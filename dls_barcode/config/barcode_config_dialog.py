@@ -33,6 +33,7 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.color_ok)
         add(cfg.color_unreadable)
         add(cfg.color_empty)
+        add(cfg.color_accept)
 
         self.start_group("Top Camera")
         add(cfg.top_barcode_size)
