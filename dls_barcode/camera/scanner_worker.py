@@ -70,7 +70,7 @@ class ScannerWorker:
             message_queue.put(NoNewBarcodeMessage()) #important used in the message logic
         elif scan_result.error() is not None and (time.time() - self._last_puck_time > NO_PUCK_TIME):
             #TODO use log
-            print(ScanErrorMessage(scan_result.error()))
+            message_queue.put(ScanErrorMessage(scan_result.error()))
 
     def _create_scanner(self, cam_position, config):
         if cam_position == CameraPosition.SIDE:
