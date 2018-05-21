@@ -25,10 +25,10 @@ class BarcodeConfig(Config):
         else:
             default_store = "../store/"
 
-        self.color_ok = add(ColorConfigItem, "Read Color", Color.Green())
-        self.color_accept = add(ColorConfigItem, "Partially Read Color", Color.Yellow())
-        self.color_unreadable = add(ColorConfigItem, "Not Read Color", Color.Red())
-        self.color_empty = add(ColorConfigItem, "Empty Color", Color.Grey())
+        self.color_ok = add(ColorConfigItem, "Pin/Puck Read", Color.Green())
+        self.color_accept = add(ColorConfigItem, "Puck Partially Read", Color.Yellow())
+        self.color_unreadable = add(ColorConfigItem, "Pin/Puck Not Read", Color.Red())
+        self.color_empty = add(ColorConfigItem, "Pin Empty", Color.Grey())
 
         self.plate_type = add(EnumConfigItem, "Sample Plate Type", default=Geometry.UNIPUCK, extra_arg=Geometry.TYPES)
         self.top_barcode_size = add(EnumConfigItem, "Datamatrix Size", default=DataMatrix.DEFAULT_SIZE,
@@ -38,11 +38,11 @@ class BarcodeConfig(Config):
         self.scan_beep = add(BoolConfigItem, "Beep While Scanning", default=True)
         self.scan_clipboard = add(BoolConfigItem, "Results to Clipboard", default=True)
 
-        self.image_puck = add(BoolConfigItem, "Draw Puck", default=True)
-        self.image_pins = add(BoolConfigItem, "Draw Slot Highlights", default=True)
+        self.image_puck = add(BoolConfigItem, "Puck Highlight", default=True)
+        self.image_pins = add(BoolConfigItem, "Slots Highlight", default=True)
         self.image_crop = add(BoolConfigItem, "Crop to Puck", default=True)
 
-        self.store_directory = add(DirectoryConfigItem, "Startup Store Directory", default=default_store)
+        self.store_directory = add(DirectoryConfigItem, "Store Directory", default=default_store)
         self.store_capacity = add(IntConfigItem, "Results History Size", default=50)
 
         self.console_frame = add(BoolConfigItem, "Print Frame Summary", default=False)

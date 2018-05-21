@@ -14,6 +14,8 @@ class MessageBox(QGroupBox):
 
         self.setTitle("Information")
 
+        self.setMaximumHeight(100)
+
         self._style_sheets = {MessageType.INFO: BASIC_STYLE_SHEET + BLACK,
                               MessageType.WARNING: BASIC_STYLE_SHEET + RED}
         self._init_ui()

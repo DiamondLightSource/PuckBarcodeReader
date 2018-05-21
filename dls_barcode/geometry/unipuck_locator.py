@@ -42,7 +42,7 @@ class UnipuckLocator:
             hull = cv2.convexHull(match_cnt)
             hull_area = cv2.contourArea(hull)
             feature_area = cv2.contourArea(match_cnt)
-            puck_area = math.pi * math.sqrt(radius)
+            #puck_area = math.pi * math.sqrt(radius)
             area_factor = feature_area / hull_area
             #puck_area_factor = feature_area / puck_area
             if round(area_factor, 2) > FEATURE_HULL_MATCH_FACTOR:# and puck_area_factor > PUCK_FEATURE_AREA_FACTOR_MIN:
