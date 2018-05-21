@@ -5,7 +5,7 @@ import time
 from PyQt4 import QtGui, QtCore
 
 from dls_barcode.config import BarcodeConfig, BarcodeConfigDialog
-from dls_barcode.camera import CameraScanner, CameraSwitch, NoNewBarcodeMessage, ScanErrorMessage
+from dls_barcode.camera import CameraScanner, CameraSwitch, NoNewBarcodeMessage
 from dls_barcode.gui.scan_button import ScanButton
 from dls_util import Beeper
 from dls_util.file import FileManager
@@ -179,15 +179,12 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         except queue.Empty:
             return
 
-        if self._camera_switch.is_side():
+        if self._camera_switch.is_side() and isinstance(scanner_msg, NoNewBarcodeMessage):
             if not self._msg_timer_is_running():
                 # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
                 self._start_msg_timer()
-            elif self._has_msg_timer_timeout() and isinstance(scanner_msg, NoNewBarcodeMessage):
-                    self._message_box.display(MessageFactory.scan_completed_message())
-            elif isinstance(scanner_msg, ScanErrorMessage):
-                    self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
-                    self._reset_msg_timer()
+            elif self._has_msg_timer_timeout():
+                self._message_box.display(MessageFactory.scan_completed_message())
         else:
             self._reset_msg_timer()
 
@@ -201,7 +198,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         return self._record_msg_timer is not None
 
     def _has_msg_timer_timeout(self):
-        timeout =2 * RESULT_TIMER_PERIOD / 1000
+        timeout = 2 * RESULT_TIMER_PERIOD / 1000
         return self._msg_timer_is_running() and time.time() - self._record_msg_timer > timeout
 
     def _read_result_queue(self):
@@ -232,6 +229,8 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
             self._latest_holder_barcode = holder_barcode
             self._latest_holder_image = holder_image
             self._restart_live_capture_from_top()
+        else:
+            self._message_box.display(MessageFactory.scan_completed_message())
 
     def _read_top_scan(self):
         if self._result_queue.empty():
@@ -252,6 +251,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         # Barcodes successfully read
         Beeper.beep()
         print("Scan Completed",  self._camera_switch.get_scan_time())
+        self._message_box.display(MessageFactory.scan_completed_message())
         self._restart_live_capture_from_side()
 
     def _restart_live_capture_from_top(self):
