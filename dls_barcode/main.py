@@ -2,15 +2,20 @@ import sys
 
 from os.path import dirname
 from sys import path
+
+from dls_barcode.config import BarcodeConfig
+from dls_barcode.gui import DiamondBarcodeMainWindow
+from dls_barcode.main_manager import MainManager
+from PyQt4 import QtGui
+import argparse
+from dls_barcode.version import VERSION
+from dls_util.file import FileManager
+
 path.append(dirname(path[0]))
 
 # Required for multiprocessing to work under PyInstaller bundling in Windows
 from dls_util import multiprocessing_support
 
-from PyQt4 import QtGui
-import argparse
-from gui import DiamondBarcodeMainWindow
-from version import VERSION
 
 # Detect if the program is running from source or has been bundled
 IS_BUNDLED = getattr(sys, 'frozen', False)
@@ -22,7 +27,11 @@ else:
 
 def main(config_file, version):
     app = QtGui.QApplication(sys.argv)
-    ex = DiamondBarcodeMainWindow(config_file, version)
+    config = BarcodeConfig(config_file, FileManager())
+    ui = DiamondBarcodeMainWindow(config, version)
+    manager = MainManager(ui, config)
+    manager.initialise_timers()
+    manager.initialise_scanner()
     sys.exit(app.exec_())
 
 

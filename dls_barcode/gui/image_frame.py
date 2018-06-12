@@ -16,9 +16,9 @@ class ImageFrame(QGroupBox):
     def _init_ui(self):
         # Image frame - displays image of the currently selected scan record
         self._frame = QLabel()
-        self._frame.setStyleSheet("background-color: black; color: red; font-size: 30pt; text-align: center")
-        self._frame.setFixedWidth(500)
-        self._frame.setFixedHeight(500)
+        self._frame.setStyleSheet("background-color: white; color: red; font-size: 30pt; text-align: center")
+        self._frame.setMinimumWidth(500)
+        self._frame.setMinimumHeight(500)
         self._frame.setAlignment(Qt.AlignCenter)
 
         vbox = QVBoxLayout()
