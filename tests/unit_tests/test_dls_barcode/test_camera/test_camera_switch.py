@@ -171,7 +171,7 @@ class TestCameraSwitch(unittest.TestCase):
     def _create_switch(self):
         return CameraSwitch(self._mock_scanner, self._mock_timeout)
 
-    def _stream_start_side_effect(self):
+    def _stream_start_side_effect(self, unused):
         self._list_of_calls.append(START)
 
     def _stream_stop_side_effect(self):
