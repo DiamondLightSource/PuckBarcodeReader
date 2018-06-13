@@ -18,7 +18,7 @@ class ScanRecordTable(QGroupBox):
     """
     COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Plate Type', 'Valid', 'Invalid', 'Empty']
 
-    def __init__(self, barcode_table, image_frame, options, to_run_on_table_clicked):
+    def __init__(self, barcode_table, image_frame, options):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
@@ -29,15 +29,15 @@ class ScanRecordTable(QGroupBox):
         self._imageFrame = image_frame
 
         self.setTitle("Scan Records")
-        self._init_ui(to_run_on_table_clicked)
+        self._init_ui()
 
         self._load_store_records()
 
-    def _init_ui(self, to_run_on_table_clicked):
+    def _init_ui(self):
         # Create record table - lists all the records in the store
         self._table = QTableWidget()
-        self._table.setFixedWidth(440)
-        self._table.setFixedHeight(600)
+        self._table.setMinimumWidth(440)
+        self._table.setMinimumHeight(600)
         self._table.setColumnCount(len(self.COLUMNS))
         self._table.setHorizontalHeaderLabels(self.COLUMNS)
         self._table.setColumnWidth(0, 70)
@@ -48,8 +48,7 @@ class ScanRecordTable(QGroupBox):
         self._table.setColumnWidth(5, 50)
         self._table.setColumnWidth(6, 45)
         self._table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self._table.cellPressed.connect(to_run_on_table_clicked)
-        self._table.cellPressed.connect(self._record_selected)
+
 
         # Delete button - deletes selected records
         btn_delete = QtGui.QPushButton('Delete')
@@ -67,6 +66,11 @@ class ScanRecordTable(QGroupBox):
         vbox.addLayout(hbox)
 
         self.setLayout(vbox)
+
+    def cell_pressed_action_triggered(self, to_run_on_table_clicked):
+        self._table.cellPressed.connect(to_run_on_table_clicked)
+        self._table.cellPressed.connect(self._record_selected)
+
 
     def add_record_frame(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""

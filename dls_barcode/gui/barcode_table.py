@@ -27,8 +27,8 @@ class BarcodeTable(QGroupBox):
 
         # Create barcode table - lists all the barcodes in a record
         self._table = QtGui.QTableWidget()
-        self._table.setFixedWidth(110)
-        self._table.setFixedHeight(600)
+        self._table.setMinimumWidth(110)
+        self._table.setMinimumHeight(600)
         self._table.setColumnCount(1)
         self._table.setRowCount(10)
         self._table.setHorizontalHeaderLabels(['Barcode'])

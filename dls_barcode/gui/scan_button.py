@@ -7,9 +7,8 @@ from PyQt4.QtGui import QPushButton, QGroupBox, QVBoxLayout, QStyle
 class ScanButton(QGroupBox):
     """ GUI component. Displays a start/stop button
     """
-    def __init__(self, title, on_scan_action_clicked):
+    def __init__(self, title):
         super(ScanButton, self).__init__()
-        self._on_scan_action_clicked = on_scan_action_clicked
         self._start_capture_icon = self.style().standardIcon(QStyle.SP_MediaPlay)
         self._stop_capture_icon = self.style().standardIcon(QStyle.SP_MediaStop)
         self.setTitle(title)
@@ -20,7 +19,7 @@ class ScanButton(QGroupBox):
         self._scan_button = QPushButton('')
         self._scan_button.setShortcut('Ctrl+W')
         self._scan_button.setStatusTip('Capture continuously from camera')
-        self._scan_button.clicked.connect(self._on_scan_action_clicked)
+
         self._scan_button.setMaximumWidth(100)
 
         self.setStopLayout()
@@ -42,3 +41,6 @@ class ScanButton(QGroupBox):
     def setStartLayout(self):
         self._scan_button.setIcon(self._start_capture_icon)
         self._scan_button.setStyleSheet("background-color: rgb(0, 255, 0)")
+
+    def click_action(self, on_scan_action_clicked):
+        self._scan_button.clicked.connect(on_scan_action_clicked)
