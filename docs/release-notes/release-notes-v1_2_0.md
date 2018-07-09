@@ -1,15 +1,14 @@
-Release Notes (v1.2.0)
+Release Notes (v1.3.0)
 ===========================
 
 Summary of all changes
 ----------------------
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
-| I04_1-274 | [#52](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/52) | Patch | Fixed system tests |
-| I04_1-272 | [#54](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/54) | Patch | Fixed cammera settings button|
-| I04_1-162 | [#56](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/56) | Patch | Fixed slow Travis build|
-| I04_1-268 | [#58](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/58) | Minor | Imporved the puck orientation algorithm|
-| I04_1-270 | [#59](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/59) | Minor | Improved the puck orientation algorithm - should work even for one pin|
+| I04_1-293 | [#62](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/62) | Minor | Record summary table color changes. |
+| I04_1-172 | [#64](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/64) | Minor | New Start/Stop scan button added. |
+| I04_1-308 | [#66](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/66) | Minor | Messages displayed need revision. |
+| I04_1-245 | [#68](https://github.com/DiamondLightSource/PuckBarcodeReader/issues/68) | Minor | Re-factor main window. |
 
 
 Change Types:
