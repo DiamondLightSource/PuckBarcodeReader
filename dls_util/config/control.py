@@ -1,5 +1,5 @@
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QLabel, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QWidget, QCheckBox, QComboBox
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtWidgets import QLabel, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QWidget, QCheckBox, QComboBox, QColorDialog
 
 from dls_util.image import Color
 
@@ -210,7 +210,7 @@ class ColorConfigControl(ConfigControl):
     def _get_dialog_color(start_color):
         color = start_color
 
-        qt_col = QtGui.QColorDialog.getColor(start_color.to_qt())
+        qt_col = QColorDialog.getColor(start_color.to_qt())
         if qt_col.isValid():
             color = Color.from_qt(qt_col)
 

@@ -2,8 +2,8 @@ import cv2 as opencv
 import math
 import numpy as np
 
-from PyQt4 import QtCore
-from PyQt4.QtGui import QImage, QPixmap
+from PyQt5 import QtCore
+from PyQt5.QtGui import QImage, QPixmap
 
 from dls_util.shape import Point
 

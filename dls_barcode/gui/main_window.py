@@ -1,5 +1,5 @@
 import sys
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets, QtGui
 
 from dls_barcode.config import BarcodeConfigDialog
 
@@ -13,13 +13,14 @@ from .message_factory import MessageFactory
 from .menu_bar import MenuBar
 
 
-class DiamondBarcodeMainWindow(QtGui.QMainWindow):
+class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     """ Main GUI window for the Barcode Scanner App.
     """
 
-    def __init__(self, config, version):
-        super(DiamondBarcodeMainWindow, self).__init__()
+    def __init__(self, config, version, flags, *args, **kwargs):
+        #super(DiamondBarcodeMainWindow, self).__init__(None, None)
 
+        super().__init__(flags, *args, **kwargs)
         self._config = config
         self._version = version
         self._cleanup = None
@@ -43,7 +44,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self.setWindowTitle('Diamond Puck Barcode Scanner')
         self.setWindowIcon(self._window_icon)
 
-        self._menu_bar = MenuBar(self.menuBar(), self._version)
+        self._menu_bar = MenuBar(self.menuBar(), self._version, None)
 
         # Barcode table - lists all the barcodes in a record
         self._barcode_table = BarcodeTable(self._config)
@@ -62,25 +63,25 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
 
         # Create layout
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.setSpacing(10)
 
-        table_vbox = QtGui.QVBoxLayout()
+        table_vbox = QtWidgets.QVBoxLayout()
         table_vbox.addWidget(self._record_table)
         table_vbox.addWidget(self._scan_button)
 
         hbox.addLayout(table_vbox)
         hbox.addWidget(self._barcode_table)
 
-        img_vbox = QtGui.QVBoxLayout()
+        img_vbox = QtWidgets.QVBoxLayout()
         img_vbox.addWidget(self._image_frame)
         img_vbox.addWidget(self._message_box)
         hbox.addLayout(img_vbox)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox)
 
-        main_widget = QtGui.QWidget()
+        main_widget = QtWidgets.QWidget()
         main_widget.setLayout(vbox)
         self.setCentralWidget(main_widget)
 
@@ -101,7 +102,7 @@ class DiamondBarcodeMainWindow(QtGui.QMainWindow):
         self._scan_button.setStartLayout()
 
     def _on_about_action_clicked(self):
-        QtGui.QMessageBox.about(self, 'About', "Version: " + self._version)
+        QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
 
     def _on_scan_action_clicked(self):

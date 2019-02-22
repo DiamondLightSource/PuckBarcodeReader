@@ -2,9 +2,8 @@ from __future__ import division
 
 import os
 
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QLabel, QTableWidgetItem
 
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 
@@ -23,10 +22,10 @@ class BarcodeTable(QGroupBox):
 
     def _init_ui(self):
         # Plate being displayed
-        self._plate_lbl = QtGui.QLabel()
+        self._plate_lbl = QLabel()
 
         # Create barcode table - lists all the barcodes in a record
-        self._table = QtGui.QTableWidget()
+        self._table = QTableWidget()
         self._table.setMinimumWidth(110)
         self._table.setMinimumHeight(600)
         self._table.setColumnCount(1)
@@ -35,7 +34,7 @@ class BarcodeTable(QGroupBox):
         self._table.setColumnWidth(0, 100)
 
         # Clipboard button - copy the selected barcodes to the clipboard
-        self._btn_clipboard = QtGui.QPushButton('Copy To Clipboard')
+        self._btn_clipboard = QPushButton('Copy To Clipboard')
         self._btn_clipboard.setToolTip('Copy barcodes for the selected record to the clipboard')
         self._btn_clipboard.resize(self._btn_clipboard.sizeHint())
         self._btn_clipboard.clicked.connect(self.copy_to_clipboard)
@@ -87,8 +86,8 @@ class BarcodeTable(QGroupBox):
             cell_color.a = 192
 
             # Set table item
-            barcode = QtGui.QTableWidgetItem(barcode)
-            barcode.setBackgroundColor(cell_color.to_qt())
+            barcode = QTableWidgetItem(barcode)
+            barcode.setBackground(cell_color.to_qt())
             barcode.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             self._table.setItem(index, 0, barcode)
 

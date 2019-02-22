@@ -1,11 +1,12 @@
-from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout
-from PyQt4 import QtCore
+from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout
+from PyQt5 import QtCore
 
 from dls_util.message import MessageType
 
 RED = "; color: red"
 BLACK = "; color: black"
 BASIC_STYLE_SHEET = "font-size: 14pt"
+
 
 class MessageBox(QGroupBox):
     """GUI component. Displays messages for the user."""

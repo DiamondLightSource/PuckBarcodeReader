@@ -1,10 +1,10 @@
-from PyQt4.QtGui import QVBoxLayout, QGroupBox
+from PyQt5.QtWidgets import QVBoxLayout, QGroupBox, QPushButton, QHBoxLayout, QDialog
 
 from .control import *
 from .item import *
 
 
-class ConfigDialog(QtGui.QDialog):
+class ConfigDialog(QDialog):
     """ Creates a Qt Dialog that allows the user to edit the values of a set of options. This is intended
     to be used in conjunction with the Config class.
 
@@ -93,14 +93,14 @@ class ConfigDialog(QtGui.QDialog):
 
     def _make_dialog_buttons(self):
         """ Create the OK/Cancel/Reset buttons. """
-        btn_cancel = QtGui.QPushButton("Cancel")
+        btn_cancel = QPushButton("Cancel")
         btn_cancel.pressed.connect(self._dialog_close_cancel)
-        btn_ok = QtGui.QPushButton("OK")
+        btn_ok = QPushButton("OK")
         btn_ok.pressed.connect(self._dialog_close_ok)
-        btn_reset = QtGui.QPushButton("Reset All")
+        btn_reset = QPushButton("Reset All")
         btn_reset.pressed.connect(self._dialog_reset)
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QHBoxLayout()
         hbox.addStretch(1)
         hbox.addWidget(btn_ok)
         hbox.addWidget(btn_cancel)

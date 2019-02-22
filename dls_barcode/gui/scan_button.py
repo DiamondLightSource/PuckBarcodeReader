@@ -1,7 +1,7 @@
 from __future__ import division
 
-from PyQt4.QtCore import QTime, QTimer
-from PyQt4.QtGui import QPushButton, QGroupBox, QVBoxLayout, QStyle
+from PyQt5.QtCore import QTime, QTimer
+from PyQt5.QtWidgets import QPushButton, QGroupBox, QVBoxLayout, QStyle
 
 
 class ScanButton(QGroupBox):

@@ -1,6 +1,6 @@
 from random import randint
 
-from PyQt4.QtGui import QColor
+from PyQt5.QtGui import QColor
 
 
 class Color:

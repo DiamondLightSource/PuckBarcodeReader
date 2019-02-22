@@ -2,7 +2,7 @@
 import multiprocessing
 import queue
 import time
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 from dls_barcode.camera import CameraScanner, CameraSwitch, NoNewBarcodeMessage, ScanErrorMessage
 
 from dls_util import Beeper

@@ -2,7 +2,7 @@ from dls_util.config import ConfigDialog
 from .camera_config_control import CameraConfigControl
 from .store_directory_config_control import StoreDirectoryConfigControl
 
-from PyQt4.QtGui import QStyle
+from PyQt5.QtWidgets import QStyle
 
 
 class BarcodeConfigDialog(ConfigDialog):

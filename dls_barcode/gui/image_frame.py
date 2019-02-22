@@ -1,7 +1,7 @@
 from __future__ import division
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QLabel, QGroupBox, QVBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout
 
 
 class ImageFrame(QGroupBox):
