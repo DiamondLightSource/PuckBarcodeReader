@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtWidgets import QLabel, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QWidget, QCheckBox, QComboBox, QColorDialog
+from PyQt5.QtWidgets import QLabel, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QWidget, QCheckBox, QComboBox, QColorDialog, QFileDialog
 
 from dls_util.image import Color
 
@@ -162,7 +162,7 @@ class DirectoryConfigControl(ConfigControl):
         self._config_item.set(self._txt_dir.text())
 
     def _open_directory(self):
-        directory = QtGui.QFileDialog.getExistingDirectory(self, 'Select a Directory', self._txt_dir.text())
+        directory = QFileDialog.getExistingDirectory(self, 'Select a Directory', self._txt_dir.text())
         if directory:
             self._txt_dir.setText(directory)
 
