@@ -40,7 +40,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         """
         self._window_icon = QtGui.QIcon("..\\resources\\icons\\qr_code_32.png")
 
-        self.setGeometry(100, 100, 1020, 650)
+        self.setGeometry(10, 50, 1650, 800)
         self.setWindowTitle('Diamond Puck Barcode Scanner')
         self.setWindowIcon(self._window_icon)
 

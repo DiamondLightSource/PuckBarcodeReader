@@ -17,6 +17,8 @@ class BarcodeTable(QGroupBox):
         self._options = options
 
         self.setTitle("Plate Barcodes")
+        self.setMaximumWidth(200)
+        self.setMinimumWidth(120)
         self._init_ui()
         self.clear()
 
@@ -26,12 +28,12 @@ class BarcodeTable(QGroupBox):
 
         # Create barcode table - lists all the barcodes in a record
         self._table = QTableWidget()
-        self._table.setMinimumWidth(110)
+        self._table.setMinimumWidth(150)
         self._table.setMinimumHeight(600)
         self._table.setColumnCount(1)
         self._table.setRowCount(10)
         self._table.setHorizontalHeaderLabels(['Barcode'])
-        self._table.setColumnWidth(0, 100)
+        self._table.setMinimumWidth(200)
 
         # Clipboard button - copy the selected barcodes to the clipboard
         self._btn_clipboard = QPushButton('Copy To Clipboard')
