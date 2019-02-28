@@ -4,6 +4,7 @@ import os
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QLabel, QTableWidgetItem
+from PyQt5 import QtGui
 
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 
@@ -18,7 +19,7 @@ class BarcodeTable(QGroupBox):
 
         self.setTitle("Plate Barcodes")
         self.setMaximumWidth(200)
-        self.setMinimumWidth(120)
+        self.setMinimumWidth(180)
         self._init_ui()
         self.clear()
 
@@ -112,7 +113,11 @@ class BarcodeTable(QGroupBox):
             pyperclip.copy(sep.join(clipboard_barcodes))
 
     def _update_plate_label(self):
-        text = "Plate : " + str(self._holder_barcode) if self._has_barcodes() else "Plate:"
+        barcode_holder = str(self._holder_barcode)
+        text = "Plate : " + barcode_holder if self._has_barcodes() else "Plate:"
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+        self._plate_lbl.setFont(myFont)
         self._plate_lbl.setText(text)
 
     def _has_barcodes(self):
