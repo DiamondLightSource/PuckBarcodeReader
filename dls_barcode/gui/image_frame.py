@@ -1,7 +1,11 @@
 from __future__ import division
 
-from PyQt5.QtCore import Qt
+
+
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout
+
+from dls_barcode.gui.image_widget import ImageWidget
 
 
 class ImageFrame(QGroupBox):
@@ -9,18 +13,15 @@ class ImageFrame(QGroupBox):
     """
     def __init__(self, title):
         super(ImageFrame, self).__init__()
-
         self.setTitle(title)
-        self.setMaximumWidth(750)
         self._init_ui()
 
     def _init_ui(self):
         # Image frame - displays image of the currently selected scan record
-        self._frame = QLabel()
+        self._frame = ImageWidget()
         self._frame.setStyleSheet("background-color: white; color: red; font-size: 30pt; text-align: center")
         self._frame.setMinimumWidth(700)
         self._frame.setAlignment(Qt.AlignCenter)
-
         vbox = QVBoxLayout()
         vbox.addWidget(self._frame)
 
