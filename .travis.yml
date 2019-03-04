@@ -3,9 +3,10 @@ sudo: required
 python:
   - "3.4"
 virtualenv:
-  system_site_packages: true
+  system_site_packages: false
 
 install:
+  - pip install --upgrade pip
   - pip install -r requirements.txt | cat
 
 script:
