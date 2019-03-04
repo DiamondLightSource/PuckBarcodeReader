@@ -13,22 +13,16 @@ The following steps will help you prepare an appropriate Python environment to r
     * enum [only if using Python v2.7]
     * numpy
     * scipy
-    * OpenCV
-    * PyQt4
+    * opencv-python==3.1.0.5
+    * PyQt5
     
-* Some of these packages can be installed using `pip`. To do this:
+* All of these packages can be installed using `pip`. To do this:
     * Open cmd.exe (being sure to ‘Run as Administrator’)
     * Upgrade pip by typing `pip install –-upgrade pip`
     * Install pyperclip by typing `pip install pyperclip`
     * Install enum by typing `pip install enum` [only if using Python 2.7]
-    
-* The easiest way to install the other packages is to download the precompiled binaries from <http://www.lfd.uci.edu/~gohlke/pythonlibs/>. To install each one, open cmd.exe and type `pip install filename`. Download the most recent version of each for your version of Python (3.5, 32bit), e.g.:
-    * numpy-1.11.0+mkl-cp35-cp35m-win32.whl
-    * opencv_python-3.1.0-cp35-cp35m-win32.whl
-    * scipy-0.17.1-cp35-cp35m-win32.whl
-    * PyQt4-4.11.4-cp35-none-win32.whl
 
-NOTE: there is a requirements.txt file that was created for use by the CI server Travis. It works in Travis but it wasn't tested locally. It contains all of the above dependencies except for enum and PyQt4.
+NOTE: there is a requirements.txt file that was created for use by the CI server Travis. It contains all of the above dependencies except for enum.
     
 * Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
 
