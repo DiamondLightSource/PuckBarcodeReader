@@ -16,7 +16,7 @@ class ScanRecordTable(QGroupBox):
     details of the scan to appear in other GUI components (list of barcodes in the barcode
     table and image of the puck in the image frame).
     """
-    COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Plate Type', 'Valid', 'Invalid', 'Empty']
+    COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Valid', 'Invalid', 'Empty', 'Plate Type']
 
     def __init__(self, barcode_table, image_frame, options):
         super(ScanRecordTable, self).__init__()
@@ -29,7 +29,7 @@ class ScanRecordTable(QGroupBox):
         self._imageFrame = image_frame
 
         self.setTitle("Scan Records")
-        self.setMaximumWidth(1200)
+        self.setMaximumWidth(1140)
 
         self._init_ui()
 
@@ -81,8 +81,8 @@ class ScanRecordTable(QGroupBox):
         self._table.setRowCount(self._store.size())
 
         for n, record in enumerate(self._store.records):
-            items = [record.date, record.time, record.holder_barcode, record.plate_type, record.num_valid_barcodes,
-                     record.num_unread_slots, record.num_empty_slots]
+            items = [record.date, record.time, record.holder_barcode, record.num_valid_barcodes,
+                     record.num_unread_slots, record.num_empty_slots, record.plate_type]
             valid_empty = record.num_valid_barcodes + record.num_empty_slots
             if valid_empty == record.num_slots:
                 color = self._options.col_ok()
