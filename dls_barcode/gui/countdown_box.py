@@ -4,7 +4,7 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout
 
 BLACK = "; color: black"
-BASIC_STYLE_SHEET = "font-size: 25pt"
+BASIC_STYLE_SHEET = "font-size: 20pt"
 
 
 class CountdownBox(QGroupBox):
