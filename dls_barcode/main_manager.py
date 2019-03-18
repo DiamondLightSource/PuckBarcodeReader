@@ -57,6 +57,7 @@ class MainManager:
         self._camera_scanner = CameraScanner(self._result_queue, self._view_queue, self._message_queue, self._config)
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
         self._restart_live_capture_from_side()
+        self._ui.resetCountdown()
 
     def _camera_capture_alive(self):
         return self._camera_scanner is not None and self._camera_switch is not None

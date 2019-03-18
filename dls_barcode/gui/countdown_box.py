@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout
 
@@ -14,6 +16,7 @@ class CountdownBox(QGroupBox):
         self.setTitle("Countdown")
         self.setMaximumHeight(100)
         self.setMaximumWidth(100)
+        self._timer = None
         self._init_ui()
         self.count = None
 
@@ -33,8 +36,12 @@ class CountdownBox(QGroupBox):
         self._timer.start(1000)
 
     def reset_countdown(self):
-        self._message_lbl.clear()
-        self.count = None
+            if self._timer is not None:
+                self._timer.stop()
+                self._timer = None
+            self._message_lbl.clear()
+            self.count = None
+
 
     def display(self):
         self._message_lbl.clear()
