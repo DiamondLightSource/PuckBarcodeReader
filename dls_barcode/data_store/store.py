@@ -16,6 +16,7 @@ class Store:
         self._file_manager = file_manager
         self._file = os.path.join(directory, "store.txt")
         self._csv_file = os.path.join(directory, "store.csv")
+        self._backup_csv_file = os.path.join(directory, "backup.csv")
         self._img_dir = os.path.join(directory, "img_dir")
 
         if not self._file_manager.is_dir(self._img_dir):
@@ -84,12 +85,16 @@ class Store:
 
         self._process_change()
 
+    def backup_records(self, records_to_back_up):
+        self._to_backup_csv_file(records_to_back_up)
+
     def _truncate_record_list(self):
         min_store_capacity = 2
         actual_store_capacity = max(self._store_capacity.value(), min_store_capacity)
 
         if len(self.records) > actual_store_capacity:
             to_delete = self.records[actual_store_capacity:]
+            self.backup_records(to_delete)
             self.delete_records(to_delete)
 
     def _process_change(self):
@@ -116,6 +121,12 @@ class Store:
         """
         record_lines = [rec.to_csv_string() + "\n" for rec in self.records]
         self._file_manager.write_lines(self._csv_file, record_lines)
+
+    def _to_backup_csv_file(self, records):
+        """ Save the contents of the store to the backup csv file
+        """
+        record_lines = [rec.to_csv_string() + "\n" for rec in records]
+        self._file_manager.write_lines(self._backup_csv_file, record_lines)
 
     def _merge_holder_image_into_pins_image(self, holder_img, pins_img):
         factor = 0.22 * pins_img.width / holder_img.width

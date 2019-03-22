@@ -135,7 +135,9 @@ class ScanRecordTable(QGroupBox):
                 record = self._store.get_record(index)
                 records_to_delete.append(record)
 
+            self._store.backup_records(records_to_delete)
             self._store.delete_records(records_to_delete)
+
             self._load_store_records()
 
     def is_latest_holder_barcode(self, holder_barcode):
