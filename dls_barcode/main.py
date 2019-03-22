@@ -1,8 +1,10 @@
+import logging
 import sys
 
 from os.path import dirname
 from sys import path
-
+import pygelf
+import logconfig
 from dls_barcode.config import BarcodeConfig
 from dls_barcode.gui import DiamondBarcodeMainWindow
 from dls_barcode.main_manager import MainManager
@@ -31,12 +33,17 @@ def main(config_file, version):
     ui = DiamondBarcodeMainWindow(config, version, None)
     manager = MainManager(ui, config)
     manager.initialise_timers()
+    log = logging.getLogger(".".join([__name__]))
+    log.debug('2) timers initialised')
     manager.initialise_scanner()
     sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
+    logconfig.setup_logging()
+    #logconfig.set_additional_handler("log.log")
     # Multiprocessing support for PyInstaller bundling in Windows
+    log = logging.getLogger(".".join([__name__]))
     if sys.platform.startswith('win'):
         import multiprocessing
         multiprocessing.freeze_support()
@@ -45,6 +52,7 @@ if __name__ == '__main__':
     parser.add_argument("-cf", "--config_file", type=str, default=DEFAULT_CONFIG_FILE,
                         help="The path of the configuration file (default=" + DEFAULT_CONFIG_FILE + ")")
     args = parser.parse_args()
-    print("CONFIG: " + args.config_file)
+    log.info("CONFIG: " + args.config_file)
+    #print("CONFIG: " + args.config_file)
 
     main(args.config_file, VERSION)

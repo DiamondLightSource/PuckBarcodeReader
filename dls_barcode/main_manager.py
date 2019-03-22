@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 import queue
 import time
@@ -54,8 +55,12 @@ class MainManager:
         self._ui.resetCountdown()
 
     def initialise_scanner(self):
+        log = logging.getLogger(".".join([__name__]))
+        log.debug("3) camera scanner initialisation")
         self._camera_scanner = CameraScanner(self._result_queue, self._view_queue, self._message_queue, self._config)
+        log.debug("4) camera switch initialisation")
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
+
         self._restart_live_capture_from_side()
         self._ui.resetCountdown()
 
@@ -63,10 +68,14 @@ class MainManager:
         return self._camera_scanner is not None and self._camera_switch is not None
 
     def _restart_live_capture_from_top(self):
+        log = logging.getLogger(".".join([__name__]))
+        log.debug("starting live capture form top")
         self._camera_switch.restart_live_capture_from_top()
         self._ui.startCountdown(self._config.top_camera_timeout.value())
 
     def _restart_live_capture_from_side(self):
+        log = logging.getLogger(".".join([__name__]))
+        log.debug("5) starting live capture form side")
         self._reset_msg_timer()
         self._ui.resetCountdown()
         self._camera_switch.restart_live_capture_from_side()
@@ -138,7 +147,8 @@ class MainManager:
 
         # Barcode successfully read
         Beeper.beep()
-        print("MAIN: puck barcode recorded")
+        log = logging.getLogger(".".join([__name__]))
+        log.debug("puck barcode recorded")
         holder_barcode = plate.barcodes()[0]
         if not self._ui.isLatestHolderBarcode(holder_barcode):
             self._latest_holder_barcode = holder_barcode
@@ -149,8 +159,10 @@ class MainManager:
         if self._result_queue.empty():
             if self._camera_switch.is_top_scan_timeout():
                 self._ui.displayScanTimeoutMessage()
-
-                print("\n*** Scan timeout ***")
+                log = logging.getLogger(".".join([__name__]))
+                extra = ({"timeout_value": 1})
+                log = logging.LoggerAdapter(log, extra)
+                log.info("scan timeout", extra)
                 self._restart_live_capture_from_side()
             return
 
@@ -165,5 +177,8 @@ class MainManager:
 
         # Barcodes successfully read
         Beeper.beep()
-        print("Scan Completed", self._camera_switch.get_scan_time())
+        log = logging.getLogger(".".join([__name__]))
+        extra = ({"scan_time": self._camera_switch.get_scan_time(), "timeout_value": 0})
+        log = logging.LoggerAdapter(log, extra)
+        log.info("Scan Completed", extra)
         self._restart_live_capture_from_side()

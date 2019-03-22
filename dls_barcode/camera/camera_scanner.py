@@ -2,6 +2,7 @@ from __future__ import division
 
 import multiprocessing
 import queue
+import logging
 
 from .capture_worker import CaptureWorker
 from .scanner_worker import ScannerWorker
@@ -49,7 +50,8 @@ class CameraScanner:
     def start_scan(self, cam_position):
         """ Spawn the processes that will continuously capture and process images from the camera.
         """
-        print("\nMAIN: start triggered")
+        log = logging.getLogger(".".join([__name__, self.__class__.__name__]))
+        log.debug("8) scan start triggered")
         scanner_args = (self._task_q, self._overlay_q, self._result_q, self._message_q, self._scanner_kill_q, self._config, cam_position)
         self._scanner_process = multiprocessing.Process(target=CameraScanner._scanner_worker, args=scanner_args)
 
@@ -57,21 +59,22 @@ class CameraScanner:
         self._scanner_process.start()
 
     def stop_scan(self):
-        print("\nMAIN: Stop triggered")
+        log = logging.getLogger(".".join([__name__, self.__class__.__name__]))
+        log.debug("stop triggered")
         self._terminate_scanner_process()
         self._capture_command_q.put(CaptureCommand(StreamAction.STOP))
-        print("MAIN: Stop completed")
+        log.debug("stop scan completed")
 
     def kill(self):
-        print("\n__________")
-        print("MAIN: Kill")
+        log = logging.getLogger(".".join([__name__, self.__class__.__name__]))
+        log.debug("Kill")
         self.stop_scan()
         self._capture_kill_q.put(None)
-        print("MAIN: forcing capture cleanup")
+        log.debug("KILL forcing capture cleanup")
         self._process_cleanup(self._capture_process, [self._task_q, self._view_q])
         self._capture_process.join()
         self._flush_queue(self._capture_kill_q)
-        print("MAIN: KILL COMPLETED")
+        log.debug("KILL COMPLETED")
 
     def _flush_queue(self, queue):
         while not queue.empty():
@@ -80,12 +83,13 @@ class CameraScanner:
     def _terminate_scanner_process(self):
         if self._scanner_process is not None:
             self._scanner_kill_q.put(None)
-            print("MAIN: forcing scanner cleanup")
+            log = logging.getLogger(".".join([__name__, self.__class__.__name__]))
+            log.debug("starting scanner process cleanup")
             self._process_cleanup(self._scanner_process, [self._result_q, self._overlay_q, self._message_q])
             self._scanner_process.join()
             self._flush_queue(self._scanner_kill_q)
             self._scanner_process = None
-            print("MAIN: scanner rejoined")
+            log.debug("scanner process cleared and rejoined - caused by stop scan")
 
     def _process_cleanup(self, process, queues):
         """ A sub-process that writes to a queue can't terminate if the queue is not empty.
@@ -96,11 +100,12 @@ class CameraScanner:
             https://stackoverflow.com/questions/31708646/process-join-and-queue-dont-work-with-large-numbers
         """
         # Put the process in a list so we don't need to check is_alive() every time - supposed to perform better
+        log = logging.getLogger(".".join([__name__, self.__class__.__name__]))
         live_processes = [process]
         display = True
         while live_processes:
             if display:
-                print("MAIN: sub-process still alive")
+                log.debug("scanner process still alive")
                 display = False
 
             for q in queues:
@@ -115,7 +120,7 @@ class CameraScanner:
 
             live_processes = [p for p in live_processes if p.is_alive()]
 
-        print("MAIN: sub-process terminated!")
+        log.debug("scanner process terminated by process cleanup")
 
     @staticmethod
     def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_queue, camera_configs):

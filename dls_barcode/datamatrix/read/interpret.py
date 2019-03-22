@@ -1,3 +1,6 @@
+import logging
+
+
 class DatamatrixByteInterpreter:
     @staticmethod
     def interpret_bytes(data_bytes):
@@ -46,13 +49,20 @@ class DatamatrixByteInterpreter:
                 i += num_bytes
 
             elif byte == 240:
+                #log = log = logging.getLogger(".".join([__name__]))
+                #log.error(NotImplementedError("Datamatrix EDIFACT decoding not implemented"))
                 raise NotImplementedError("Datamatrix EDIFACT decoding not implemented")
 
             elif byte == 241:
+                #log = log = logging.getLogger(".".join([__name__]))
+                #log.error(NotImplementedError("Datamatrix Extended Channel Interpretation code not implemented"))
                 raise NotImplementedError("Datamatrix Extended Channel Interpretation code not implemented")
 
             elif 242 <= byte < 256 or byte == 0:  # Unused parts of message space.
-                raise ValueError("Code {} is not used in Datamatrix specification".format(byte))
+                #log = log = logging.getLogger(".".join([__name__]))
+                error = ValueError("Code {} is not used in Datamatrix specification".format(byte))
+                #.error(error)
+                raise error
 
         return ''.join(m for m in message)
 

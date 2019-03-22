@@ -1,3 +1,5 @@
+import logging
+
 import cv2 as opencv
 
 _OPENCV_MAJOR = opencv.__version__[0]
