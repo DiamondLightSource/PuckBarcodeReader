@@ -15,5 +15,6 @@ class ImageWidget(QLabel):
     def eventFilter(self, source, event):
         if source is self and event.type() == QtCore.QEvent.Resize:
             ma = self.pixmap()
-            self.setPixmap(ma.scaled(self.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+            if ma is not None:
+                self.setPixmap(ma.scaled(self.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         return QtWidgets.QWidget.eventFilter(self, source, event)

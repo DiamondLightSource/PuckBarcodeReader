@@ -162,3 +162,4 @@ class Record:
         """
         return datetime.datetime.fromtimestamp(self.timestamp).strftime(Record.DATE_FORMAT)
 
+

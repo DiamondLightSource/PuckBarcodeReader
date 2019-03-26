@@ -22,7 +22,7 @@ class ScanRecordTable(QGroupBox):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
-        self._store = Store(options.store_directory.value(), options.store_capacity, FileManager())
+        self._store = Store(options.store_directory.value(), options.store_capacity)
         self._options = options
 
         self._barcodeTable = barcode_table
@@ -115,7 +115,7 @@ class ScanRecordTable(QGroupBox):
             self._imageFrame.display_puck_image(marked_image)
         except IndexError:
             self._barcodeTable.clear()
-            self._imageFrame.clear_frame("Record table empty\nNothing to display")
+#            self._imageFrame.clear_frame("Record table empty\nNothing to display")
 
     def _delete_selected_records(self):
         """ Called when the 'Delete' button is pressed. Deletes all of the selected records
