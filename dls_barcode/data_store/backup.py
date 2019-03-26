@@ -1,38 +1,21 @@
 import time
 
-from dls_barcode.data_store.record import Record
-from dls_util.file import FileManager
+from dls_barcode.data_store.comms_manager import CommsManager
 
 
 class Backup:
 
-    def __init__(self, backup_file):
-        self._backup_file = backup_file
-        self._file_manager = FileManager()
-        self._load_records_from_file()
+    """
+    Backup class maintains the short time backaup of records which is kept in the same folder as the store files.
+    """
 
-    def _load_records_from_file(self):
-        """ Clear the current record store and load a new set of records from the specified file. """
-        self.records = []
+    MAX_BACKUP_TIME = 6   # maximum backup time in weeks
 
-        if not self._file_manager.is_file(self._backup_file):
-            return
-
-        lines = self._file_manager.read_lines(self._backup_file)
-        for line in lines:
-            try:
-                record = Record.from_string(line)
-                self.records.append(record)
-            except Exception:
-                print("Failed to parse store Record: {}".format(line))
-
-        #self._truncate_record_list()
-
-    def _to_backup_file(self):
-        """ Save the contents of the store to the backing file
-        """
-        record_lines = [rec.to_string() + "\n" for rec in self.records]
-        self._file_manager.write_lines(self._backup_file, record_lines)
+    def __init__(self, directory, backup_time):
+        self.comms = CommsManager(directory, "backup")
+        self.backup_time = backup_time
+        self.records = self.comms.load_records_from_file()
+        self._truncate_record_list()
 
     def _truncate_record_list(self):
         for record in self.records:
@@ -42,12 +25,13 @@ class Backup:
     def backup_records(self, to_back):
         self.records.extend(to_back)
         self._truncate_record_list()
-        self._to_backup_file()
+        self.comms.to_csv_file(self.records)
 
-    def _is_old(self,record):
+    def _is_old(self, record):
         tm = time.time()
         record_time = record.timestamp
         delta = tm - record_time
-        weeks = 3 * 604800 #3 weeks in seconds
+        backup_time = min(self.backup_time, self.MAX_BACKUP_TIME)
+        weeks = backup_time * 604800  # weeks in seconds
         return delta > weeks
 
