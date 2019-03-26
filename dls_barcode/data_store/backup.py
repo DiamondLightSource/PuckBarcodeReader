@@ -9,8 +9,6 @@ class Backup:
     Backup class maintains the short time backaup of records which is kept in the same folder as the store files.
     """
 
-    MAX_BACKUP_TIME = 6   # maximum backup time in weeks
-
     def __init__(self, directory, backup_time):
         self.comms = CommsManager(directory, "backup")
         self.backup_time = backup_time
@@ -31,7 +29,6 @@ class Backup:
         tm = time.time()
         record_time = record.timestamp
         delta = tm - record_time
-        backup_time = min(self.backup_time, self.MAX_BACKUP_TIME)
-        weeks = backup_time * 604800  # weeks in seconds
+        weeks = self.backup_time * 604800  # weeks in seconds
         return delta > weeks
 
