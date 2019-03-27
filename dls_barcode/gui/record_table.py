@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget, QMessageBox
 
 from dls_barcode.data_store import Store
+from dls_barcode.data_store.store_manager import StoreManager
 from dls_util.file import FileManager
 
 # todo: allow delete key to be used for deletion
@@ -22,7 +23,7 @@ class ScanRecordTable(QGroupBox):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
-        self._store = Store(options.store_directory.value(), options.store_capacity, 3)#options.backup_time
+        self._store = StoreManager(options.store_directory, options.store_capacity, options.backup_time).create_store()
         self._options = options
 
         self._barcodeTable = barcode_table

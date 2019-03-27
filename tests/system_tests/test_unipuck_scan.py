@@ -2,6 +2,7 @@ import os, shutil
 
 from dls_barcode.config.barcode_config import BarcodeConfig
 from dls_barcode.data_store import Store
+from dls_barcode.data_store.store_manager import StoreManager
 from dls_barcode.scan import GeometryScanner
 from dls_util.image import Image
 from dls_util.file import FileManager
@@ -15,11 +16,11 @@ FILE_MANAGER = FileManager()
 OPTIONS = BarcodeConfig(CONFIG_FILE, FILE_MANAGER)
 
 # Clear store before creating a new one
-store_dir = OPTIONS.store_directory.value()
+store_dir = OPTIONS.store_directory
 if os.path.isdir(store_dir):
     shutil.rmtree(store_dir)
 
-STORE = Store(store_dir, OPTIONS.store_capacity, FILE_MANAGER)
+STORE = StoreManager(store_dir, OPTIONS.store_capacity, OPTIONS.backup_time).create_store()
 
 
 def test_generator():

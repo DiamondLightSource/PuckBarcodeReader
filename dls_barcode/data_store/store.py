@@ -1,8 +1,6 @@
 import uuid
 import os
 
-from dls_barcode.data_store.backup import Backup
-from dls_barcode.data_store.comms_manager import CommsManager
 from .record import Record
 
 
@@ -13,15 +11,13 @@ class Store:
     """
     MIN_STORE_CAPACITY = 2
 
-    def __init__(self, directory, store_capacity, backup_time):
+    def __init__(self, comms_manager, backup, store_capacity):
         """ Initializes a new instance of Store.
         """
         self._store_capacity = store_capacity
-        self._backup = Backup(directory, backup_time)
-        self._comms_manager = CommsManager(directory, "store")
-        self._img_dir = os.path.join(directory, "img_dir")
-        self._comms_manager.make_img_dir(self._img_dir)
-
+        self._backup = backup
+        self._comms_manager = comms_manager
+        self._img_dir = self._comms_manager.make_img_dir()
         self.records = self._comms_manager.load_records_from_file()
         self._truncate_record_list()
         self._sort_records()

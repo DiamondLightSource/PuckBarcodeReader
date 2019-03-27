@@ -10,7 +10,7 @@ class CommsManager:
 
     def __init__(self, directory, file_name):
         self._file_manager = FileManager()
-        self._directory = directory
+        self._directory = directory.value()
         self._file_name = file_name
 
     def load_records_from_file(self):
@@ -45,9 +45,11 @@ class CommsManager:
         record_lines = [rec.to_csv_string() + "\n" for rec in records]
         self._file_manager.write_lines(csv_file, record_lines)
 
-    def make_img_dir(self, img_dir):
+    def make_img_dir(self):
+        img_dir = os.path.join(self._directory, "img_dir")
         if not self._file_manager.is_dir(img_dir):
             self._file_manager.make_dir(img_dir)
+        return img_dir
 
     def remove_img_file(self, record):
         if self._file_manager.is_file(record.image_path):
