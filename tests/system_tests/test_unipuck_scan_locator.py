@@ -24,8 +24,8 @@ OPTIONS = BarcodeConfig(CONFIG_FILE, FILE_MANAGER)
 
 # Clear store before creating a new one
 store_dir = OPTIONS.store_directory
-if os.path.isdir(store_dir):
-    shutil.rmtree(store_dir)
+if os.path.isdir(store_dir.value()):
+    shutil.rmtree(store_dir.value())
 
 STORE = StoreManager(store_dir, OPTIONS.store_capacity, OPTIONS.backup_time).create_store()
 
