@@ -45,6 +45,6 @@ class CountdownBox(QGroupBox):
 
     def display(self):
         self._message_lbl.clear()
-        if self.count is not None and self.count >= 0:
+        if self.count is not None and self.count > 0:
             self._message_lbl.setText(str(self.count))
             self.count = self.count - 1

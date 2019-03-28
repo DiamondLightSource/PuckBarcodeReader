@@ -68,8 +68,8 @@ class MainManager:
 
     def _restart_live_capture_from_side(self):
         self._reset_msg_timer()
-        self._ui.resetCountdown()
         self._camera_switch.restart_live_capture_from_side()
+        self._ui.resetCountdown()
 
     def _read_message_queue(self):
         if self._message_queue.empty():
