@@ -18,8 +18,8 @@ class BarcodeTable(QGroupBox):
         self._options = options
 
         self.setTitle("Plate Barcodes")
-        self.setMaximumWidth(200)
-        self.setMinimumWidth(180)
+        self.setMaximumWidth(135)
+        self.setMinimumWidth(125)
         self._init_ui()
         self.clear()
 
@@ -29,7 +29,7 @@ class BarcodeTable(QGroupBox):
 
         # Create barcode table - lists all the barcodes in a record
         self._table = QTableWidget()
-        self._table.setMinimumWidth(150)
+        self._table.setMinimumWidth(70)
         self._table.setMinimumHeight(600)
         self._table.setColumnCount(1)
         self._table.setRowCount(10)

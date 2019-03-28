@@ -29,7 +29,7 @@ class ScanRecordTable(QGroupBox):
         self._imageFrame = image_frame
 
         self.setTitle("Scan Records")
-        self.setMaximumWidth(1140)
+        self.setMaximumWidth(730)
 
         self._init_ui()
 
@@ -38,7 +38,7 @@ class ScanRecordTable(QGroupBox):
     def _init_ui(self):
         # Create record table - lists all the records in the store
         self._table = QTableWidget()
-        self._table.setMinimumWidth(900)
+        self._table.setMinimumWidth(720) #900
         self._table.setMinimumHeight(600)
         self._table.setColumnCount(len(self.COLUMNS))
         self._table.setHorizontalHeaderLabels(self.COLUMNS)
