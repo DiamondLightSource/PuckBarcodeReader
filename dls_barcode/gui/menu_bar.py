@@ -1,14 +1,15 @@
 from __future__ import division
 
-from PyQt4.QtGui import qApp, QAction, QMainWindow, QStyle
+from PyQt5.QtWidgets import qApp, QAction, QMainWindow, QStyle
 
 
 class MenuBar(QMainWindow):
     """ GUI component. Displays a start/stop button
     """
 
-    def __init__(self, mainMenu, version):
-        super(MenuBar, self).__init__()
+    def __init__(self, mainMenu, version, flags, *args, **kwargs):
+        #super(MenuBar, self).__init__(mainMenu, version)
+        super().__init__(flags, *args, **kwargs)
         self._version = version
 
         self._exit_icon = self.style().standardIcon(QStyle.SP_DialogCloseButton)

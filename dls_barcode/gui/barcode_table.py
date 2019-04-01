@@ -2,9 +2,9 @@ from __future__ import division
 
 import os
 
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QLabel, QTableWidgetItem
+from PyQt5 import QtGui
 
 from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
 
@@ -18,24 +18,26 @@ class BarcodeTable(QGroupBox):
         self._options = options
 
         self.setTitle("Plate Barcodes")
+        self.setMaximumWidth(160)
+        self.setMinimumWidth(160)
         self._init_ui()
         self.clear()
 
     def _init_ui(self):
         # Plate being displayed
-        self._plate_lbl = QtGui.QLabel()
+        self._plate_lbl = QLabel()
 
         # Create barcode table - lists all the barcodes in a record
-        self._table = QtGui.QTableWidget()
-        self._table.setMinimumWidth(110)
+        self._table = QTableWidget()
+        self._table.setMinimumWidth(70)
         self._table.setMinimumHeight(600)
         self._table.setColumnCount(1)
         self._table.setRowCount(10)
         self._table.setHorizontalHeaderLabels(['Barcode'])
-        self._table.setColumnWidth(0, 100)
+        self._table.setMinimumWidth(200)
 
         # Clipboard button - copy the selected barcodes to the clipboard
-        self._btn_clipboard = QtGui.QPushButton('Copy To Clipboard')
+        self._btn_clipboard = QPushButton('Copy To Clipboard')
         self._btn_clipboard.setToolTip('Copy barcodes for the selected record to the clipboard')
         self._btn_clipboard.resize(self._btn_clipboard.sizeHint())
         self._btn_clipboard.clicked.connect(self.copy_to_clipboard)
@@ -87,8 +89,8 @@ class BarcodeTable(QGroupBox):
             cell_color.a = 192
 
             # Set table item
-            barcode = QtGui.QTableWidgetItem(barcode)
-            barcode.setBackgroundColor(cell_color.to_qt())
+            barcode = QTableWidgetItem(barcode)
+            barcode.setBackground(cell_color.to_qt())
             barcode.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             self._table.setItem(index, 0, barcode)
 
@@ -111,7 +113,11 @@ class BarcodeTable(QGroupBox):
             pyperclip.copy(sep.join(clipboard_barcodes))
 
     def _update_plate_label(self):
-        text = "Plate : " + str(self._holder_barcode) if self._has_barcodes() else "Plate:"
+        barcode_holder = str(self._holder_barcode)
+        text = "Plate : " + barcode_holder if self._has_barcodes() else "Plate:"
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+        self._plate_lbl.setFont(myFont)
         self._plate_lbl.setText(text)
 
     def _has_barcodes(self):

@@ -6,7 +6,7 @@ from sys import path
 from dls_barcode.config import BarcodeConfig
 from dls_barcode.gui import DiamondBarcodeMainWindow
 from dls_barcode.main_manager import MainManager
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 import argparse
 from dls_barcode.version import VERSION
 from dls_util.file import FileManager
@@ -26,9 +26,9 @@ else:
 
 
 def main(config_file, version):
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     config = BarcodeConfig(config_file, FileManager())
-    ui = DiamondBarcodeMainWindow(config, version)
+    ui = DiamondBarcodeMainWindow(config, version, None)
     manager = MainManager(ui, config)
     manager.initialise_timers()
     manager.initialise_scanner()

@@ -1,8 +1,8 @@
 from __future__ import division
 
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget, QMessageBox
 
 from dls_barcode.data_store import Store
 from dls_util.file import FileManager
@@ -16,7 +16,7 @@ class ScanRecordTable(QGroupBox):
     details of the scan to appear in other GUI components (list of barcodes in the barcode
     table and image of the puck in the image frame).
     """
-    COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Plate Type', 'Valid', 'Invalid', 'Empty']
+    COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Valid', 'Invalid', 'Empty', 'Plate Type']
 
     def __init__(self, barcode_table, image_frame, options):
         super(ScanRecordTable, self).__init__()
@@ -29,6 +29,8 @@ class ScanRecordTable(QGroupBox):
         self._imageFrame = image_frame
 
         self.setTitle("Scan Records")
+        self.setMaximumWidth(730)
+
         self._init_ui()
 
         self._load_store_records()
@@ -36,22 +38,16 @@ class ScanRecordTable(QGroupBox):
     def _init_ui(self):
         # Create record table - lists all the records in the store
         self._table = QTableWidget()
-        self._table.setMinimumWidth(440)
+        self._table.setMinimumWidth(720) #900
         self._table.setMinimumHeight(600)
         self._table.setColumnCount(len(self.COLUMNS))
         self._table.setHorizontalHeaderLabels(self.COLUMNS)
-        self._table.setColumnWidth(0, 70)
-        self._table.setColumnWidth(1, 55)
-        self._table.setColumnWidth(2, 85)
-        self._table.setColumnWidth(3, 70)
-        self._table.setColumnWidth(4, 45)
-        self._table.setColumnWidth(5, 50)
-        self._table.setColumnWidth(6, 45)
-        self._table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+
+        self._table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
 
         # Delete button - deletes selected records
-        btn_delete = QtGui.QPushButton('Delete')
+        btn_delete = QtWidgets.QPushButton('Delete')
         btn_delete.setToolTip('Delete selected scan/s')
         btn_delete.resize(btn_delete.sizeHint())
         btn_delete.clicked.connect(self._delete_selected_records)
@@ -71,7 +67,6 @@ class ScanRecordTable(QGroupBox):
         self._table.cellPressed.connect(to_run_on_table_clicked)
         self._table.cellPressed.connect(self._record_selected)
 
-
     def add_record_frame(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
         self._store.merge_record(holder_barcode, plate, holder_img, pins_img)
@@ -86,8 +81,8 @@ class ScanRecordTable(QGroupBox):
         self._table.setRowCount(self._store.size())
 
         for n, record in enumerate(self._store.records):
-            items = [record.date, record.time, record.holder_barcode, record.plate_type, record.num_valid_barcodes,
-                     record.num_unread_slots, record.num_empty_slots]
+            items = [record.date, record.time, record.holder_barcode, record.num_valid_barcodes,
+                     record.num_unread_slots, record.num_empty_slots, record.plate_type]
             valid_empty = record.num_valid_barcodes + record.num_empty_slots
             if valid_empty == record.num_slots:
                 color = self._options.col_ok()
@@ -98,8 +93,8 @@ class ScanRecordTable(QGroupBox):
 
             color.a = 192
             for m, item in enumerate(items):
-                new_item = QtGui.QTableWidgetItem(str(item))
-                new_item.setBackgroundColor(color.to_qt())
+                new_item = QtWidgets.QTableWidgetItem(str(item))
+                new_item.setBackground(color.to_qt())
                 new_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 self._table.setItem(n, m, new_item)
 
@@ -128,11 +123,11 @@ class ScanRecordTable(QGroupBox):
         """
         # Display a confirmation dialog to check that user wants to proceed with deletion
         quit_msg = "This operation cannot be undone.\nAre you sure you want to delete these record/s?"
-        reply = QtGui.QMessageBox.warning(self, 'Confirm Delete',
-                         quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        reply = QtWidgets.QMessageBox.warning(self, 'Confirm Delete',
+                         quit_msg, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
         # If yes, find the appropriate records and delete them
-        if reply == QtGui.QMessageBox.Yes:
+        if reply == QMessageBox.Yes:
             rows = self._table.selectionModel().selectedRows()
             records_to_delete = []
             for row in rows:
