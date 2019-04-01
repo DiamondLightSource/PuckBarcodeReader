@@ -1,16 +1,14 @@
-import sys
 from PyQt5 import QtWidgets, QtGui
 
 from dls_barcode.config import BarcodeConfigDialog
-
 from dls_barcode.gui.scan_button import ScanButton
-
 from .barcode_table import BarcodeTable
+from .countdown_box import CountdownBox
 from .image_frame import ImageFrame
-from .record_table import ScanRecordTable
+from .menu_bar import MenuBar
 from .message_box import MessageBox
 from .message_factory import MessageFactory
-from .menu_bar import MenuBar
+from .record_table import ScanRecordTable
 
 
 class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
@@ -18,7 +16,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     """
 
     def __init__(self, config, version, flags, *args, **kwargs):
-        #super(DiamondBarcodeMainWindow, self).__init__(None, None)
 
         super().__init__(flags, *args, **kwargs)
         self._config = config
@@ -32,6 +29,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._barcode_table = None
         self._image_frame = None
         self._scan_button = None
+        self._countdown_box = None
 
         self._init_ui()
 
@@ -61,6 +59,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         # Message display
         self._message_box = MessageBox()
 
+        # Count down display
+        self._countdown_box = CountdownBox()
+
         # Create layout
 
         hbox = QtWidgets.QHBoxLayout()
@@ -75,7 +76,14 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
         img_vbox = QtWidgets.QVBoxLayout()
         img_vbox.addWidget(self._image_frame)
-        img_vbox.addWidget(self._message_box)
+
+        msg_hbox = QtWidgets.QHBoxLayout()
+        msg_hbox.setSpacing(10)
+        msg_hbox.addWidget(self._message_box)
+        msg_hbox.addWidget(self._countdown_box)
+
+        img_vbox.addLayout(msg_hbox)
+
         hbox.addLayout(img_vbox)
 
         vbox = QtWidgets.QVBoxLayout()
@@ -103,7 +111,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def _on_about_action_clicked(self):
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
-
 
     def _on_scan_action_clicked(self):
         print("MAIN: Scan menu clicked")
@@ -142,3 +149,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def isLatestHolderBarcode(self, holder_barcode):
         return self._record_table.is_latest_holder_barcode(holder_barcode)
+
+    def startCountdown(self, count):
+        self._countdown_box.start_countdown(count)
+
+    def resetCountdown(self):
+        self._countdown_box.reset_countdown()

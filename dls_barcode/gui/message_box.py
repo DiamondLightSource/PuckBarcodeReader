@@ -5,7 +5,7 @@ from dls_util.message import MessageType
 
 RED = "; color: red"
 BLACK = "; color: black"
-BASIC_STYLE_SHEET = "font-size: 14pt"
+BASIC_STYLE_SHEET = "font-size: 20pt"
 
 
 class MessageBox(QGroupBox):

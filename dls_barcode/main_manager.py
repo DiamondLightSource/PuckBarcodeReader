@@ -1,10 +1,10 @@
-
 import multiprocessing
 import queue
 import time
-from PyQt5 import QtCore
-from dls_barcode.camera import CameraScanner, CameraSwitch, NoNewBarcodeMessage, ScanErrorMessage
 
+from PyQt5 import QtCore
+
+from dls_barcode.camera import CameraScanner, CameraSwitch, NoNewBarcodeMessage, ScanErrorMessage
 from dls_util import Beeper
 
 RESULT_TIMER_PERIOD = 1000  # ms
@@ -27,7 +27,6 @@ class MainManager:
         self._result_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
         self._message_queue = multiprocessing.Queue()
-        #self._reset_msg_timer()
         # initialise all actions
         self._ui.set_actions_triger(self._cleanup, self.initialise_scanner, self._camera_capture_alive)
 
@@ -52,21 +51,25 @@ class MainManager:
         self._camera_scanner.kill()
         self._camera_scanner = None
         self._camera_switch = None
+        self._ui.resetCountdown()
 
     def initialise_scanner(self):
         self._camera_scanner = CameraScanner(self._result_queue, self._view_queue, self._message_queue, self._config)
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
         self._restart_live_capture_from_side()
+        self._ui.resetCountdown()
 
     def _camera_capture_alive(self):
         return self._camera_scanner is not None and self._camera_switch is not None
 
     def _restart_live_capture_from_top(self):
         self._camera_switch.restart_live_capture_from_top()
+        self._ui.startCountdown(self._config.top_camera_timeout.value())
 
     def _restart_live_capture_from_side(self):
         self._reset_msg_timer()
         self._camera_switch.restart_live_capture_from_side()
+        self._ui.resetCountdown()
 
     def _read_message_queue(self):
         if self._message_queue.empty():
