@@ -1,10 +1,8 @@
 import unittest
 from mock import MagicMock
 from mock import call
-import os
 from dls_barcode.data_store import Store
 from dls_barcode.data_store.record import Record
-from dls_barcode.data_store.store_manager import StoreManager
 
 ID0 = "id0"
 ID1 = "id1"
@@ -299,6 +297,10 @@ class TestStore(unittest.TestCase):
 
         # Assert
         self._comms_manager.to_file.assert_called()
+        ((record_lines_used), kwargs) = self._comms_manager.to_file.call_args_list[0]
+        self.assertEqual(len(record_lines_used[0]), store.size())
+        for r, l in zip(store.records, record_lines_used):
+            self.assertIn(r, l)
 
 
     def test_when_records_are_deleted_then_csv_file_is_updated(self):
@@ -314,6 +316,11 @@ class TestStore(unittest.TestCase):
 
         # Assert
         self._comms_manager.to_csv_file.assert_called()
+
+        ((record_lines_used), kwargs) = self._comms_manager.to_csv_file.call_args_list[0]
+        self.assertEqual(len(record_lines_used[0]), store.size())
+        for r, l in zip(store.records, record_lines_used):
+            self.assertIn(r, l)
 
     def test_given_a_non_empty_store_when_capacity_is_reduced_then_records_are_truncated_at_next_merge(self):
         # Arrange
