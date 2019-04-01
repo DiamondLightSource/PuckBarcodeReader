@@ -14,7 +14,7 @@ class TestBackup(unittest.TestCase):
         WEEK_IN_SECONDS = 604800
         self.backup_time.value.return_value = weeks
         record_one = MagicMock(timestamp=time.time() - (weeks-1)*WEEK_IN_SECONDS)
-        record_two = MagicMock(timestamp=time.time() - weeks*WEEK_IN_SECONDS)
+        record_two = MagicMock(timestamp=time.time() - (weeks-2)*WEEK_IN_SECONDS)
         record_three = MagicMock(timestamp=time.time() - (weeks+1)*WEEK_IN_SECONDS)
         record_three.to_csv_string.return_value = 'csv_string_three'
         record_three.to_string.return_value = 'string_three'
