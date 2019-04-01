@@ -1,4 +1,4 @@
-Release Notes (v1.3.0)
+Release Notes (v1.4.0)
 ===========================
 
 Summary of all changes
