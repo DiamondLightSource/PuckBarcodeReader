@@ -44,6 +44,7 @@ class BarcodeConfig(Config):
 
         self.store_directory = add(DirectoryConfigItem, "Store Directory", default=default_store)
         self.store_capacity = add(IntConfigItem, "Results History Size", default=50)
+        self.backup_time = add(IntConfigItem, "Backup in Weeks", default=3)
 
         self.console_frame = add(BoolConfigItem, "Print Frame Summary", default=False)
         self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)

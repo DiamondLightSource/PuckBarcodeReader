@@ -17,10 +17,13 @@ The following steps will help you prepare an appropriate Python environment to r
     * PyQt5
     
 * All of these packages can be installed using `pip`. To do this:
-    * Open cmd.exe (being sure to ‘Run as Administrator’)
+    * Create a new virtual environment eg.`python3 -m venv my-env`
+    * activate the environment - run `my-env\Scripts\activate.bat`
     * Upgrade pip by typing `pip install –-upgrade pip`
+    * Install all required packages using pip:
     * Install pyperclip by typing `pip install pyperclip`
     * Install enum by typing `pip install enum` [only if using Python 2.7]
+    * Similarly install scipy, numpy, PyQt5 and opencv-python
 
 NOTE: there is a requirements.txt file that was created for use by the CI server Travis. It contains all of the above dependencies except for enum.
     
@@ -44,18 +47,13 @@ Creating a Self-Contained Executable
 ====================================
 A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used to create a stand-alone windows executable (.exe) file.
 
-Install PyInstaller with `pip install pyinstaller`. Make sure that the correct version of Python is referenced in your system path.
+Activate your virtual environment (e.g.run in command line C:\Users\rqq82173\PycharmProjects\python_environments\barcode_qt5\Scripts\activate.bat) 
+Install PyInstaller with `pip install pyinstaller` (if it is not installed yet).
 
-To create the executable file, run the `build.bat` file. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). If everything has worked correctly, this single file will be all that is needed to run the barcode scanner application.
-
-Troubles creating Executable
-
-Whe the path to Python on Pyinstaller contains spaces there an error [failed to create process](https://stackoverflow.com/questions/31808180/installing-pyinstaller-via-pip-leads-to-failed-to-create-process/34546220#34546220) occures. 
-To get around the porblem call script pyinstaller-script.py.
-For example: "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\python.exe" "C:\Users\Urszula Neuman\AppData\Local\Programs\Python\Python35\Scripts\pyinstaller-script.py" main.py
-The result exec file is created in subdirectrory called dist.
-
-NOTE: when creating the executable on a 64bit machine (using Python 3.5.1 32bit) you might get the error ‘No module named pywintypes’. To fix this, try `pip install pypiwin32`.
+To create the executable file, run the `build.bat` file. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). 
+'build.bat' includes hardcoded paths to the main file and the icon. This needs to be updated accordingly.
+Once .exe file is created add 'resources' folder to th bin folder (resources include the icon and the shape patter). 
+Zip the bin folder and add it to release files.
 
 Continuous Integration
 ======================

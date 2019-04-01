@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget, QMessageBox
 
 from dls_barcode.data_store import Store
+from dls_barcode.data_store.store_manager import StoreManager
 from dls_util.file import FileManager
 
 # todo: allow delete key to be used for deletion
@@ -22,7 +23,7 @@ class ScanRecordTable(QGroupBox):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
-        self._store = Store(options.store_directory.value(), options.store_capacity, FileManager())
+        self._store = StoreManager(options.store_directory, options.store_capacity, options.backup_time).create_store()
         self._options = options
 
         self._barcodeTable = barcode_table
@@ -115,7 +116,7 @@ class ScanRecordTable(QGroupBox):
             self._imageFrame.display_puck_image(marked_image)
         except IndexError:
             self._barcodeTable.clear()
-            self._imageFrame.clear_frame("Record table empty\nNothing to display")
+#            self._imageFrame.clear_frame("Record table empty\nNothing to display")
 
     def _delete_selected_records(self):
         """ Called when the 'Delete' button is pressed. Deletes all of the selected records
@@ -135,7 +136,9 @@ class ScanRecordTable(QGroupBox):
                 record = self._store.get_record(index)
                 records_to_delete.append(record)
 
+            self._store.backup_records(records_to_delete)
             self._store.delete_records(records_to_delete)
+
             self._load_store_records()
 
     def is_latest_holder_barcode(self, holder_barcode):
