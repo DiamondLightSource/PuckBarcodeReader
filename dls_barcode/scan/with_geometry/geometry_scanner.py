@@ -60,7 +60,7 @@ class GeometryScanner:
         self._frame_result.set_barcodes(self._barcodes)
         if self.plate_type == Geometry.UNIPUCK:
             self._geometry = UnipuckLocator(self._frame_img).find_location()
-        if self._geometry == None:
+        if self._geometry is None:
             self._geometry = self._calculate_geometry()
 
         self._frame_result.set_geometry(self._geometry)
@@ -171,8 +171,8 @@ class GeometryScanner:
         slotted_bcs = [None] * geometry.num_slots()
         for bc in barcodes:
             slot_num = geometry.containing_slot(bc.center())
-            if(slot_num != None):
-                slotted_bcs[slot_num -  1] = bc
+            if slot_num is not None:
+                slotted_bcs[slot_num - 1] = bc
 
         return slotted_bcs
 

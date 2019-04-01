@@ -1,3 +1,4 @@
+import logging
 import time
 from .camera_position import CameraPosition
 
@@ -18,6 +19,8 @@ class CameraSwitch:
     def restart_live_capture_from_side(self):
         self._stop_live_capture()
         self._switch_to_side()
+        log = logging.getLogger(".".join([__name__]))
+        log.debug("6) starting scan from side")
         self._scanner.start_scan(CameraPosition.SIDE)
 
     def restart_live_capture_from_top(self):
