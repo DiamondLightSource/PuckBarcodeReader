@@ -1,6 +1,9 @@
 import uuid
 import os
+import time
 
+from dls_barcode.data_store.backup import Backup
+from dls_barcode.data_store.comms_manager import CommsManager
 from .record import Record
 
 
@@ -9,17 +12,15 @@ class Store:
     """ Maintains a list of records of previous barcodes scans. Any changes (additions
     or deletions) are automatically written to the backing file.
     """
-    MIN_STORE_CAPACITY = 2
 
-    def __init__(self, comms_manager, backup, store_capacity):
+    def __init__(self, comms_manager):
         """ Initializes a new instance of Store.
         """
-        self._store_capacity = store_capacity
-        self._backup = backup
         self._comms_manager = comms_manager
-        self._img_dir = self._comms_manager.make_img_dir()
-        self.records = self._comms_manager.load_records_from_file()
-        self._truncate_record_list()
+        self._comms_manager.make_img_dir()
+        self._img_dir = self._comms_manager.get_img_dir()
+        records = self._comms_manager.load_records_from_file()
+        self.records = records
         self._sort_records()
 
     def size(self):
@@ -53,6 +54,13 @@ class Store:
 
         self._add_record(holder_barcode, plate, holder_img, pins_img)
 
+    def backup_records(self, directory):
+        ts = time.localtime()
+        file_name = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
+        backup_manger = CommsManager(directory, file_name)
+        backup = Backup(backup_manger)
+        backup.backup_records(self.records)
+
     def delete_records(self, records_to_delete):
         """ Remove all of the records in the supplied list from the store and
         save changes to the backing file.
@@ -63,23 +71,11 @@ class Store:
 
         self._process_change()
 
-    def backup_records(self, records_to_backup):
-        self._backup.backup_records(records_to_backup)
-
-    def _truncate_record_list(self):
-
-        actual_store_capacity = max(self._store_capacity.value(), self.MIN_STORE_CAPACITY)
-
-        if len(self.records) > actual_store_capacity:
-            to_delete = self.records[actual_store_capacity:]
-            self.backup_records(to_delete)
-            self.delete_records(to_delete)
 
     def _process_change(self):
         """ Sort the records and save to file.
         """
         self._sort_records()
-        self._truncate_record_list()
         self._comms_manager.to_file(self.records)
         self._comms_manager.to_csv_file(self.records)
 

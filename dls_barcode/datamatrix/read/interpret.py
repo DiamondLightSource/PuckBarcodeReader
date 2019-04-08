@@ -58,11 +58,14 @@ class DatamatrixByteInterpreter:
                 #log.error(NotImplementedError("Datamatrix Extended Channel Interpretation code not implemented"))
                 raise NotImplementedError("Datamatrix Extended Channel Interpretation code not implemented")
 
-            elif 242 <= byte < 256 or byte == 0:  # Unused parts of message space.
+            elif 242 <= byte < 256:  # Unused parts of message space.
                 #log = log = logging.getLogger(".".join([__name__]))
                 error = ValueError("Code {} is not used in Datamatrix specification".format(byte))
                 #.error(error)
                 raise error
+            elif byte == 0:
+                error = ValueError("Code {} is not used in Datamatrix specification".format(byte))
+                print(error)
 
         return ''.join(m for m in message)
 

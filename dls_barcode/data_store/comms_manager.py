@@ -10,8 +10,10 @@ class CommsManager:
 
     def __init__(self, directory, file_name):
         self._file_manager = FileManager()
-        self._directory = directory.value()
+        self._make_dir(directory)
+        self._directory = directory
         self._file_name = file_name
+        self._img_dir = None
 
     def load_records_from_file(self):
         """ Clear the current record store and load a new set of records from the specified file. """
@@ -46,10 +48,15 @@ class CommsManager:
         self._file_manager.write_lines(csv_file, record_lines)
 
     def make_img_dir(self):
-        img_dir = os.path.join(self._directory, "img_dir")
-        if not self._file_manager.is_dir(img_dir):
-            self._file_manager.make_dir(img_dir)
-        return img_dir
+        self._img_dir = os.path.join(self._directory, "img_dir")
+        self._make_dir(self._img_dir)
+
+    def get_img_dir(self):
+        return self._img_dir
+
+    def _make_dir(self, dr):
+        if not self._file_manager.is_dir(dr):
+            self._file_manager.make_dir(dr)
 
     def remove_img_file(self, record):
         if self._file_manager.is_file(record.image_path):

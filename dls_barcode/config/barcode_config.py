@@ -22,8 +22,11 @@ class BarcodeConfig(Config):
 
         if IS_BUNDLED:
             default_store = "./store/"
+            default_backup = "./backup/"
         else:
             default_store = "../store/"
+            default_backup = "../backup/"
+
 
         self.color_ok = add(ColorConfigItem, "Pin/Puck Read", Color.Green())
         self.color_accept = add(ColorConfigItem, "Puck Partially Read", Color.Yellow())
@@ -43,8 +46,9 @@ class BarcodeConfig(Config):
         self.image_crop = add(BoolConfigItem, "Crop to Puck", default=True)
 
         self.store_directory = add(DirectoryConfigItem, "Store Directory", default=default_store)
-        self.store_capacity = add(IntConfigItem, "Results History Size", default=50)
-        self.backup_time = add(IntConfigItem, "Backup in Weeks", default=3)
+        self.backup = add(BoolConfigItem, "Backup before Delete", default=True)
+        self.backup_directory = add(DirectoryConfigItem, "Backup Directory", default=default_backup)
+
 
         self.console_frame = add(BoolConfigItem, "Print Frame Summary", default=False)
         self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)
@@ -59,6 +63,12 @@ class BarcodeConfig(Config):
         self.side_camera_height = add(IntConfigItem, "Side Camera Height", default=1200)
 
         self.initialize_from_file()
+
+    def get_store_directory(self):
+        return self.store_directory.value()
+
+    def get_backup_directory(self):
+        return self.backup_directory.value()
 
     def col_ok(self):
         return self.color_ok.value()
