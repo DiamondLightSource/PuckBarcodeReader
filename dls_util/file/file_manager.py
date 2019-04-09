@@ -30,3 +30,7 @@ class FileManager:
 
     def remove(self, path):
         os.remove(path)
+
+    def make_dir_when_no_dir(self, dr):
+        if not self.is_dir(dr):
+            self.make_dir(dr)

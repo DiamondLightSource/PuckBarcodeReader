@@ -1,9 +1,8 @@
 import uuid
-import os
 import time
 
 from dls_barcode.data_store.backup import Backup
-from dls_barcode.data_store.comms_manager import CommsManager
+from dls_barcode.data_store.store_writer import StoreWriter
 from .record import Record
 
 
@@ -13,15 +12,11 @@ class Store:
     or deletions) are automatically written to the backing file.
     """
 
-    def __init__(self, comms_manager):
+    def __init__(self, store_writer, records):
         """ Initializes a new instance of Store.
         """
-        self._comms_manager = comms_manager
-        self._comms_manager.make_img_dir()
-        self._img_dir = self._comms_manager.get_img_dir()
-        records = self._comms_manager.load_records_from_file()
+        self._store_writer = store_writer
         self.records = records
-        self._sort_records()
 
     def size(self):
         """ Returns the number of records in the store
@@ -31,6 +26,7 @@ class Store:
     def get_record(self, index):
         """ Get record by index where the 0th record is the most recent
         """
+        self._sort_records()
         return self.records[index] if self.records else None
 
     def _add_record(self, holder_barcode, plate, holder_img, pins_img):
@@ -38,10 +34,9 @@ class Store:
         """
         merged_img = self._merge_holder_image_into_pins_image(holder_img, pins_img)
         guid = str(uuid.uuid4())
-        filename = os.path.abspath(os.path.join(self._img_dir, guid + '.png'))
-        merged_img.save_as(filename)
+        self._store_writer.to_image(merged_img, guid)
 
-        record = Record.from_plate(holder_barcode, plate, filename)
+        record = Record.from_plate(holder_barcode, plate, self._store_writer.get_img_path())
 
         self.records.append(record)
         self._process_change()
@@ -57,8 +52,8 @@ class Store:
     def backup_records(self, directory):
         ts = time.localtime()
         file_name = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
-        backup_manger = CommsManager(directory, file_name)
-        backup = Backup(backup_manger)
+        backup_writer = StoreWriter(directory, file_name)
+        backup = Backup(backup_writer)
         backup.backup_records(self.records)
 
     def delete_records(self, records_to_delete):
@@ -67,17 +62,16 @@ class Store:
         """
         for record in records_to_delete:
             self.records.remove(record)
-            self._comms_manager.remove_img_file(record)
+            self._store_writer.remove_img_file(record)
 
         self._process_change()
-
 
     def _process_change(self):
         """ Sort the records and save to file.
         """
         self._sort_records()
-        self._comms_manager.to_file(self.records)
-        self._comms_manager.to_csv_file(self.records)
+        self._store_writer.to_file(self.records)
+        self._store_writer.to_csv_file(self.records)
 
     def _sort_records(self):
         """ Sort the records in descending date order (most recent first).
@@ -93,5 +87,6 @@ class Store:
         return merged_img
 
     def is_latest_holder_barcode(self, holder_barcode):
+        self._sort_records()
         latest_record = self.get_record(0)
         return latest_record is not None and holder_barcode == latest_record.holder_barcode
