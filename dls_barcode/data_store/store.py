@@ -54,6 +54,7 @@ class Store:
         file_name = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
         backup_writer = StoreWriter(directory, file_name)
         backup = Backup(backup_writer)
+        self._sort_records()
         backup.backup_records(self.records)
 
     def delete_records(self, records_to_delete):
