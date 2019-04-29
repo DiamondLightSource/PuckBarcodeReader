@@ -18,3 +18,7 @@ class MessageFactory:
     @staticmethod
     def scan_completed_message():
         return Message(MessageType.INFO, "Scan completed")
+
+    @staticmethod
+    def puck_scan_completed_message():
+        return Message(MessageType.INFO, "Scan completed!")

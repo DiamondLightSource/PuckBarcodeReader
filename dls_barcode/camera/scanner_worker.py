@@ -6,7 +6,7 @@ from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
 from .camera_position import CameraPosition
 from .plate_overlay import PlateOverlay
-from .scanner_message import NoNewBarcodeMessage, ScanErrorMessage
+from .scanner_message import NoNewBarcodeMessage, ScanErrorMessage, NoNewPuckBarcodeMessage
 
 NO_PUCK_TIME = 2
 
@@ -67,7 +67,10 @@ class ScannerWorker:
         elif scan_result.any_valid_barcodes():
             # We have read valid barcodes but they are not new, so the scanner didn't even output a plate
             self._last_puck_time = time.time()
-            message_queue.put(NoNewBarcodeMessage()) #important used in the message logic
+            if scan_result.geometry() is not None:
+                message_queue.put(NoNewBarcodeMessage()) #important used in the message logic
+            else:
+                message_queue.put(NoNewPuckBarcodeMessage())
         elif scan_result.error() is not None and (time.time() - self._last_puck_time > NO_PUCK_TIME):
             #TODO use log
             message_queue.put(ScanErrorMessage(scan_result.error()))
