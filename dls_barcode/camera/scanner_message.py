@@ -2,6 +2,10 @@ class NoNewBarcodeMessage:
     pass
 
 
+class NoNewPuckBarcodeMessage:
+    pass
+
+
 class ScanErrorMessage:
     def __init__(self, content):
         self._content = content

@@ -5,7 +5,8 @@ import time
 
 from PyQt5 import QtCore
 
-from dls_barcode.camera import CameraScanner, CameraSwitch, NoNewBarcodeMessage, ScanErrorMessage
+from dls_barcode.camera import CameraScanner, CameraSwitch, ScanErrorMessage, NoNewPuckBarcodeMessage
+
 from dls_util import Beeper
 
 RESULT_TIMER_PERIOD = 1000  # ms
@@ -23,6 +24,7 @@ class MainManager:
         # Scan elements
         self._camera_scanner = None
         self._camera_switch = None
+        self._scan_completed_message_flag = False
 
         # Queue that holds new results generated in continuous scanning mode
         self._result_queue = multiprocessing.Queue()
@@ -62,7 +64,6 @@ class MainManager:
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
 
         self._restart_live_capture_from_side()
-        self._ui.resetCountdown()
 
     def _camera_capture_alive(self):
         return self._camera_scanner is not None and self._camera_switch is not None
@@ -78,7 +79,6 @@ class MainManager:
         log.debug("5) starting live capture form side")
         self._reset_msg_timer()
         self._camera_switch.restart_live_capture_from_side()
-        self._ui.resetCountdown()
 
     def _read_message_queue(self):
         if self._message_queue.empty():
@@ -93,11 +93,13 @@ class MainManager:
             if not self._msg_timer_is_running():
                 # The result queue is read at a slower rate - use a timer to give it time to process a new barcode
                 self._start_msg_timer()
-            elif self._has_msg_timer_timeout() and isinstance(scanner_msg, NoNewBarcodeMessage):
-                self._ui.displayScanCompleteMessage()
+            elif self._has_msg_timer_timeout() and isinstance(scanner_msg, NoNewPuckBarcodeMessage):
+                self._ui.displayPuckScanCompleteMessage()
+                self._ui.scanCompleted()
             elif isinstance(scanner_msg, ScanErrorMessage):
                 self._ui.displayScanErrorMessage(scanner_msg)
                 self._reset_msg_timer()
+                self._ui.resetCountdown()
         else:
             self._reset_msg_timer()
 
@@ -137,6 +139,7 @@ class MainManager:
             self._read_top_scan()
 
     def _read_side_scan(self):
+        self._scan_completed_message_flag = False
         if self._result_queue.empty():
             return
 
@@ -156,14 +159,21 @@ class MainManager:
             self._restart_live_capture_from_top()
 
     def _read_top_scan(self):
-        if self._result_queue.empty():
-            if self._camera_switch.is_top_scan_timeout():
+        if self._camera_switch.is_top_scan_timeout():
+            log = logging.getLogger(".".join([__name__]))
+            extra = ({"timeout_value": 1})
+            log = logging.LoggerAdapter(log, extra)
+            log.info("scan timeout", extra)
+            if self._scan_completed_message_flag:
+                self._ui.displayScanCompleteMessage()
+                self._ui.scanCompleted()
+            else:
                 self._ui.displayScanTimeoutMessage()
-                log = logging.getLogger(".".join([__name__]))
-                extra = ({"timeout_value": 1})
-                log = logging.LoggerAdapter(log, extra)
-                log.info("scan timeout", extra)
-                self._restart_live_capture_from_side()
+                self._ui.resetCountdown()
+            self._restart_live_capture_from_side()
+            return
+
+        if self._result_queue.empty():
             return
 
         # Get the result
@@ -173,6 +183,7 @@ class MainManager:
         self._ui.addRecordFrame(self._latest_holder_barcode, plate, self._latest_holder_image, pins_image)
 
         if not plate.is_full_valid():
+            self._scan_completed_message_flag = True
             return
 
         # Barcodes successfully read
@@ -181,4 +192,7 @@ class MainManager:
         extra = ({"scan_time": self._camera_switch.get_scan_time(), "timeout_value": 0})
         log = logging.LoggerAdapter(log, extra)
         log.info("Scan Completed", extra)
+        self._ui.displayScanCompleteMessage()
+        self._ui.scanCompleted()
+        self._scan_completed_message_flag = True
         self._restart_live_capture_from_side()

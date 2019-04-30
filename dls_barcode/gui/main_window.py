@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui
 
 from dls_barcode.config import BarcodeConfigDialog
+from dls_barcode.gui.progress_bar import ProgressBox
 from dls_barcode.gui.scan_button import ScanButton
 from .barcode_table import BarcodeTable
 from .countdown_box import CountdownBox
@@ -60,7 +61,8 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._message_box = MessageBox()
 
         # Count down display
-        self._countdown_box = CountdownBox()
+        #self._countdown_box = CountdownBox()
+        self._countdown_box = ProgressBox()
 
         # Create layout
 
@@ -135,6 +137,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def displayScanCompleteMessage(self):
         self._message_box.display(MessageFactory.scan_completed_message())
 
+    def displayPuckScanCompleteMessage(self):
+        self._message_box.display(MessageFactory.puck_scan_completed_message())
+
     def displayScanErrorMessage(self, scanner_msg):
         self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
 
@@ -155,3 +160,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def resetCountdown(self):
         self._countdown_box.reset_countdown()
+
+    def scanCompleted(self):
+        self._countdown_box.scan_completed()
