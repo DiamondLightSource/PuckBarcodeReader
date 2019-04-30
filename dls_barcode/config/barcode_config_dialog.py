@@ -55,8 +55,8 @@ class BarcodeConfigDialog(ConfigDialog):
 
         self.start_group("Store")
         self._add_control(StoreDirectoryConfigControl(cfg.store_directory))
-        add(cfg.backup_time)
-        add(cfg.store_capacity)
+        add(cfg.backup)
+        add(cfg.backup_directory)
 
         self.start_group("Debug")
         add(cfg.console_frame)
