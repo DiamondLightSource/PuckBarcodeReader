@@ -5,7 +5,7 @@ Changes merged into master
 --------------------------
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
-
+|I04_1-I04_1-415||Patch|Puck scanner - record backup functionality change|
 
 Change Types:
 * Major - Backward incompatible change
