@@ -4,36 +4,20 @@ from dls_barcode.data_store.record import Record
 from dls_util.file import FileManager
 
 
-class CommsManager:
-    """ Maintains communication between store/backup and the file manager.
+class StoreWriter:
+    """ Maintains writing records to file and saving png images in a sub-folder
     """
 
-    def __init__(self, directory, file_name):
-        self._file_manager = FileManager()
-        self._directory = directory.value()
+    def __init__(self, directory, file_name, file_manager=FileManager()):
+        self._file_manager = file_manager
+        self._directory = directory
         self._file_name = file_name
-
-    def load_records_from_file(self):
-        """ Clear the current record store and load a new set of records from the specified file. """
-        file = os.path.join(self._directory, self._file_name + '.txt')
-        records = []
-
-        if not self._file_manager.is_file(file):
-            return records
-
-        lines = self._file_manager.read_lines(file)
-        for line in lines:
-            try:
-                record = Record.from_string(line)
-                records.append(record)
-            except Exception:
-                print("Failed to parse store Record: {}".format(line))
-
-        return records
+        self._image_path = None
 
     def to_file(self, records):
         """ Save the contents of the store to the backing file
         """
+        self._file_manager.make_dir_when_no_dir(self._directory)
         file = os.path.join(self._directory, self._file_name + '.txt')
         record_lines = [rec.to_string() + "\n" for rec in records]
         self._file_manager.write_lines(file, record_lines)
@@ -41,14 +25,23 @@ class CommsManager:
     def to_csv_file(self, records):
         """ Save the contents of the store to the backing csv file
         """
+        self._file_manager.make_dir_when_no_dir(self._directory)
         csv_file = os.path.join(self._directory, self._file_name + ".csv")
         record_lines = [rec.to_csv_string() + "\n" for rec in records]
         self._file_manager.write_lines(csv_file, record_lines)
 
-    def make_img_dir(self):
+    def to_image(self, image, name):
+        dr = self._make_img_dir()
+        self._image_path = os.path.abspath(os.path.join(dr, name + '.png'))
+        image.save_as(self._image_path)
+
+    def get_img_path(self):
+        return self._image_path
+
+    def _make_img_dir(self):
+        self._file_manager.make_dir_when_no_dir(self._directory)
         img_dir = os.path.join(self._directory, "img_dir")
-        if not self._file_manager.is_dir(img_dir):
-            self._file_manager.make_dir(img_dir)
+        self._file_manager.make_dir_when_no_dir(img_dir)
         return img_dir
 
     def remove_img_file(self, record):

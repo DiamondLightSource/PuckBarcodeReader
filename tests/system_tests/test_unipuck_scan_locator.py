@@ -2,10 +2,11 @@ import os, shutil
 
 import cv2
 import numpy as np
+from mock import MagicMock
 
 from dls_barcode.config.barcode_config import BarcodeConfig
 from dls_barcode.data_store import Store
-from dls_barcode.data_store.store_manager import StoreManager
+from dls_barcode.data_store.store_writer import StoreWriter
 from dls_barcode.geometry.unipuck import Unipuck
 from dls_barcode.scan import GeometryScanner
 from dls_util import Color
@@ -26,8 +27,8 @@ OPTIONS = BarcodeConfig(CONFIG_FILE, FILE_MANAGER)
 store_dir = OPTIONS.store_directory
 if os.path.isdir(store_dir.value()):
     shutil.rmtree(store_dir.value())
-
-STORE = StoreManager(store_dir, OPTIONS.store_capacity, OPTIONS.backup_time).create_store()
+comms_manger = StoreWriter(OPTIONS.get_store_directory(), "store")
+STORE = Store(comms_manger, MagicMock)
 
 def test_generator():
     TEST_CASES = generate_test_cases()
