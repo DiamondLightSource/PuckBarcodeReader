@@ -83,7 +83,7 @@ class GeometryScanner:
 
     def _locate_all_barcodes_in_image(self):
         barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
-        #TODO: log this
+        # TODO: log this
         if len(barcodes) == 0:
             raise NoBarcodesDetectedError()
 
@@ -110,7 +110,6 @@ class GeometryScanner:
             self._plate = Plate(self.plate_type)
             self._plate_scan = PlateScanner(self._plate, self._is_single_image)
             self._plate_scan.new_frame(self._geometry, self._barcodes, slot_scanner)
-
 
     def _merge_frame_into_plate(self):
         # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can

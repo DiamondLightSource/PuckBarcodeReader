@@ -1,5 +1,7 @@
 from __future__ import division
 
+import time
+
 import math
 
 import numpy as np
@@ -51,7 +53,11 @@ class UnipuckCalculator:
 
             puck = Unipuck(center, radius)
 
+            from datetime import datetime
+            now = datetime.now()
             angle = self._determine_puck_orientation(puck, self._slot_centers)
+            now1 = datetime.now()
+            print("Current Time 2=", now1-now)
             puck.set_rotation(angle)
 
             return puck
@@ -112,7 +118,6 @@ class UnipuckCalculator:
         which is the best orientation by looking at sum of squared errors. This algorithm can
         definitely be improved upon but this does the job
         """
-        # TODO: finding orientation takes 80-90% of the alignment time; find a better algorithm
 
         errors = []
         best_sse = 10000000
@@ -120,8 +125,8 @@ class UnipuckCalculator:
         original_angle = puck.angle()
 
         # For each angular increment, calculate the sum of squared errors in slot center position
-        for a in range(0, 360, 2):
-            angle = a / (180 / math.pi)
+        for a in range(-16, 16, 1):
+            angle = original_angle + a
             puck.set_rotation(angle)
             sse = 0
             for p in pin_centers:
