@@ -72,8 +72,8 @@ def generate_test_cases():
 
     puck5_codes = [['DF150E0870', 1], ['DF150E1029', 2], ['DF150E1022', 3], ['DF150E0342', 4], ['DF150E0708', 5],
                    ['DF150E0806', 6], ['DF150E0678', 7], ['DF150E0721', 8], ['DF150E0816', 9], ['DF150E0660', 10],
-                   ['DF075E0276', 11], ['DF150E0414', 12], ['DF150E0166', 13], ['DF150E1008', 14], ['DF150E1050', 15],
-                   ['DF150E0806', 16]]
+                   ['DF075C0276', 11], ['DF150E0414', 12], ['DF150E0166', 13], ['DF075C1008', 14], ['DF150E1050', 15],
+                   ['DF150E0450', 16]]
 
     # List of files for Puck type 1
     puck1_files = ['puck1_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(1, 5)]
@@ -97,10 +97,10 @@ def generate_test_cases():
 
     # Create a list of test cases
     test_cases = []
-    #test_cases.extend(puck1_testcases)
-    #test_cases.extend(puck2_testcases)
-    #test_cases.extend(puck3_testcases)
-    #test_cases.extend(puck4_testcases)
+    test_cases.extend(puck1_testcases)
+    test_cases.extend(puck2_testcases)
+    test_cases.extend(puck3_testcases)
+    test_cases.extend(puck4_testcases)
     test_cases.extend(puck5_testcases)
     return test_cases
 
