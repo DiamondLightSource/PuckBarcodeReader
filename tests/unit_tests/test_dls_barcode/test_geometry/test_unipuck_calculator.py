@@ -1,3 +1,4 @@
+import math
 import unittest
 from mock import MagicMock
 
@@ -75,36 +76,32 @@ class TestUnipuckCalculator(unittest.TestCase):
     #test _center_minimiser
     def test_center_minimiser_returns_0_for_ideal_case(self):
         center = MagicMock()
-        layer1_point1 = MagicMock()
-        layer1_point2 = MagicMock()
-        layer2_point1 = MagicMock()
-        layer2_point2 = MagicMock()
+        point1 = MagicMock()
+        point2 = MagicMock()
+        point3 = MagicMock()
+        point4 = MagicMock()
         #points equally distanced from the center
-        layer1_point1.distance_to_sq.return_value = 25
-        layer1_point2.distance_to_sq.return_value = 25
-        layer2_point1.distance_to_sq.return_value = 50
-        layer2_point2.distance_to_sq.return_value = 50
-        layer1 = [layer1_point1, layer1_point2]
-        layer2 = [layer2_point1, layer2_point2]
-        layers = tuple([layer1, layer2])
-        e = _center_minimiser(center, layers)
+        point1.distance_to_sq.return_value = 25
+        point2.distance_to_sq.return_value = 25
+        point3.distance_to_sq.return_value = 25
+        point4.distance_to_sq.return_value = 25
+        points = [point1, point2, point3, point4]
+        e = _center_minimiser(center, points)
         self.assertEqual(e, 0)
 
     def test_center_minimiser_returns_error_for_point_not_equally_distanced_from_center(self):
         center = MagicMock()
-        layer1_point1 = MagicMock()
-        layer1_point2 = MagicMock()
-        layer2_point1 = MagicMock()
-        layer2_point2 = MagicMock()
+        point1 = MagicMock()
+        point2 = MagicMock()
+        point3 = MagicMock()
+        point4 = MagicMock()
         # points not equally distanced from the center
-        layer1_point1.distance_to_sq.return_value = 20
-        layer1_point2.distance_to_sq.return_value = 25
-        layer2_point1.distance_to_sq.return_value = 50
-        layer2_point2.distance_to_sq.return_value = 48
-        layer1 = [layer1_point1, layer1_point2]
-        layer2 = [layer2_point1, layer2_point2]
-        layers = tuple([layer1, layer2])
-        e = _center_minimiser(center, layers)
+        point1.distance_to_sq.return_value = 20
+        point2.distance_to_sq.return_value = 25
+        point3.distance_to_sq.return_value = 50
+        point4.distance_to_sq.return_value = 48
+        points = [point1, point2, point3, point4]
+        e = _center_minimiser(center, points)
         self.assertGreater(e, 0)
 
     # test _calculate_puck_size
@@ -121,17 +118,18 @@ class TestUnipuckCalculator(unittest.TestCase):
 
     # test _determine_puck_orientation
     #a better test coverage could be added
-    def test_determine_puck_orientation_returns_0_when_empty_pin_centers_mock_passed(self):
+    def test_determine_puck_orientation_first_angle_checked_when_empty_pin_centers_mock_passed(self):
         puck = MagicMock()
-        puck.angle.return_value = 10
+        puck.angle.return_value = math.pi/2
         puck.radius.return_value = 12
+        first_angle_checked = (90 - 16) / (180 / math.pi)
         pin_centers = MagicMock()
         pin_centers.__len__.return_value = 16 #has to be a number - division by 0
 
         calculator = self._create_unipuck_calculator()
         orientation = calculator._determine_puck_orientation(puck, pin_centers)
-        self.assertEqual(puck.set_rotation.call_count, 181) #always checks 180 positions of the puck
-        self.assertEqual(orientation, 0)
+        self.assertEqual(puck.set_rotation.call_count, 33) # checks 32 positions around the initial puck position
+        self.assertEqual(orientation, first_angle_checked)
 
     # test _shortest_sq_distance
     def test_shortest_sq_distance_distance_larger_than_slot_radius(self):
