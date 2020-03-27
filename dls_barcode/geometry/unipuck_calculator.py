@@ -123,7 +123,7 @@ class UnipuckCalculator:
         # Set the puck back to its original angle
         puck.set_rotation(original_angle)
 
-        average_error = best_sse / puck.radius() ** 2 / len(pin_centers)
+        average_error = best_sse / (puck.radius() ** 2) / len(pin_centers)
         if average_error > 0.003:
             raise GeometryAlignmentError("Unable to determine Unipuck orientation")
 
