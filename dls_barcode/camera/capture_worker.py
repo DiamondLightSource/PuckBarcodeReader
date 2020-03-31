@@ -1,10 +1,12 @@
 import time
 import queue
 
+from dls_util.cv.camera import Camera
+from dls_util.cv.camers_manager import CameraManager
 from dls_util.image import Overlay
 from .stream_action import StreamAction
 from dls_util.image import Image
-from dls_util.cv import CameraStream
+from PyQt5.QtWidgets import QMessageBox
 
 Q_LIMIT = 1
 
@@ -55,7 +57,17 @@ class CaptureWorker:
                 display = False
 
             # Capture the next frame from the camera
-            frame = stream.get_frame()
+            try:
+                frame = stream.get_frame()
+            except IOError:
+                # TODO error handling from te UI
+               # msg = QMessageBox()
+               # msg.setWindowTitle("Camera Error")
+               # msg.setText("Cannot find specified camera")
+               # msg.setIcon(QMessageBox.Critical)
+               # x = msg.exec_()
+                return
+
             # Add the frame to the task queue to be processed
             # NOTE: the rate at which frames are pushed to the task queue is lower than the rate at which frames are acquired
             if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
@@ -88,7 +100,11 @@ class CaptureWorker:
         cam_number = camera_config.camera_number.value()
         width = camera_config.width.value()
         height = camera_config.height.value()
-        return CameraStream(cam_number, width, height)
+        #try:
+        stream = CameraManager(Camera(cam_number, width, height))
+        stream.create_capture()
+        return stream
+
 
     def _flush_queue(self, q):
         while not q.empty():
