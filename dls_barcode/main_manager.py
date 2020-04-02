@@ -6,6 +6,7 @@ import time
 from PyQt5 import QtCore
 
 from dls_barcode.camera import CameraScanner, CameraSwitch, ScanErrorMessage, NoNewPuckBarcodeMessage
+from dls_barcode.camera.scanner_message import CameraErrorMessage
 
 from dls_util import Beeper
 
@@ -88,7 +89,8 @@ class MainManager:
             scanner_msg = self._message_queue.get(False)
         except queue.Empty:
             return
-
+        if isinstance(scanner_msg, CameraErrorMessage):
+            self._ui.displayCameraErrorMessage()
         if self._camera_switch.is_side():
             if not self._msg_timer_is_running():
                 # The result queue is read at a slower rate - use a timer to give it time to process a new barcode

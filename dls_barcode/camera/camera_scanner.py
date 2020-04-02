@@ -38,7 +38,7 @@ class CameraScanner:
         self._camera_configs = {CameraPosition.SIDE: self._config.get_side_camera_config(),
                                 CameraPosition.TOP: self._config.get_top_camera_config()}
 
-        capture_args = (self._task_q, self._view_q, self._overlay_q, self._capture_command_q, self._capture_kill_q,
+        capture_args = (self._task_q, self._view_q, self._overlay_q, self._capture_command_q, self._capture_kill_q, self._message_q,
                         self._camera_configs)
 
         # The capture process is always running: we initialise the cameras only once because it's time consuming
@@ -123,10 +123,14 @@ class CameraScanner:
         log.debug("scanner process terminated by process cleanup")
 
     @staticmethod
-    def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_queue, camera_configs):
+    def _capture_worker(task_queue, view_queue, overlay_queue, command_queue, kill_queue, message_queue, camera_configs):
         """ Function used as the main loop of a worker process.
         """
-        CaptureWorker(camera_configs).run(task_queue, view_queue, overlay_queue, command_queue, kill_queue)
+        #try:
+        CaptureWorker(camera_configs).run(task_queue, view_queue, overlay_queue, command_queue, kill_queue, message_queue)
+        #except IOError:
+        #    raise message_queue.IOError
+
 
     @staticmethod
     def _scanner_worker(task_queue, overlay_queue, result_queue, message_queue, kill_queue, config, cam_position):

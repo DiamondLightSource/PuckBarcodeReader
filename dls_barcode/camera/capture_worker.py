@@ -4,9 +4,9 @@ import queue
 from dls_util.cv.camera import Camera
 from dls_util.cv.camers_manager import CameraManager
 from dls_util.image import Overlay
+from .scanner_message import CameraErrorMessage, ScanErrorMessage
 from .stream_action import StreamAction
 from dls_util.image import Image
-from PyQt5.QtWidgets import QMessageBox
 
 Q_LIMIT = 1
 
@@ -28,7 +28,7 @@ class CaptureWorker:
         for cam_position, cam_config in self._camera_configs.items():
             self._streams[cam_position] = self._initialise_stream(cam_config)
 
-    def run(self, task_queue, view_queue, overlay_queue, command_queue, kill_queue):
+    def run(self, task_queue, view_queue, overlay_queue, command_queue, kill_queue, message_queue):
         while kill_queue.empty():
             if command_queue.empty():
                 continue
@@ -36,7 +36,7 @@ class CaptureWorker:
             command = command_queue.get()
             if command.get_action() == StreamAction.START:
                 print("CAPTURE start: " + str(command.get_camera_position()))
-                self._run_capture(self._streams[command.get_camera_position()], task_queue, view_queue, overlay_queue, command_queue)
+                self._run_capture(self._streams[command.get_camera_position()], task_queue, view_queue, overlay_queue, command_queue, message_queue)
 
         # Clean up
         print("CAPTURE kill & cleanup")
@@ -45,7 +45,7 @@ class CaptureWorker:
 
         print("- capture all cleaned")
 
-    def _run_capture(self, stream, task_queue, view_queue, overlay_queue, stop_queue):
+    def _run_capture(self, stream, task_queue, view_queue, overlay_queue, stop_queue, message_queue):
         # Store the latest image overlay which highlights the puck
         latest_overlay = Overlay(0)
         last_time = time.time()
@@ -60,6 +60,7 @@ class CaptureWorker:
             try:
                 frame = stream.get_frame()
             except IOError:
+                message_queue.put(CameraErrorMessage())
                 # TODO error handling from te UI
                # msg = QMessageBox()
                # msg.setWindowTitle("Camera Error")
@@ -96,11 +97,12 @@ class CaptureWorker:
         self._flush_queue(view_queue)
         print("--- capture view Q flushed")
 
+
+
     def _initialise_stream(self, camera_config):
         cam_number = camera_config.camera_number.value()
         width = camera_config.width.value()
         height = camera_config.height.value()
-        #try:
         stream = CameraManager(Camera(cam_number, width, height))
         stream.create_capture()
         return stream

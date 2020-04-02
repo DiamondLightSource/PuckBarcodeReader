@@ -12,3 +12,7 @@ class ScanErrorMessage:
 
     def content(self):
         return self._content
+
+
+class CameraErrorMessage:
+    pass
