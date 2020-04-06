@@ -61,12 +61,6 @@ class CaptureWorker:
                 frame = stream.get_frame()
             except IOError:
                 message_queue.put(CameraErrorMessage())
-                # TODO error handling from te UI
-               # msg = QMessageBox()
-               # msg.setWindowTitle("Camera Error")
-               # msg.setText("Cannot find specified camera")
-               # msg.setIcon(QMessageBox.Critical)
-               # x = msg.exec_()
                 return
 
             # Add the frame to the task queue to be processed

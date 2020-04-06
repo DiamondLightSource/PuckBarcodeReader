@@ -142,7 +142,20 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._message_box.display(MessageFactory.puck_scan_completed_message())
 
     def displayCameraErrorMessage(self):
-        QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
+        self._cleanup()
+        mgs = QMessageBox(self)
+        mgs.setIcon(QMessageBox.Critical)
+        mgs.setWindowTitle("Camera Error")
+        mgs.setText('Camera configuration incorrect.\nYou can either change the configuration or quit.')
+        configure_button = mgs.addButton("Configure", QMessageBox.ActionRole)
+        quit_button = mgs.addButton("Quit", QMessageBox.ActionRole)
+        mgs.setEscapeButton(configure_button)
+        mgs.exec_()
+        if mgs.clickedButton() == configure_button:
+            self._on_options_action_clicked()
+            self._on_scan_action_clicked()
+        else:
+            self.close()
 
     def displayScanErrorMessage(self, scanner_msg):
         self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
