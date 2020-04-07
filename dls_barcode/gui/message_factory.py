@@ -25,4 +25,6 @@ class MessageFactory:
 
     @staticmethod
     def camera_not_found_message():
-        return Message(MessageType.WARNING, "Cannot find specified camera!")
+        return Message(MessageType.WARNING, "camera can not be found.\nEnter the configuration to select the camera.", lifetime=0)
+
+

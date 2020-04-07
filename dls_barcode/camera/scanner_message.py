@@ -15,4 +15,8 @@ class ScanErrorMessage:
 
 
 class CameraErrorMessage:
-    pass
+    def __init__(self, content):
+        self._content = content
+
+    def content(self):
+        return self._content
