@@ -1,6 +1,5 @@
 class Camera:
-    """ Class that wraps an OpenCV VideoCapture
-    """
+
     def __init__(self, camera_number, width, height):
         self._camera_number = camera_number
         self._width = width
