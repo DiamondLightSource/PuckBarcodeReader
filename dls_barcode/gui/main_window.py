@@ -146,7 +146,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         mgs = QMessageBox(self)
         mgs.setIcon(QMessageBox.Critical)
         mgs.setWindowTitle("Camera Error")
-        mgs.setText(scanner_message.content() + " " + MessageFactory.camera_not_found_message().content())
+        mgs.setText( scanner_message.content()+" " + MessageFactory.camera_not_found_message().content())
         configure_button = mgs.addButton("Configure", QMessageBox.ActionRole)
         quit_button = mgs.addButton("Quit", QMessageBox.ActionRole)
         mgs.setEscapeButton(configure_button)

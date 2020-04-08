@@ -3,7 +3,7 @@ import cv2
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
 from dls_util.config import ConfigControl
 from dls_util.cv.camera import Camera
-from dls_util.cv.camers_manager import CameraManager
+from dls_util.cv.capture_manager import CaptureManager
 
 
 class CameraConfigControl(ConfigControl):
@@ -88,16 +88,15 @@ class CameraConfigControl(ConfigControl):
             return
 
         # Check that we can connect to the camera
-        stream = CameraManager(Camera(camera_num, camera_width, camera_height))
+        stream = CaptureManager(Camera(camera_num, camera_width, camera_height))
         stream.create_capture()
 
         # Display a preview feed from the camera
         breaking_frame = False
         while True:
             # Capture the next frame from the camera
-            try:
-                frame = stream.get_frame()
-            except IOError:
+            frame = stream.get_frame()
+            if frame is None:
                 QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
                 return
 
@@ -130,5 +129,5 @@ class CameraConfigControl(ConfigControl):
 
     def _open_camera_controls(self):
         camera_num = int(self.txt_number.text())
-        CameraManager.open_camera_controls(camera_num)
+        CaptureManager.open_camera_controls(camera_num)
 

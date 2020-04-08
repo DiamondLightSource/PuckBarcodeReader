@@ -2,7 +2,7 @@ import time
 import queue
 
 from dls_util.cv.camera import Camera
-from dls_util.cv.camers_manager import CameraManager
+from dls_util.cv.capture_manager import CaptureManager
 from dls_util.image import Overlay
 from .scanner_message import CameraErrorMessage, ScanErrorMessage
 from .stream_action import StreamAction
@@ -58,9 +58,8 @@ class CaptureWorker:
                 display = False
 
             # Capture the next frame from the camera
-            try:
-                frame = stream.get_frame()
-            except IOError:
+            frame = stream.get_frame()
+            if frame is None:
                 message_queue.put(CameraErrorMessage(camera_positon))
                 return
 
@@ -98,7 +97,7 @@ class CaptureWorker:
         cam_number = camera_config.camera_number.value()
         width = camera_config.width.value()
         height = camera_config.height.value()
-        stream = CameraManager(Camera(cam_number, width, height))
+        stream = CaptureManager(Camera(cam_number, width, height))
         stream.create_capture()
         return stream
 
