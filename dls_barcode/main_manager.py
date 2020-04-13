@@ -9,7 +9,6 @@ from dls_barcode.camera import CameraScanner, CameraSwitch, ScanErrorMessage, No
 from dls_barcode.camera.scanner_message import CameraErrorMessage
 
 from dls_util import Beeper
-from dls_util.cv.camera import Camera
 from dls_util.cv.capture_manager import CaptureManager
 
 RESULT_TIMER_PERIOD = 1000  # ms
@@ -213,19 +212,11 @@ class MainManager:
         camera_top_config = self._config.get_top_camera_config()
         camera_side_config = self._config.get_side_camera_config()
 
-        top_number = camera_top_config.camera_number.value()
-        top_width = camera_top_config.width.value()
-        top_height = camera_top_config.height.value()
-
-        side_number = camera_side_config.camera_number.value()
-        side_width = camera_side_config.width.value()
-        side_height = camera_side_config.height.value()
-
-        stream_top = CaptureManager(Camera(top_number, top_width, top_height))
+        stream_top = CaptureManager(camera_top_config)
         stream_top.create_capture()
         frame_top = stream_top.get_frame()
 
-        stream_side = CaptureManager(Camera(side_number, side_width, side_height))
+        stream_side = CaptureManager(camera_side_config)
         stream_side.create_capture()
         frame_side = stream_side.get_frame()
 

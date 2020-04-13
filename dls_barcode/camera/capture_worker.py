@@ -1,7 +1,6 @@
 import time
 import queue
 
-from dls_util.cv.camera import Camera
 from dls_util.cv.capture_manager import CaptureManager
 from dls_util.image import Overlay
 from .scanner_message import CameraErrorMessage, ScanErrorMessage
@@ -94,10 +93,7 @@ class CaptureWorker:
 
 
     def _initialise_stream(self, camera_config):
-        cam_number = camera_config.camera_number.value()
-        width = camera_config.width.value()
-        height = camera_config.height.value()
-        stream = CaptureManager(Camera(cam_number, width, height))
+        stream = CaptureManager(camera_config)
         stream.create_capture()
         return stream
 

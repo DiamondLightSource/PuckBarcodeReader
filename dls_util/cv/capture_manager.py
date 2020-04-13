@@ -25,9 +25,9 @@ class CaptureManager:
         self._cap = None
 
     def create_capture(self):
-        self._cap = opencv.VideoCapture(self._camera.get_camera_number())
-        self._set_width(self._camera.get_camera_width())
-        self._set_height(self._camera.get_camera_height())
+        self._cap = opencv.VideoCapture(self._camera.get_number())
+        self._set_width(self._camera.get_width())
+        self._set_height(self._camera.get_height())
 
     def get_frame(self):
         read_ok, frame = self._cap.read()
