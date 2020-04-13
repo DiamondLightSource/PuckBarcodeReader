@@ -23,6 +23,8 @@ class CaptureManager:
     def __init__(self, camera):
         self._camera = camera
         self._cap = None
+        self._frame = None
+        self._read_ok = False
 
     def create_capture(self):
         self._cap = opencv.VideoCapture(self._camera.get_number())
@@ -30,11 +32,13 @@ class CaptureManager:
         self._set_height(self._camera.get_height())
 
     def get_frame(self):
-        read_ok, frame = self._cap.read()
-        if read_ok:
-            return frame
-        else:
-            return None
+        return self._frame
+
+    def is_read_ok(self):
+        return self._read_ok
+
+    def read_frame(self):
+        self._read_ok, self._frame = self._cap.read()
 
     def release_resources(self):
         if self._cap is not None:

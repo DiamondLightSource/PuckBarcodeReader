@@ -204,32 +204,32 @@ class MainManager:
         self._ui.scanCompleted()
         self._scan_completed_message_flag = True
         self._restart_live_capture_from_side()
-
-# should go to the cammer amanager
-    def test_cameras(self):
-
-        # Object thet has a function which tests both cammeras and returns an error message or None
-        camera_top_config = self._config.get_top_camera_config()
-        camera_side_config = self._config.get_side_camera_config()
-
-        stream_top = CaptureManager(camera_top_config)
-        stream_top.create_capture()
-        frame_top = stream_top.get_frame()
-
-        stream_side = CaptureManager(camera_side_config)
-        stream_side.create_capture()
-        frame_side = stream_side.get_frame()
-
-        if frame_top is None and frame_top is None:
-            return CameraErrorMessage("TOP and SIDE")
-        if frame_top is None:
-            return CameraErrorMessage("TOP")
-        if frame_side is None:
-            return CameraErrorMessage("SIDE")
-
-        return None
-
-
-
-
-
+#
+# # should go to the cammer amanager
+#     def test_cameras(self):
+#
+#         # Object thet has a function which tests both cammeras and returns an error message or None
+#         camera_top_config = self._config.get_top_camera_config()
+#         camera_side_config = self._config.get_side_camera_config()
+#
+#         stream_top = CaptureManager(camera_top_config)
+#         stream_top.create_capture()
+#         frame_top = stream_top.get_frame()
+#
+#         stream_side = CaptureManager(camera_side_config)
+#         stream_side.create_capture()
+#         frame_side = stream_side.get_frame()
+#
+#         if frame_top is None and frame_top is None:
+#             return CameraErrorMessage("TOP and SIDE")
+#         if frame_top is None:
+#             return CameraErrorMessage("TOP")
+#         if frame_side is None:
+#             return CameraErrorMessage("SIDE")
+#
+#         return None
+#
+#
+#
+#
+#

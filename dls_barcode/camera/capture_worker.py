@@ -57,8 +57,10 @@ class CaptureWorker:
                 display = False
 
             # Capture the next frame from the camera
+            stream.read_frame()
+            read_ok = stream.is_read_ok()
             frame = stream.get_frame()
-            if frame is None:
+            if not read_ok:
                 message_queue.put(CameraErrorMessage(camera_positon))
                 return
 

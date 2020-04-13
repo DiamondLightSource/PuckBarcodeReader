@@ -78,12 +78,10 @@ class CameraConfigControl(ConfigControl):
 
     def _test_camera(self):
         # Check that values are integers
-        try:
-           #camera = CameraConfig(self.txt_number.text(), self.txt_width.text(), self.txt_height.text())
-           int(self._camera_config.get_number())
-           int(self._camera_config.get_height())
-           int(self._camera_config.get_width())
-        except ValueError:
+
+        values_int = self._camera_config.values_are_int()
+
+        if not values_int:
             QMessageBox.critical(self, "Camera Error", "Camera number, width, and height must be integers")
             return
 
@@ -94,9 +92,11 @@ class CameraConfigControl(ConfigControl):
         # Display a preview feed from the camera
         breaking_frame = False
         while True:
-            # Capture the next frame from the camera
+            stream.read_frame()
+            read_ok = stream.is_read_ok()
             frame = stream.get_frame()
-            if frame is None:
+            if not read_ok:
+            # Capture the next frame from the camera
                 QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
                 return
 
