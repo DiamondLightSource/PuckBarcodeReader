@@ -2,7 +2,7 @@ import cv2
 
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
 
-from dls_barcode.config.camera_config import CameraConfig
+
 from dls_util.config import ConfigControl
 from dls_util.cv.capture_manager import CaptureManager
 
@@ -51,7 +51,7 @@ class CameraConfigControl(ConfigControl):
 
         btn_camera_settings = QPushButton("Camera Settings")
         btn_camera_settings.setFixedWidth(self.BUTTON_WIDTH)
-        btn_camera_settings.clicked.connect(self._open_camera_controls)
+        btn_camera_settings.clicked.connect(self.open_camera_controls)
 
         hbox_buttons = QHBoxLayout()
         hbox_buttons.addWidget(btn_camera_test)
@@ -89,16 +89,21 @@ class CameraConfigControl(ConfigControl):
         stream = CaptureManager(self._camera_config)
         stream.create_capture()
 
+        stream.read_frame()
+        read_ok = stream.is_read_ok()
+        frame = stream.get_frame()
+        if not read_ok:
+            # Capture the next frame from the camera
+            QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
+            return
+
         # Display a preview feed from the camera
         breaking_frame = False
         while True:
+
             stream.read_frame()
             read_ok = stream.is_read_ok()
             frame = stream.get_frame()
-            if not read_ok:
-            # Capture the next frame from the camera
-                QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
-                return
 
             if frame is None:
                 breaking_frame = True
@@ -115,7 +120,8 @@ class CameraConfigControl(ConfigControl):
             if set_width != self._camera_config.get_width() or set_height != self._camera_config.get_height():
                 QMessageBox.warning(self, "Camera Error",
                                     "Could not set the camera to the specified resolution: {}x{}.\nThe camera defaulted "
-                                    "to {}x{}.".format(self._camera_config.get_width(), self._camera_config.get_height(), set_width, set_height))
+                                    "to {}x{}.".format(self._camera_config.get_width(),
+                                                       self._camera_config.get_height(), set_width, set_height))
                 self.txt_width.setText(str(set_width))
                 self.txt_height.setText(str(set_height))
                 return
@@ -127,7 +133,72 @@ class CameraConfigControl(ConfigControl):
         if breaking_frame:
             self._test_camera()
 
-    def _open_camera_controls(self):
+    def open_camera_controls(self):
         camera_num = int(self.txt_number.text())
         CaptureManager.open_camera_controls(camera_num)
 
+    # def _test_camera(self):
+    #     self.save_to_config()
+    #     cm = ControlTest(self._camera_config)
+    #     message = cm.test_camera_settings()
+    #     if message is not None:
+    #         QMessageBox.critical(self, "Camera Error", message)
+    #         if "defaulted to" in message:
+    #             self.txt_width.setText(str("1920"))
+    #             self.txt_height.setText(str("1080"))
+    #             self.save_to_config()
+    #
+    #     res = cm.get_frame()
+    #     if res is not None:
+    #         small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
+    #         cv2.imshow('Camera Preview', small)
+    #
+    #         while cv2.getWindowProperty('Camera Preview', 0) >= 0:
+    #             res = cm.get_frame()
+    #             if res is not None:
+    #                 small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
+    #                 cv2.imshow('Camera Preview', small)
+    #
+    #                 cv2.waitKey(50)
+    #     cv2.destroyAllWindows()
+
+
+# class ControlTest:
+#
+#     def __init__(self, config):
+#         self.camera_config = config
+#
+#     def test_camera_settings(self):
+#         values_int = self.camera_config.values_are_int()
+#         if not values_int:
+#             return "camera can not be found.\nEnter the configuration to select the camera."
+#
+#         stream = CaptureManager(self.camera_config)
+#         stream.create_capture()
+#         stream.read_frame()
+#         read_ok = stream.is_read_ok()
+#         if not read_ok:
+#             stream.release_resources()
+#             return "Camera number, width, and height must be integers"
+#
+#         set_width = int(stream.get_width())
+#         set_height = int(stream.get_height())
+#         if set_width != self.camera_config.get_width() or set_height != self.camera_config.get_height():
+#             stream.release_resources()
+#
+#             return "Could not set the camera {} to the specified resolution: {}x{}.\nThe camera defaulted to {}x{}.".format(
+#                 self.camera_config.get_number(), self.camera_config.get_width(), self.camera_config.get_height(),
+#                 set_width, set_height)
+#
+#         # this should be a separate function which will be run in a loop after the settings are checkt
+#         stream.release_resources()
+#         return None
+#
+#     def get_frame(self):
+#         stream = CaptureManager(self.camera_config)
+#         stream.create_capture()
+#         stream.read_frame()
+#         frame = stream.get_frame()
+#         stream.release_resources()
+#         return frame
+#
