@@ -1,7 +1,5 @@
 import cv2
-
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
-
 
 from dls_util.config import ConfigControl
 from dls_util.cv.capture_manager import CaptureManager
@@ -76,9 +74,8 @@ class CameraConfigControl(ConfigControl):
         self._camera_config.set_width(self.txt_width.text())
         self._camera_config.set_height(self.txt_height.text())
 
-    def _test_camera(self):
+    def _test_camera_settings(self):
         # Check that values are integers
-
         values_int = self._camera_config.values_are_int()
 
         if not values_int:
@@ -91,20 +88,34 @@ class CameraConfigControl(ConfigControl):
 
         stream.read_frame()
         read_ok = stream.is_read_ok()
-        frame = stream.get_frame()
+        set_width = int(stream.get_width())
+        set_height = int(stream.get_height())
+        stream.release_resources()
         if not read_ok:
             # Capture the next frame from the camera
             QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
             return
 
+        # Check resolution is acceptable - change this!!!
+        if set_width != self._camera_config.get_width() or set_height != self._camera_config.get_height():
+            QMessageBox.warning(self, "Camera Error",
+                            "Could not set the camera to the specified resolution: {}x{}.\nThe camera defaulted "
+                            "to {}x{}.".format(self._camera_config.get_width(),
+                                               self._camera_config.get_height(), set_width, set_height))
+            self.txt_width.setText(str(set_width))
+            self.txt_height.setText(str(set_height))
+            self.save_to_config()
+            return
+
+    def _display_camera_preview(self):
+        stream = CaptureManager(self._camera_config)
+        stream.create_capture()
+
         # Display a preview feed from the camera
         breaking_frame = False
         while True:
-
             stream.read_frame()
-            read_ok = stream.is_read_ok()
             frame = stream.get_frame()
-
             if frame is None:
                 breaking_frame = True
                 break
@@ -114,18 +125,6 @@ class CameraConfigControl(ConfigControl):
             small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
             cv2.imshow('Camera Preview (Press any key to exit)', small)
 
-            # Check resolution is acceptable
-            set_width = int(stream.get_width())
-            set_height = int(stream.get_height())
-            if set_width != self._camera_config.get_width() or set_height != self._camera_config.get_height():
-                QMessageBox.warning(self, "Camera Error",
-                                    "Could not set the camera to the specified resolution: {}x{}.\nThe camera defaulted "
-                                    "to {}x{}.".format(self._camera_config.get_width(),
-                                                       self._camera_config.get_height(), set_width, set_height))
-                self.txt_width.setText(str(set_width))
-                self.txt_height.setText(str(set_height))
-                return
-
         stream.release_resources()
         cv2.destroyAllWindows()
 
@@ -133,72 +132,11 @@ class CameraConfigControl(ConfigControl):
         if breaking_frame:
             self._test_camera()
 
+    def _test_camera(self):
+        self.save_to_config()
+        self._test_camera_settings()
+        self._display_camera_preview()
+
     def open_camera_controls(self):
         camera_num = int(self.txt_number.text())
         CaptureManager.open_camera_controls(camera_num)
-
-    # def _test_camera(self):
-    #     self.save_to_config()
-    #     cm = ControlTest(self._camera_config)
-    #     message = cm.test_camera_settings()
-    #     if message is not None:
-    #         QMessageBox.critical(self, "Camera Error", message)
-    #         if "defaulted to" in message:
-    #             self.txt_width.setText(str("1920"))
-    #             self.txt_height.setText(str("1080"))
-    #             self.save_to_config()
-    #
-    #     res = cm.get_frame()
-    #     if res is not None:
-    #         small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
-    #         cv2.imshow('Camera Preview', small)
-    #
-    #         while cv2.getWindowProperty('Camera Preview', 0) >= 0:
-    #             res = cm.get_frame()
-    #             if res is not None:
-    #                 small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
-    #                 cv2.imshow('Camera Preview', small)
-    #
-    #                 cv2.waitKey(50)
-    #     cv2.destroyAllWindows()
-
-
-# class ControlTest:
-#
-#     def __init__(self, config):
-#         self.camera_config = config
-#
-#     def test_camera_settings(self):
-#         values_int = self.camera_config.values_are_int()
-#         if not values_int:
-#             return "camera can not be found.\nEnter the configuration to select the camera."
-#
-#         stream = CaptureManager(self.camera_config)
-#         stream.create_capture()
-#         stream.read_frame()
-#         read_ok = stream.is_read_ok()
-#         if not read_ok:
-#             stream.release_resources()
-#             return "Camera number, width, and height must be integers"
-#
-#         set_width = int(stream.get_width())
-#         set_height = int(stream.get_height())
-#         if set_width != self.camera_config.get_width() or set_height != self.camera_config.get_height():
-#             stream.release_resources()
-#
-#             return "Could not set the camera {} to the specified resolution: {}x{}.\nThe camera defaulted to {}x{}.".format(
-#                 self.camera_config.get_number(), self.camera_config.get_width(), self.camera_config.get_height(),
-#                 set_width, set_height)
-#
-#         # this should be a separate function which will be run in a loop after the settings are checkt
-#         stream.release_resources()
-#         return None
-#
-#     def get_frame(self):
-#         stream = CaptureManager(self.camera_config)
-#         stream.create_capture()
-#         stream.read_frame()
-#         frame = stream.get_frame()
-#         stream.release_resources()
-#         return frame
-#
