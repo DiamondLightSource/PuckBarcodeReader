@@ -49,7 +49,7 @@ class CameraConfigControl(ConfigControl):
 
         btn_camera_settings = QPushButton("Camera Settings")
         btn_camera_settings.setFixedWidth(self.BUTTON_WIDTH)
-        btn_camera_settings.clicked.connect(self.open_camera_controls)
+        btn_camera_settings.clicked.connect(self._open_camera_controls)
 
         hbox_buttons = QHBoxLayout()
         hbox_buttons.addWidget(btn_camera_test)
@@ -74,6 +74,15 @@ class CameraConfigControl(ConfigControl):
         self._camera_config.set_width(self.txt_width.text())
         self._camera_config.set_height(self.txt_height.text())
 
+    def _test_camera(self):
+        self.save_to_config()
+        self._test_camera_settings()
+        self._display_camera_preview()
+
+    def _open_camera_controls(self):
+        camera_num = int(self.txt_number.text())
+        CaptureManager.open_camera_controls(camera_num)
+
     def _test_camera_settings(self):
         # Check that values are integers
         values_int = self._camera_config.values_are_int()
@@ -85,7 +94,6 @@ class CameraConfigControl(ConfigControl):
         # Check that we can connect to the camera
         stream = CaptureManager(self._camera_config)
         stream.create_capture()
-
         stream.read_frame()
         read_ok = stream.is_read_ok()
         set_width = int(stream.get_width())
@@ -110,33 +118,14 @@ class CameraConfigControl(ConfigControl):
     def _display_camera_preview(self):
         stream = CaptureManager(self._camera_config)
         stream.create_capture()
-
-        # Display a preview feed from the camera
-        breaking_frame = False
         while True:
             stream.read_frame()
-            frame = stream.get_frame()
-            if frame is None:
-                breaking_frame = True
+            res = stream.get_frame()
+            if res is not None:
+                small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
+                cv2.imshow('Camera Preview', small)
+                cv2.waitKey(50)
+            if cv2.getWindowProperty('Camera Preview', 0) <0:
                 break
-            elif cv2.waitKey(1) not in (255, -1):
-                break
-
-            small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-            cv2.imshow('Camera Preview (Press any key to exit)', small)
-
-        stream.release_resources()
         cv2.destroyAllWindows()
-
-        # Opening the camera controls window stops the camera from working; reopen this window
-        if breaking_frame:
-            self._test_camera()
-
-    def _test_camera(self):
-        self.save_to_config()
-        self._test_camera_settings()
-        self._display_camera_preview()
-
-    def open_camera_controls(self):
-        camera_num = int(self.txt_number.text())
-        CaptureManager.open_camera_controls(camera_num)
+        stream.release_resources()
