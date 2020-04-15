@@ -23,16 +23,3 @@ class CameraConfig:
 
     def set_height(self, height):
         self.height.set(height)
-
-    def values_are_int(self):
-        try:
-            int(self.get_number())
-            int(self.get_height())
-            int(self.get_width())
-        except ValueError:
-            return False
-
-        return True
-
-
-

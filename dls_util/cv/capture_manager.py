@@ -62,3 +62,5 @@ class CaptureManager:
          This sometimes crashes but it's out of our control and the CAP_PROP_SETTINGS is not documented"""
         cap = opencv.VideoCapture(camera_num)
         cap.set(opencv.CAP_PROP_SETTINGS, 1)
+
+

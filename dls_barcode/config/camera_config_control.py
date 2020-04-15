@@ -84,35 +84,15 @@ class CameraConfigControl(ConfigControl):
         CaptureManager.open_camera_controls(camera_num)
 
     def _test_camera_settings(self):
-        # Check that values are integers
-        values_int = self._camera_config.values_are_int()
-
-        if not values_int:
-            QMessageBox.critical(self, "Camera Error", "Camera number, width, and height must be integers")
-            return
-
         # Check that we can connect to the camera
         stream = CaptureManager(self._camera_config)
         stream.create_capture()
         stream.read_frame()
         read_ok = stream.is_read_ok()
-        set_width = int(stream.get_width())
-        set_height = int(stream.get_height())
         stream.release_resources()
         if not read_ok:
             # Capture the next frame from the camera
             QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
-            return
-
-        # Check resolution is acceptable - change this!!!
-        if set_width != self._camera_config.get_width() or set_height != self._camera_config.get_height():
-            QMessageBox.warning(self, "Camera Error",
-                            "Could not set the camera to the specified resolution: {}x{}.\nThe camera defaulted "
-                            "to {}x{}.".format(self._camera_config.get_width(),
-                                               self._camera_config.get_height(), set_width, set_height))
-            self.txt_width.setText(str(set_width))
-            self.txt_height.setText(str(set_height))
-            self.save_to_config()
             return
 
     def _display_camera_preview(self):
@@ -125,7 +105,7 @@ class CameraConfigControl(ConfigControl):
                 small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
                 cv2.imshow('Camera Preview', small)
                 cv2.waitKey(50)
-            if cv2.getWindowProperty('Camera Preview', 0) <0:
+            if cv2.getWindowProperty('Camera Preview', 0) < 0:
                 break
         cv2.destroyAllWindows()
         stream.release_resources()
