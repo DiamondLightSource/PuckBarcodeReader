@@ -98,6 +98,7 @@ class CameraConfigControl(ConfigControl):
     def _display_camera_preview(self):
         stream = CaptureManager(self._camera_config)
         stream.create_capture()
+        #self._print_possible_resolutions(stream)
         while True:
             stream.read_frame()
             res = stream.get_frame()
@@ -109,3 +110,23 @@ class CameraConfigControl(ConfigControl):
                 break
         cv2.destroyAllWindows()
         stream.release_resources()
+
+    # def _print_possible_resolutions(self, cm):
+    #     i = 0
+    #     x_y_list = []
+    #     x = 600
+    #     y = 400
+    #     while i < 1000:
+    #         x = x + i
+    #         y = y + i
+    #         i = i + 1
+    #         x1, y1 = cm.set_res(x, y)
+    #         if x1 not in x_y_list:
+    #             x_y_list.append(x1)
+    #             x = x1
+    #             y = y1
+    #             i = 0
+    #             print(str(x1), str(y1))
+    #         if len(x_y_list) > 4:
+    #             break
+    #     print("end")

@@ -18,6 +18,10 @@ def _get_width_flag():
         return opencv.CAP_PROP_FRAME_WIDTH
 
 
+def get_available_resolutions():
+    return [(640,480), (800,600), (1600,1200), (2048, 1536), (2592,1944)]
+
+
 class CaptureManager:
 
     def __init__(self, camera):
@@ -63,4 +67,7 @@ class CaptureManager:
         cap = opencv.VideoCapture(camera_num)
         cap.set(opencv.CAP_PROP_SETTINGS, 1)
 
-
+    #def set_res(self, x, y):
+        #self._cap.set(opencv.CAP_PROP_FRAME_WIDTH, int(x))
+        #self._cap.set(opencv.CAP_PROP_FRAME_HEIGHT, int(y))
+        #return int(self._cap.get(opencv.CAP_PROP_FRAME_WIDTH)), int(self._cap.get(opencv.CAP_PROP_FRAME_HEIGHT))
