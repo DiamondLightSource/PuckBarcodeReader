@@ -1,10 +1,12 @@
 import time
 import queue
 
+from dls_util.cv.camera import Camera
+from dls_util.cv.capture_manager import CaptureManager
 from dls_util.image import Overlay
+from .scanner_message import CameraErrorMessage, ScanErrorMessage
 from .stream_action import StreamAction
 from dls_util.image import Image
-from dls_util.cv import CameraStream
 
 Q_LIMIT = 1
 
@@ -26,15 +28,16 @@ class CaptureWorker:
         for cam_position, cam_config in self._camera_configs.items():
             self._streams[cam_position] = self._initialise_stream(cam_config)
 
-    def run(self, task_queue, view_queue, overlay_queue, command_queue, kill_queue):
+    def run(self, task_queue, view_queue, overlay_queue, command_queue, kill_queue, message_queue):
         while kill_queue.empty():
             if command_queue.empty():
                 continue
 
             command = command_queue.get()
             if command.get_action() == StreamAction.START:
-                print("CAPTURE start: " + str(command.get_camera_position()))
-                self._run_capture(self._streams[command.get_camera_position()], task_queue, view_queue, overlay_queue, command_queue)
+                camera_position_name = command.get_camera_position_name()
+                print("CAPTURE start: " + camera_position_name)
+                self._run_capture(self._streams[command.get_camera_position()], camera_position_name, task_queue, view_queue, overlay_queue, command_queue, message_queue)
 
         # Clean up
         print("CAPTURE kill & cleanup")
@@ -43,7 +46,7 @@ class CaptureWorker:
 
         print("- capture all cleaned")
 
-    def _run_capture(self, stream, task_queue, view_queue, overlay_queue, stop_queue):
+    def _run_capture(self, stream, camera_positon, task_queue, view_queue, overlay_queue, stop_queue, message_queue):
         # Store the latest image overlay which highlights the puck
         latest_overlay = Overlay(0)
         last_time = time.time()
@@ -56,6 +59,10 @@ class CaptureWorker:
 
             # Capture the next frame from the camera
             frame = stream.get_frame()
+            if frame is None:
+                message_queue.put(CameraErrorMessage(camera_positon))
+                return
+
             # Add the frame to the task queue to be processed
             # NOTE: the rate at which frames are pushed to the task queue is lower than the rate at which frames are acquired
             if task_queue.qsize() < Q_LIMIT and (time.time() - last_time >= INTERVAL):
@@ -84,11 +91,16 @@ class CaptureWorker:
         self._flush_queue(view_queue)
         print("--- capture view Q flushed")
 
+
+
     def _initialise_stream(self, camera_config):
         cam_number = camera_config.camera_number.value()
         width = camera_config.width.value()
         height = camera_config.height.value()
-        return CameraStream(cam_number, width, height)
+        stream = CaptureManager(Camera(cam_number, width, height))
+        stream.create_capture()
+        return stream
+
 
     def _flush_queue(self, q):
         while not q.empty():

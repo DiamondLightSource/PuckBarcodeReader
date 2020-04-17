@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtWidgets import QMessageBox
 
 from dls_barcode.config import BarcodeConfigDialog
 from dls_barcode.gui.progress_bar import ProgressBox
@@ -139,6 +140,22 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def displayPuckScanCompleteMessage(self):
         self._message_box.display(MessageFactory.puck_scan_completed_message())
+
+    def displayCameraErrorMessage(self, scanner_message):
+        self._cleanup()
+        mgs = QMessageBox(self)
+        mgs.setIcon(QMessageBox.Critical)
+        mgs.setWindowTitle("Camera Error")
+        mgs.setText( scanner_message.content()+" " + MessageFactory.camera_not_found_message().content())
+        configure_button = mgs.addButton("Configure", QMessageBox.ActionRole)
+        quit_button = mgs.addButton("Quit", QMessageBox.ActionRole)
+        mgs.setEscapeButton(configure_button)
+        mgs.exec_()
+        if mgs.clickedButton() == configure_button:
+            self._on_options_action_clicked()
+            self._on_scan_action_clicked()
+        else:
+            self.close()
 
     def displayScanErrorMessage(self, scanner_msg):
         self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))

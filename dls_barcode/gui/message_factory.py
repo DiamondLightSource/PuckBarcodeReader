@@ -22,3 +22,9 @@ class MessageFactory:
     @staticmethod
     def puck_scan_completed_message():
         return Message(MessageType.INFO, "Scan completed!")
+
+    @staticmethod
+    def camera_not_found_message():
+        return Message(MessageType.WARNING, "camera can not be found.\nEnter the configuration to select the camera.", lifetime=0)
+
+

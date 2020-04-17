@@ -18,3 +18,7 @@ class CaptureCommand:
 
     def get_camera_position(self):
         return self._camera_position
+
+    def get_camera_position_name(self):
+        return self._camera_position.name
+
