@@ -5,6 +5,8 @@ Changes merged into master
 --------------------------
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
+|I04-1-246  |     -        |Minor |Better behaviour if selected camera can't be accessed|
+
 
 
 
