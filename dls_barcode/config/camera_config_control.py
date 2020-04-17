@@ -1,8 +1,10 @@
 import cv2
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QComboBox
+from PyQt5.uic.properties import QtCore
 
 from dls_util.config import ConfigControl
-from dls_util.cv.capture_manager import CaptureManager
+from dls_util.cv.capture_manager import CaptureManager, get_available_resolutions
 
 
 class CameraConfigControl(ConfigControl):
@@ -29,17 +31,26 @@ class CameraConfigControl(ConfigControl):
         # Set Camera Resolution
         lbl = QLabel("Camera Resolution")
         lbl.setFixedWidth(ConfigControl.LABEL_WIDTH)
-        self.txt_width = QLineEdit()
-        self.txt_width.setFixedWidth(self.RES_TEXT_WIDTH)
-        self.txt_height = QLineEdit()
-        self.txt_height.setFixedWidth(self.RES_TEXT_WIDTH)
+        self.combo = QComboBox()
+        resolutions = get_available_resolutions()
+        for resolution in resolutions:
+            width = resolution[0]
+            height = resolution[1]
+            self.combo.addItem(str(width)+"x"+str(height))
+            #print(str(self.combo.height()))
+
+        #self.txt_width = QLineEdit()
+        #self.txt_width.setFixedWidth(self.RES_TEXT_WIDTH)
+        #self.txt_height = QLineEdit()
+        #self.txt_height.setFixedWidth(self.RES_TEXT_WIDTH)
 
         hbox_res = QHBoxLayout()
         hbox_res.setContentsMargins(0, 0, 0, 0)
         hbox_res.addWidget(lbl)
-        hbox_res.addWidget(self.txt_width)
-        hbox_res.addWidget(QLabel("x"))
-        hbox_res.addWidget(self.txt_height)
+        hbox_res.addWidget(self.combo)
+        #hbox_res.addWidget(self.txt_width)
+        #hbox_res.addWidget(QLabel("x"))
+        #hbox_res.addWidget(self.txt_height)
         hbox_res.addStretch()
 
         # Preview camera
@@ -66,13 +77,24 @@ class CameraConfigControl(ConfigControl):
 
     def update_from_config(self):
         self.txt_number.setText(str(self._camera_config.get_number()))
-        self.txt_width.setText(str(self._camera_config.get_width()))
-        self.txt_height.setText(str(self._camera_config.get_height()))
+        text = str(self._camera_config.get_height()) + "x" + str(self._camera_config.get_width())
+        index = self.combo.findText(text, Qt.MatchExactly)
+        if index >= 0:
+            self.combo.setCurrentIndex(index)
+
+        #self.txt_width.setText(str(self._camera_config.get_width()))
+        #self.txt_height.setText(str(self._camera_config.get_height()))
 
     def save_to_config(self):
         self._camera_config.set_number(self.txt_number.text())
-        self._camera_config.set_width(self.txt_width.text())
-        self._camera_config.set_height(self.txt_height.text())
+        text = str(self.combo.currentText())
+        sp = text.split("x")
+        h = sp[0]
+        w = sp[1]
+        self._camera_config.set_height(h)
+        self._camera_config.set_width(w)
+
+        #self._camera_config.set_height(self.txt_height.text())
 
     def _test_camera(self):
         self.save_to_config()
