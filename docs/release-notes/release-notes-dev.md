@@ -5,6 +5,7 @@ Changes merged into master
 --------------------------
 | Jira Task | GitHub Issue | Type | Description |
 |-----------|--------------|------|-------------|
+|I04-1-448  |     -        |Minor |Improve the interface for setting the camera resolution|
 
 
 
