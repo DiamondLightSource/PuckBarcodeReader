@@ -48,7 +48,7 @@ def run_scans(img_file, expected_codes):
             slot_number = expected_code[1] #number
             slot = plate.slot(slot_number)
             read_code_text = slot.barcode_data()
-            #print(slot_number, read_code_text, expected_code_text)
+            print(slot_number, read_code_text, expected_code_text)
             if slot.state() == slot.VALID:
                 assert read_code_text == expected_code_text
 
@@ -65,10 +65,15 @@ def generate_test_cases():
 
     puck3_codes = [['DF075C0843', 3], ['DF075C1005', 5], ['DF075C1099', 7]]
 
-    puck4_codes = [['DF150E0853', 1], ['DF150E1004', 2], ['DF150E0723', 3], ['DF150E0284', 4], ['DF150E0792',5], ['DF150E0834', 6], ['DF150E0212', 7], ['DF150E0564', 8], ['DF150E0457', 9], ['DF150E0717', 10],
-                    ['DF150E0714', 11], ['DF150E0523', 12],['DF150E0231', 13], ['DF150E0200', 14], ['DF150E0102', 15], ['DF150E0964', 16] ]
+    puck4_codes = [['DF150E0853', 1], ['DF150E1004', 2], ['DF150E0723', 3], ['DF150E0284', 4], ['DF150E0792',5],
+                   ['DF150E0834', 6], ['DF150E0212', 7], ['DF150E0564', 8], ['DF150E0457', 9], ['DF150E0717', 10],
+                   ['DF150E0714', 11], ['DF150E0523', 12],['DF150E0231', 13], ['DF150E0200', 14], ['DF150E0102', 15],
+                   ['DF150E0964', 16]]
 
-
+    puck5_codes = [['DF150E0870', 1], ['DF150E1029', 2], ['DF150E1022', 3], ['DF150E0342', 4], ['DF150E0708', 5],
+                   ['DF150E0806', 6], ['DF150E0678', 7], ['DF150E0721', 8], ['DF150E0816', 9], ['DF150E0660', 10],
+                   ['DF075C0276', 11], ['DF150E0414', 12], ['DF150E0166', 13], ['DF075C1008', 14], ['DF150E1050', 15],
+                   ['DF150E0450', 16]]
 
     # List of files for Puck type 1
     puck1_files = ['puck1_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(1, 5)]
@@ -86,6 +91,9 @@ def generate_test_cases():
     puck4_files = ['puck4_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(1, 6)]
     puck4_testcases = [(file, puck4_codes) for file in puck4_files]
 
+    puck5_files = ['puck5_' + ("0" + str(i) if i < 10 else str(i)) + ".png" for i in range(1, 2)]
+    puck5_testcases = [(file, puck5_codes) for file in puck5_files]
+
 
     # Create a list of test cases
     test_cases = []
@@ -93,6 +101,7 @@ def generate_test_cases():
     test_cases.extend(puck2_testcases)
     test_cases.extend(puck3_testcases)
     test_cases.extend(puck4_testcases)
+    test_cases.extend(puck5_testcases)
     return test_cases
 
 

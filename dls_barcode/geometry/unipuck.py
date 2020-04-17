@@ -15,7 +15,8 @@ class Unipuck:
     TYPE_NAME = "Unipuck"
     NUM_SLOTS = Template.NUM_SLOTS
 
-    def __init__(self, center, radius, rotation=0.0, feature_center=None, feature_boarder=None):
+    def __init__(self, center, radius, rotation=math.pi/4, feature_center=None, feature_boarder=None):
+        # rotation=math.pi/2 - align the read dot of the camera with the screw
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
         """

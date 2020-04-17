@@ -1,5 +1,7 @@
 from __future__ import division
 
+import time
+
 import math
 
 import numpy as np
@@ -23,6 +25,7 @@ class UnipuckCalculator:
     center of each slot, the unique orientation and position of the puck can be determined.
     This is possible even if some of the slot locations are not none.
     """
+
     def __init__(self, slot_centers):
         """ Determine the puck geometry (position and orientation) for the locations of the
         centers of some (or all of the pins).
@@ -48,9 +51,7 @@ class UnipuckCalculator:
         try:
             center = self._find_puck_center(self._slot_centers)
             radius = self._calculate_puck_size(self._slot_centers, center)
-
             puck = Unipuck(center, radius)
-
             angle = self._determine_puck_orientation(puck, self._slot_centers)
             puck.set_rotation(angle)
 
@@ -67,24 +68,13 @@ class UnipuckCalculator:
         Within each layer there may be some missing points, so if we calculate the center
         position of the puck by averaging the center positions of the slots, the results will
         be a bit out. Instead, we use the average center position (the centroid) as a starting
-        point and divide the slots into two groups based on how close they are to the centroid.
-        As long as not too many slots are missing, the division into groups should work well.
+        point.
         We then iterate over different values for the puck center position, attempting to find
         a location that is equidistant from all of the slot centers.
         """
         centroid = calculate_centroid(pin_centers)
-
-        # Calculate distance from center to each pin-center
-        distances = [[point, point.distance_to(centroid)] for point in pin_centers]
-        distances = sorted(distances, key=lambda distance: distance[1])
-
-        # Sort the points into two layers based on their distance from the centroid
-        layer_break = _partition([d for p, d in distances])
-        first_layer = [p for p, d in distances[:layer_break]]
-        second_layer = [p for p, d in distances[layer_break:]]
-
-        # Optimise for the puck center by finding the point that is equidistant from every point in each layer
-        center = fmin(func=_center_minimiser, x0=centroid.tuple(), args=tuple([[first_layer, second_layer]]), xtol=1, disp=False)
+        # Optimise for the puck center by finding the point that is equidistant from every point
+        center = fmin(func=_center_minimiser, x0=centroid.tuple(), args=tuple([pin_centers]), xtol=1, disp=False)
         center = Point(center[0], center[1]).intify()
 
         return center
@@ -112,7 +102,6 @@ class UnipuckCalculator:
         which is the best orientation by looking at sum of squared errors. This algorithm can
         definitely be improved upon but this does the job
         """
-        # TODO: finding orientation takes 80-90% of the alignment time; find a better algorithm
 
         errors = []
         best_sse = 10000000
@@ -120,8 +109,8 @@ class UnipuckCalculator:
         original_angle = puck.angle()
 
         # For each angular increment, calculate the sum of squared errors in slot center position
-        for a in range(0, 360, 2):
-            angle = a / (180 / math.pi)
+        for a in range(-16, 16, 1):
+            angle = original_angle + a / (180 / math.pi)
             puck.set_rotation(angle)
             sse = 0
             for p in pin_centers:
@@ -134,7 +123,7 @@ class UnipuckCalculator:
         # Set the puck back to its original angle
         puck.set_rotation(original_angle)
 
-        average_error = best_sse / puck.radius() ** 2 / len(pin_centers)
+        average_error = best_sse / (puck.radius() ** 2) / len(pin_centers)
         if average_error > 0.003:
             raise GeometryAlignmentError("Unable to determine Unipuck orientation")
 
@@ -144,10 +133,10 @@ class UnipuckCalculator:
     def _shortest_sq_distance(puck, point):
         """ Returns the distance from the specified point to the closest slot in the puck. """
         low_l_sq = 100000000
-        slot_sq = puck.slot_radius()**2
+        slot_sq = puck.slot_radius() ** 2
 
         for num in range(puck.num_slots()):
-            center = puck.slot_center(num+1)
+            center = puck.slot_center(num + 1)
             length_sq = point.distance_to_sq(center)
             if length_sq < low_l_sq:
                 low_l_sq = length_sq
@@ -166,20 +155,17 @@ def calculate_centroid(points):
     return Point((sum(x) / len(points)), (sum(y) / len(points))).intify()
 
 
-def _center_minimiser(center, layers):
-    """ Used as the cost function in an optimisation routine. The puck consists of 2 layers of slots.
-    Within a given layer, each slot is the same distance from the center point of the puck. Therefore
+def _center_minimiser(center, dist):
+    """ Used as the cost function in an optimisation routine.
     for a trial center point, we calculate an error that is the sum of the squares of the deviation
-    of the distance of each slot from the mean distance of all the slots in the layer.
+    of the distance of each slot from the mean distance of all the slots.
     """
     errors = []
     center = Point.from_array(center)
-    for layer in layers:
-        distances = [p.distance_to_sq(center) for p in layer]
-
-        mean = np.mean(distances)
-        layer_errors = [(d-mean)**2 for d in distances]
-        errors.extend(layer_errors)
+    distances = [p.distance_to_sq(center) for p in dist]
+    mean = np.mean(distances)
+    layer_errors = [(d - mean) ** 2 for d in distances]
+    errors.extend(layer_errors)
 
     return sum(errors)
 
@@ -200,11 +186,11 @@ def _partition(numbers):
     break_point = 0
 
     while s < len(numbers):
-        if not numbers[:s+1] or not numbers[-s-1:]:
+        if not numbers[:s + 1] or not numbers[-s - 1:]:
             raise Exception("Empty slice")
 
-        gp1_average = np.mean(numbers[:s+1])
-        gp2_average = np.mean(numbers[-s-1:])
+        gp1_average = np.mean(numbers[:s + 1])
+        gp2_average = np.mean(numbers[-s - 1:])
 
         s += 1
 
