@@ -18,8 +18,8 @@ def _get_width_flag():
         return opencv.CAP_PROP_FRAME_WIDTH
 
 
-def get_available_resolutions():
-    return [(640,480), (800,600), (1600,1200), (2048, 1536), (2592,1944)]
+#def get_available_resolutions():
+#    return [(640,480), (800,600), (1600,1200), (2048, 1536), (2592,1944)]
 
 
 class CaptureManager:
@@ -48,14 +48,16 @@ class CaptureManager:
         if self._cap is not None:
             self._cap.release()
 
-    def get_width(self):
-        return self._cap.get(_get_width_flag())
+    #def get_width(self):
+    #    return self._cap.get(_get_width_flag())
 
-    def get_height(self):
-        return self._cap.get(_get_height_flag())
+    #def get_height(self):
+    #    return self._cap.get(_get_height_flag())
 
     def _set_width(self, width):
+        # opencv adjusts the setting to the camera specification
         self._cap.set(_get_width_flag(), width)
+        print(self._cap.get(_get_width_flag()))
 
     def _set_height(self, height):
         self._cap.set(_get_height_flag(), height)
@@ -66,8 +68,3 @@ class CaptureManager:
          This sometimes crashes but it's out of our control and the CAP_PROP_SETTINGS is not documented"""
         cap = opencv.VideoCapture(camera_num)
         cap.set(opencv.CAP_PROP_SETTINGS, 1)
-
-    #def set_res(self, x, y):
-        #self._cap.set(opencv.CAP_PROP_FRAME_WIDTH, int(x))
-        #self._cap.set(opencv.CAP_PROP_FRAME_HEIGHT, int(y))
-        #return int(self._cap.get(opencv.CAP_PROP_FRAME_WIDTH)), int(self._cap.get(opencv.CAP_PROP_FRAME_HEIGHT))
