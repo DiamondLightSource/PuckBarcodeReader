@@ -77,7 +77,7 @@ class CameraConfigControl(ConfigControl):
 
     def update_from_config(self):
         self.txt_number.setText(str(self._camera_config.get_number()))
-        text = str(self._camera_config.get_height()) + "x" + str(self._camera_config.get_width())
+        text = str(self._camera_config.get_width()) + "x" + str(self._camera_config.get_height())
         index = self.combo.findText(text, Qt.MatchExactly)
         if index >= 0:
             self.combo.setCurrentIndex(index)
@@ -89,12 +89,10 @@ class CameraConfigControl(ConfigControl):
         self._camera_config.set_number(self.txt_number.text())
         text = str(self.combo.currentText())
         sp = text.split("x")
-        h = sp[0]
-        w = sp[1]
+        w = sp[0]
+        h = sp[1]
         self._camera_config.set_height(h)
         self._camera_config.set_width(w)
-
-        #self._camera_config.set_height(self.txt_height.text())
 
     def _test_camera(self):
         self.save_to_config()
