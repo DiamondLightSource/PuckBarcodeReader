@@ -22,9 +22,11 @@ class BarcodeConfig(Config):
 
         if IS_BUNDLED:
             default_store = "./store/"
+            default_session = "./session/"
             default_backup = "./backup/"
         else:
             default_store = "../store/"
+            default_session = "../session/"
             default_backup = "../backup/"
 
 
@@ -46,6 +48,7 @@ class BarcodeConfig(Config):
         self.image_crop = add(BoolConfigItem, "Crop to Puck", default=True)
 
         self.store_directory = add(DirectoryConfigItem, "Store Directory", default=default_store)
+        self.session_directory = add(DirectoryConfigItem, "Session Directory", default=default_session)
         self.backup = add(BoolConfigItem, "Backup before Delete", default=True)
         self.backup_directory = add(DirectoryConfigItem, "Backup Directory", default=default_backup)
 
@@ -66,6 +69,9 @@ class BarcodeConfig(Config):
 
     def get_store_directory(self):
         return self.store_directory.value()
+
+    def get_session_directory(self):
+        return self.session_directory.value()
 
     def get_backup_directory(self):
         return self.backup_directory.value()

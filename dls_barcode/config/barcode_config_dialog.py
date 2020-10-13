@@ -1,6 +1,6 @@
 from dls_util.config import ConfigDialog
 from .camera_config_control import CameraConfigControl
-from .store_directory_config_control import StoreDirectoryConfigControl
+from .startup_directory_config_control import StartupDirectoryConfigControl
 
 from PyQt5.QtWidgets import QStyle
 
@@ -54,9 +54,12 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.image_crop)
 
         self.start_group("Store")
-        self._add_control(StoreDirectoryConfigControl(cfg.store_directory))
+        self._add_control(StartupDirectoryConfigControl(cfg.store_directory))
         add(cfg.backup)
         add(cfg.backup_directory)
+
+        self.start_group("Session")
+        self._add_control(StartupDirectoryConfigControl(cfg.session_directory))
 
         self.start_group("Debug")
         add(cfg.console_frame)
