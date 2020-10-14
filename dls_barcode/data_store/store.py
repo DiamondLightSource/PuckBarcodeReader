@@ -45,11 +45,12 @@ class Store:
         self.records.append(record)
         self._process_change()
 
-    def merge_record(self, holder_barcode, plate, holder_img, pins_img):
+    def merge_record(self, holder_barcode, plate, holder_img, pins_img, start_time=0):
         """ Create new record or replace existing record if it has the same holder barcode as the most
         recent record. Save to backing store. """
-        if self.records and self.records[0].holder_barcode == holder_barcode:
-            self.delete_records([self.records[0]])
+        records = self.get_records_after_timestamp(start_time)
+        if records and records[0].holder_barcode == holder_barcode:
+            self.delete_records([records[0]])
 
         self._add_record(holder_barcode, plate, holder_img, pins_img)
 
