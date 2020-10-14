@@ -37,6 +37,7 @@ class ScanRecordTable(QGroupBox):
         # Create the session  manager and a file writer for sessions
         session_writer = StoreWriter(options.get_session_directory(), "session")
         self._session_manager = SessionManager(session_writer, self._store)
+        self._session_manager.new_session()
 
         self._barcodeTable = barcode_table
         self._imageFrame = image_frame
