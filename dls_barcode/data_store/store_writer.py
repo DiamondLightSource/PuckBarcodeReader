@@ -14,6 +14,9 @@ class StoreWriter:
         self._file_name = file_name
         self._image_path = None
 
+    def get_full_csv_path(self):
+        return os.path.join(self._directory, self._file_name + ".csv")
+
     def set_file_name(self, fname):
         self._file_name = fname
 

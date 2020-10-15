@@ -222,7 +222,7 @@ class ScanRecordTable(QGroupBox):
         Saves csv file with records in current session"""
         were_records_saved = self._session_manager.save_session()
         saved_msg = (
-            "Records saved to {}".format(self._session_manager.last_saved_fname)
+            "Records saved to {}".format(self._session_manager.last_saved_file)
             if were_records_saved else "No records to save")
         reply = QMessageBox.information(self, 'Save Session', saved_msg, QMessageBox.Ok)
 
