@@ -14,6 +14,9 @@ class StoreWriter:
         self._file_name = file_name
         self._image_path = None
 
+    def set_file_name(self, fname):
+        self._file_name = fname
+
     def to_file(self, records):
         """ Save the contents of the store to the backing file
         """

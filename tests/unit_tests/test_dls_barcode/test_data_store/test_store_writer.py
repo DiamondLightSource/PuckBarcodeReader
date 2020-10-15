@@ -127,6 +127,18 @@ class TestStoreWriter(unittest.TestCase):
         self.assertIn("img_dir", path)
         self.assertIn(self.directory, path)
 
+    def test_set_file_name(self):
+        # Arrange
+        cm = StoreWriter(self.directory, self.file_name)
+        cm._file_manager = MagicMock()
+        test_file_name = "test_file_name"
+
+        # Act
+        cm.set_file_name(test_file_name)
+
+        # Assert
+        self.assertEqual(cm._file_name, test_file_name)
+
     @classmethod
     def tearDownClass(cls):
         if os.path.isdir('dir'):
