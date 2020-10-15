@@ -220,7 +220,11 @@ class ScanRecordTable(QGroupBox):
     def _save_session_clicked(self):
         """Called when the 'Save Session' button is clicked.
         Saves csv file with records in current session"""
-        self._session_manager.save_session()
+        were_records_saved = self._session_manager.save_session()
+        saved_msg = (
+            "Records saved to {}".format(self._session_manager.last_saved_fname)
+            if were_records_saved else "No records to save")
+        reply = QMessageBox.information(self, 'Save Session', saved_msg, QMessageBox.Ok)
 
     def is_latest_holder_barcode(self, holder_barcode):
         return self._store.is_latest_holder_barcode(holder_barcode, self._session_manager.current_session_id)

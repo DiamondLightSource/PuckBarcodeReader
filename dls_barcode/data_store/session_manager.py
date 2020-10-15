@@ -12,6 +12,7 @@ class SessionManager:
         self.current_session_timestamp = ""
         self._session_writer = session_writer
         self._store = store
+        self._last_saved_fname = ""
 
     def new_session(self):
         """Start a new session"""
@@ -28,4 +29,11 @@ class SessionManager:
     def save_session(self):
         "Save the records from a session"
         records = self._store.get_records_after_timestamp(self.current_session_id)
-        self._session_writer.to_csv_file(records)
+        if records:
+            file_time = datetime.fromtimestamp(self.current_session_id
+                ).strftime("%H%M%S_%d%m%Y")
+            self.last_saved_fname = "session_{}".format(file_time)
+            self._session_writer.set_file_name(self.last_saved_fname)
+            self._session_writer.to_csv_file(records)
+        records_saved = not not records
+        return records_saved
