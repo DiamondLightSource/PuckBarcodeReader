@@ -18,10 +18,14 @@ class Store:
         self._store_writer = store_writer
         self.records = records
 
-    def size(self):
+    def size(self, start_time=None):
         """ Returns the number of records in the store
         """
-        return len(self.records)
+        if start_time:
+            num_records = len(self.get_records_after_timestamp(start_time))
+        else:
+            num_records = len(self.records)
+        return num_records
 
     def get_record(self, index):
         """ Get record by index where the 0th record is the most recent
@@ -74,6 +78,11 @@ class Store:
         self._store_writer.to_file(self.records)
         self._store_writer.to_csv_file(self.records)
 
+    def get_records_after_timestamp(self, start_time):
+        self._sort_records()
+        records_after_timestamp = [r for r in self.records if start_time <= r.timestamp]
+        return records_after_timestamp
+
     def _sort_records(self):
         """ Sort the records in descending date order (most recent first).
         """
@@ -87,7 +96,7 @@ class Store:
         merged_img.paste(small_holder_img, 0, 0)
         return merged_img
 
-    def is_latest_holder_barcode(self, holder_barcode):
+    def is_latest_holder_barcode(self, holder_barcode, start_time):
         self._sort_records()
         latest_record = self.get_record(0)
-        return latest_record is not None and holder_barcode == latest_record.holder_barcode
+        return latest_record is not None and holder_barcode == latest_record.holder_barcode and latest_record.timestamp > start_time
