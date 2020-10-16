@@ -112,6 +112,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._menu_bar.about_action_trigerred(self._on_about_action_clicked)
         self._menu_bar.optiones_action_triggered(self._on_options_action_clicked)
         self._record_table.cell_pressed_action_triggered(self._to_run_on_table_clicked)
+        self._record_table.change_session_action_triggered(self._on_session_changed)
 
     def _to_run_on_table_clicked(self):
         self._cleanup()
@@ -119,6 +120,13 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def _on_about_action_clicked(self):
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
+
+    def _on_session_changed(self):
+        # If camera is not running leave things as they are
+        # If scan is running stop it
+        if self._camera_capture_alive():
+            self._cleanup()
+            self._scan_button.setStartLayout()
 
     def _on_scan_action_clicked(self):
         self._log.debug("MAIN: Scan menu clicked")

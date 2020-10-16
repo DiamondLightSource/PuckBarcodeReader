@@ -108,6 +108,10 @@ class ScanRecordTable(QGroupBox):
         self._table.cellPressed.connect(to_run_on_table_clicked)
         self._table.cellPressed.connect(self._record_selected)
 
+    def change_session_action_triggered(self, on_change_session_action_clicked):
+        self._new_session_button.clicked.connect(on_change_session_action_clicked)
+        self._end_session_button.clicked.connect(on_change_session_action_clicked)
+
     def add_record_frame(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
         self._store.merge_record(holder_barcode, plate, holder_img, pins_img)
@@ -199,13 +203,17 @@ class ScanRecordTable(QGroupBox):
 
     def _new_session_clicked(self):
         """Called when the 'New Session' button is clicked. Starts a new session"""
+        # Multiple sessions within a one second period are not allowed as they would
+        # have the same session id. Disable the new session button for one second.
         self._new_session_button.setEnabled(False)
+        self._save_session_button.setDisabled(False)
         QTimer.singleShot(1000, lambda: self._new_session_button.setDisabled(False))
         self._session_manager.new_session()
         self._update_session()
 
     def _end_session_clicked(self):
         """Called when the 'End Session' button is clicked. Ends the active session"""
+        self._save_session_button.setEnabled(False)
         self._session_manager.end_session()
         self._update_session()
 
