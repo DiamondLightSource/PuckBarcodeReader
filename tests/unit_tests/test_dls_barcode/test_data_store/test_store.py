@@ -132,6 +132,25 @@ class TestStore(unittest.TestCase):
         duplicates = [r for r in store.records if r.holder_barcode == holder_barcode]
         self.assertEqual(len(duplicates), 2)
 
+    def test_duplicate_holder_barcodes_are_allowed_if_the_duplicate_is_the_latest_holder_barcode_but_start_time_is_later(self):
+        # Arrange
+        holder_barcode = "ABD1234"
+        timestamp = 1494238924.0
+        recs = self._get_records()
+        duplicate_rec_string = "f59c92c1;" + str(timestamp) + ";test.png;None;" + holder_barcode + ",DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        recs.append(Record.from_string(duplicate_rec_string))
+        store = self._create_store_with_records(recs)
+        old_store_size = store.size()
+
+        # Act
+        store.merge_record(holder_barcode, self._plate, self._holder_img, self._pins_img, timestamp + 1)
+        new_store_size = store.size()
+
+        # Assert
+        self.assertEqual(store.size(), old_store_size + 1)
+        duplicates = [r for r in store.records if r.holder_barcode == holder_barcode]
+        self.assertEqual(len(duplicates), 2)
+
     def test_given_a_store_when_merging_a_record_then_store_is_saved_to_backing_file(self):
         # Arrange
         store = self._create_store()
@@ -226,6 +245,35 @@ class TestStore(unittest.TestCase):
         self.assertEqual(len(record_lines_used[0]), store.size())
         for r, l in zip(store.records, record_lines_used):
             self.assertIn(r, l)
+
+    def test_store_saves_records_after_start_timestamp(self):
+        # Arrange
+        store = self._create_store()
+        test_time = 1494238922.0
+        expected_records_after_timestamp = [r for r in store.records if r.timestamp >= test_time]
+
+        # Act
+        records_after_timestamp = store.get_records_after_timestamp(test_time)
+
+        # Assert
+        self.assertEqual(records_after_timestamp, expected_records_after_timestamp)
+
+    def test_is_latest_holder_barcode_looks_for_records_since_start_time_only(self):
+        # Arrange
+        store = self._create_store()
+        start_time_latest_barcode_is_yes = 1494238922.0
+        start_time_latest_barcode_is_no = 1494238924.0
+        holder_barcode = "DLSL-001"
+
+        # Act
+        is_latest_holder_barcode_should_be_yes = store.is_latest_holder_barcode(holder_barcode,
+            start_time_latest_barcode_is_yes)
+        is_latest_holder_barcode_should_be_no = store.is_latest_holder_barcode(holder_barcode,
+            start_time_latest_barcode_is_no)
+
+        # Assert
+        self.assertTrue(is_latest_holder_barcode_should_be_yes)
+        self.assertFalse(is_latest_holder_barcode_should_be_no)
 
     def _create_store(self):
         return Store(self._store_writer, self._get_records())
