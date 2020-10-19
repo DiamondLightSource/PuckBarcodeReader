@@ -207,6 +207,7 @@ class ScanRecordTable(QGroupBox):
         # have the same session id. Disable the new session button for one second.
         self._new_session_button.setEnabled(False)
         self._save_session_button.setDisabled(False)
+        self._end_session_button.setDisabled(False)
         QTimer.singleShot(1000, lambda: self._new_session_button.setDisabled(False))
         self._session_manager.new_session()
         self._update_session()
@@ -214,6 +215,7 @@ class ScanRecordTable(QGroupBox):
     def _end_session_clicked(self):
         """Called when the 'End Session' button is clicked. Ends the active session"""
         self._save_session_button.setEnabled(False)
+        self._end_session_button.setEnabled(False)
         self._session_manager.end_session()
         self._update_session()
 
