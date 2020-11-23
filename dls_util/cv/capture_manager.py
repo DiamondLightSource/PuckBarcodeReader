@@ -25,7 +25,7 @@ class CaptureManager:
         self._cap = None
 
     def create_capture(self):
-        self._cap = opencv.VideoCapture(self._camera.get_camera_number())
+        self._cap = opencv.VideoCapture(self._camera.get_camera_number() + opencv.CAP_DSHOW)
         self._set_width(self._camera.get_camera_width())
         self._set_height(self._camera.get_camera_height())
 
@@ -56,5 +56,5 @@ class CaptureManager:
     def open_camera_controls(camera_num):
         """Open the camera's settings panel.
          This sometimes crashes but it's out of our control and the CAP_PROP_SETTINGS is not documented"""
-        cap = opencv.VideoCapture(camera_num)
+        cap = opencv.VideoCapture(camera_num + opencv.CAP_DSHOW)
         cap.set(opencv.CAP_PROP_SETTINGS, 1)
