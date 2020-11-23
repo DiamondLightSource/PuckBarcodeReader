@@ -2,9 +2,9 @@ import cv2
 
 from dls_util.shape import Point, Circle
 
-_OPENCV_MAJOR = cv2.__version__[0]
+_OPENCV_MAJOR = int(cv2.__version__[0])
 
-if _OPENCV_MAJOR == '3':
+if _OPENCV_MAJOR >= 3:
     _HOUGH_METHOD = cv2.HOUGH_GRADIENT
 else:
     from cv2 import cv

@@ -34,7 +34,7 @@ class TestCircleDetector(unittest.TestCase):
     def test_init_sets_method(self):
         decorator = CircleDetector()
         _OPENCV_MAJOR = cv2.__version__[0]
-        if _OPENCV_MAJOR == '3':
+        if _OPENCV_MAJOR >= '3':
             _HOUGH_METHOD = cv2.HOUGH_GRADIENT
         else:
             from cv2 import cv

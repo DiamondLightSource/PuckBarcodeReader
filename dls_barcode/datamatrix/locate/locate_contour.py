@@ -64,13 +64,7 @@ class ContourLocator:
     def _get_contours(binary_image):
         """ Find contours and return them as lists of vertices. """
         raw_img = binary_image.img.copy()
-
-        # List of return values changed between version 2 and 3
-        if OPENCV_MAJOR == '3':
-            _, raw_contours, _ = cv2.findContours(raw_img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        else:
-            raw_contours, _ = cv2.findContours(raw_img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
+        raw_contours, _ = cv2.findContours(raw_img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2:]
         return raw_contours
 
     @staticmethod
