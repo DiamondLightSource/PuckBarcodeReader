@@ -67,27 +67,34 @@ class ScanRecordTable(QGroupBox):
         self._new_session_button = QtWidgets.QPushButton("New Session")
         self._new_session_button.setStatusTip("Create a new session")
         self._new_session_button.clicked.connect(self._new_session_clicked)
-        self._end_session_button = QtWidgets.QPushButton("End Session")
+        self._end_session_button = QtWidgets.QPushButton("Save and End Session")
         self._end_session_button.setStatusTip("End the current session")
         self._end_session_button.clicked.connect(self._end_session_clicked)
-        self._save_session_button = QtWidgets.QPushButton("Save Session")
-        self._save_session_button.setStatusTip("Save the current session")
-        self._save_session_button.clicked.connect(self._save_session_clicked)
+        self._discard_session_button = QtWidgets.QPushButton("Discard Session")
+        self._discard_session_button.setStatusTip("Discard the current session without saving")
+        self._discard_session_button.clicked.connect(self._discard_session_clicked)
 
-        self._new_session_button.setMaximumWidth(100)
-        self._end_session_button.setMaximumWidth(100)
-        self._save_session_button.setMaximumWidth(100)
+        self._new_session_button.setMaximumWidth(120)
+        self._end_session_button.setMaximumWidth(120)
+        self._discard_session_button.setMaximumWidth(120)
 
         vbox = QVBoxLayout()
 
         hbox = QHBoxLayout()
         hbox.setSpacing(0)
         hbox.addWidget(self._new_session_button)
-        hbox.addWidget(self._save_session_button)
         hbox.addWidget(self._end_session_button)
         hbox.addStretch(1)
+        hbox.addWidget(self._discard_session_button)
+        vbox.addLayout(hbox)
+
+        hbox = QHBoxLayout()
+        hbox.setSpacing(0)
         hbox.addWidget(self._session_active_label)
-        hbox.addStretch(1)
+        vbox.addLayout(hbox)
+
+        hbox = QHBoxLayout()
+        hbox.setSpacing(0)
         hbox.addWidget(self._current_session_id_label)
         vbox.addLayout(hbox)
 
@@ -115,6 +122,7 @@ class ScanRecordTable(QGroupBox):
     def change_session_action_triggered(self, on_change_session_action_clicked):
         self._new_session_button.clicked.connect(on_change_session_action_clicked)
         self._end_session_button.clicked.connect(on_change_session_action_clicked)
+        self._discard_session_button.clicked.connect(on_change_session_action_clicked)
 
     def add_record_frame(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new scan frame - creates a new record if its a new puck, else merges with previous record"""
@@ -195,14 +203,17 @@ class ScanRecordTable(QGroupBox):
 
     def _update_session(self):
         if self._session_manager.current_session_id:
+            self._barcodeTable.clear()
             self._session_active_label.setText("Session Active")
-            self._current_session_id_label.setText(
-                "{} {}".format(self._session_manager.visit_code,
-                    self._session_manager.current_session_timestamp)
+            self._current_session_id_label.setText("{} {}".format(
+                self._session_manager.visit_code,
+                self._session_manager.current_session_timestamp)
             )
         else:
             self._session_active_label.setText("No Session Active")
             self._current_session_id_label.setText("Showing all results in store")
+            self._end_session_button.setEnabled(False)
+            self._discard_session_button.setEnabled(False)
         self._imageFrame.clear_frame("")
         self._load_store_records()
 
@@ -211,9 +222,9 @@ class ScanRecordTable(QGroupBox):
         # Multiple sessions within a one second period are not allowed as they would
         # have the same session id. Disable the new session button for one second.
         self._new_session_button.setEnabled(False)
-        self._save_session_button.setDisabled(False)
+        self._discard_session_button.setDisabled(False)
         self._end_session_button.setDisabled(False)
-        QTimer.singleShot(1000, lambda: self._new_session_button.setDisabled(False))
+        QTimer.singleShot(1000, lambda: self._new_session_button.setEnabled(False))
 
         visit_code, ok = self._input_visit_code()
         while(ok and not visit_code):
@@ -222,17 +233,31 @@ class ScanRecordTable(QGroupBox):
             self._session_manager.new_session(visit_code)
             self._update_session()
         else:
-            self._save_session_button.setEnabled(False)
+            self._discard_session_button.setEnabled(False)
             self._end_session_button.setEnabled(False)
 
     def _end_session_clicked(self):
-        """Called when the 'End Session' button is clicked. Ends the active session"""
-        self._save_session_button.setEnabled(False)
+        """Called when the 'Save and End Session' button is clicked.
+        Ends the active session"""
+        # Save before ending
+        self._save_session()
+        self._discard_session_button.setEnabled(False)
         self._end_session_button.setEnabled(False)
+        self._new_session_button.setEnabled(True)
         self._session_manager.end_session()
         self._update_session()
 
-    def _save_session_clicked(self):
+    def _discard_session_clicked(self):
+        """Called when the 'Discard Session' button is clicked.
+        Discards the active session without saving"""
+        if self._session_manager.is_session_empty() or self._check_discard():
+            self._discard_session_button.setEnabled(False)
+            self._end_session_button.setEnabled(False)
+            self._new_session_button.setEnabled(True)
+            self._session_manager.end_session()
+            self._update_session()
+
+    def _save_session(self):
         """Called when the 'Save Session' button is clicked.
         Saves csv file with records in current session"""
         were_records_saved = self._session_manager.save_session()
@@ -253,6 +278,13 @@ class ScanRecordTable(QGroupBox):
         ok = visit_code_dialog.exec_()
         visit_code = visit_code_dialog.textValue()
         return visit_code, ok
+
+    def _check_discard(self):
+        reply = QMessageBox.question(self, 'Message',
+            "Are you sure you want to discard session?\n"
+            "The session will not be saved.",
+            QMessageBox.Yes, QMessageBox.No)
+        return reply == QMessageBox.Yes
 
     def is_latest_holder_barcode(self, holder_barcode):
         return self._store.is_latest_holder_barcode(holder_barcode, self._session_manager.current_session_id)

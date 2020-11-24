@@ -28,6 +28,10 @@ class SessionManager:
         self.current_session_id = 0
         self.current_session_timestamp = ""
 
+    def is_session_empty(self):
+        records = self._store.get_records_after_timestamp(self.current_session_id)
+        return not records
+
     def save_session(self):
         "Save the records from a session"
         records = self._store.get_records_after_timestamp(self.current_session_id)

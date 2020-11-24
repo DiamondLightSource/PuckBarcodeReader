@@ -8,10 +8,6 @@ from dls_barcode.data_store import Store
 from dls_barcode.data_store.session_manager import SessionManager
 from dls_barcode.data_store.record import Record
 
-ID0 = "id0"
-ID1 = "id1"
-ID2 = "id2"
-ID3 = "id3"
 VISIT_CODE = "tv12345 % ? <>"
 VISIT_CODE_PROCESSED = "tv12345%"
 
@@ -50,6 +46,16 @@ class TestSessionManager(unittest.TestCase):
 
         # Assert
         self.assertEqual(session.current_session_timestamp, expected_timestamp)
+
+    def test_session_manager_recognises_empty_session(self):
+        # Arrange
+        session = self._create_session_manager()
+        session.new_session(VISIT_CODE)
+        self._store.get_records_after_timestamp.return_value = []
+        is_session_empty = session.is_session_empty()
+
+        # Assert
+        self.assertTrue(is_session_empty)
 
     def test_session_manager_end_session_has_correct_timestamp(self):
         # Arrange
