@@ -3,7 +3,7 @@ from __future__ import division
 from datetime import datetime
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QTableWidget, QMessageBox
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QInputDialog, QTableWidget, QMessageBox
 
 from dls_barcode.data_store import Store
 from dls_barcode.data_store.store_loader import StoreLoader
@@ -15,7 +15,8 @@ from dls_barcode.data_store.session_manager import SessionManager
 
 RED = "; color: red"
 BLACK = "; color: black"
-BASIC_STYLE_SHEET = "font-size: 12pt"
+BASIC_STYLE_SHEET = "font-size: 11pt"
+BOLD_STYLE_SHEET = "font-size: 11pt; font-weight:bold"
 
 class ScanRecordTable(QGroupBox):
     """ GUI component. Displays a list of previous scan results. Selecting a scan causes
@@ -37,7 +38,6 @@ class ScanRecordTable(QGroupBox):
         # Create the session  manager and a file writer for sessions
         session_writer = StoreWriter(options.get_session_directory(), "session")
         self._session_manager = SessionManager(session_writer, self._store)
-        self._session_manager.new_session()
 
         self._barcodeTable = barcode_table
         self._imageFrame = image_frame
@@ -60,8 +60,10 @@ class ScanRecordTable(QGroupBox):
         self._table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
         #Session
+        self._session_active_label =  QtWidgets.QLabel()
+        self._session_active_label.setStyleSheet(BOLD_STYLE_SHEET + RED)
         self._current_session_id_label = QtWidgets.QLabel()
-        self._current_session_id_label.setStyleSheet(BASIC_STYLE_SHEET + RED)
+        self._current_session_id_label.setStyleSheet(BASIC_STYLE_SHEET + BLACK)
         self._new_session_button = QtWidgets.QPushButton("New Session")
         self._new_session_button.setStatusTip("Create a new session")
         self._new_session_button.clicked.connect(self._new_session_clicked)
@@ -83,6 +85,8 @@ class ScanRecordTable(QGroupBox):
         hbox.addWidget(self._new_session_button)
         hbox.addWidget(self._save_session_button)
         hbox.addWidget(self._end_session_button)
+        hbox.addStretch(1)
+        hbox.addWidget(self._session_active_label)
         hbox.addStretch(1)
         hbox.addWidget(self._current_session_id_label)
         vbox.addLayout(hbox)
@@ -191,13 +195,14 @@ class ScanRecordTable(QGroupBox):
 
     def _update_session(self):
         if self._session_manager.current_session_id:
-            self._current_session_id_label.setStyleSheet(BASIC_STYLE_SHEET + BLACK)
+            self._session_active_label.setText("Session Active")
             self._current_session_id_label.setText(
-                "Session active: {}".format(self._session_manager.current_session_timestamp)
+                "{} {}".format(self._session_manager.visit_code,
+                    self._session_manager.current_session_timestamp)
             )
         else:
-            self._current_session_id_label.setStyleSheet(BASIC_STYLE_SHEET + RED)
-            self._current_session_id_label.setText("No active session, showing all results in store")
+            self._session_active_label.setText("No Session Active")
+            self._current_session_id_label.setText("Showing all results in store")
         self._imageFrame.clear_frame("")
         self._load_store_records()
 
@@ -209,8 +214,16 @@ class ScanRecordTable(QGroupBox):
         self._save_session_button.setDisabled(False)
         self._end_session_button.setDisabled(False)
         QTimer.singleShot(1000, lambda: self._new_session_button.setDisabled(False))
-        self._session_manager.new_session()
-        self._update_session()
+
+        visit_code, ok = self._input_visit_code()
+        while(ok and not visit_code):
+            visit_code, ok = self._input_visit_code()
+        if ok:
+            self._session_manager.new_session(visit_code)
+            self._update_session()
+        else:
+            self._save_session_button.setEnabled(False)
+            self._end_session_button.setEnabled(False)
 
     def _end_session_clicked(self):
         """Called when the 'End Session' button is clicked. Ends the active session"""
@@ -227,6 +240,19 @@ class ScanRecordTable(QGroupBox):
             "Records saved to {}".format(self._session_manager.last_saved_file)
             if were_records_saved else "No records to save")
         reply = QMessageBox.information(self, 'Save Session', saved_msg, QMessageBox.Ok)
+
+    def _input_visit_code(self):
+        """Called from _new_session_clicked to get visit code"""
+        visit_code_dialog = QInputDialog(self)
+        visit_code_dialog.resize(300, 50)
+        visit_code_dialog.setWindowTitle("Input visit code")
+        visit_code_dialog.setInputMode(QInputDialog.TextInput)
+        visit_code_dialog.setLabelText("Visit code:")
+        visit_code_dialog.setWhatsThis("Enter the visit code. "
+            "Illegal filename characters will be removed.")
+        ok = visit_code_dialog.exec_()
+        visit_code = visit_code_dialog.textValue()
+        return visit_code, ok
 
     def is_latest_holder_barcode(self, holder_barcode):
         return self._store.is_latest_holder_barcode(holder_barcode, self._session_manager.current_session_id)

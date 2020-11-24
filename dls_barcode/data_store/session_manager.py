@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 import time
 
 
@@ -14,9 +15,10 @@ class SessionManager:
         self._store = store
         self._last_saved_file = ""
 
-    def new_session(self):
+    def new_session(self, visit_code):
         """Start a new session"""
         self.current_session_id = time.time()
+        self.visit_code = re.sub(r'[\\/*?:"<>|\ ]',"",visit_code)
         self.current_session_timestamp = datetime.fromtimestamp(
             self.current_session_id
         ).strftime("%H:%M:%S %d/%m/%Y")
@@ -32,7 +34,7 @@ class SessionManager:
         if records:
             file_time = datetime.fromtimestamp(self.current_session_id
                 ).strftime("%H%M%S_%d%m%Y")
-            session_fname = "session_{}".format(file_time)
+            session_fname = "{}_{}".format(self.visit_code, file_time)
             self._session_writer.set_file_name(session_fname)
             self._session_writer.to_csv_file(records)
             self.last_saved_file = self._session_writer.get_full_csv_path()
