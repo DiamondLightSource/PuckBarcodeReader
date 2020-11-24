@@ -44,7 +44,6 @@ def main(config_file, version):
     manager.initialise_timers()
 
     log.debug('2) timers initialised')
-    manager.initialise_scanner()
     sys.exit(app.exec_())
 
 

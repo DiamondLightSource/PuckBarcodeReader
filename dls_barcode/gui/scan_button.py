@@ -22,7 +22,7 @@ class ScanButton(QGroupBox):
 
         self._scan_button.setMaximumWidth(100)
 
-        self.setStopLayout()
+        self.setStartLayout()
         vbox = QVBoxLayout()
         vbox.addWidget(self._scan_button)
         self.setLayout(vbox)
