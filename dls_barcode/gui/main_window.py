@@ -98,8 +98,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
-    def set_actions_triger(self, cleanup, initialise_scanner, camera_capture_alive):
+    def set_actions_triger(self, cleanup, cleanup_logging, initialise_scanner, camera_capture_alive):
         self._cleanup = cleanup
+        self._cleanup_logging = cleanup_logging
         self._initialise_scanner = initialise_scanner
         self._camera_capture_alive = camera_capture_alive
         self._scan_button.click_action(self._on_scan_action_clicked)
@@ -133,6 +134,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
         self._cleanup()
+        self._cleanup_logging()
         event.accept()
 
     def displayScanCompleteMessage(self):

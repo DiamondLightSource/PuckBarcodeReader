@@ -11,9 +11,10 @@ class TestMainManager(unittest.TestCase):
     def setUp(self):
         self._ui = MagicMock()
         self._config = MagicMock()
+        self._process_logger = MagicMock()
         self._list_of_calls = []
         #initialise manager
-        self._manager = MainManager(self._ui, self._config)
+        self._manager = MainManager(self._ui, self._config, self._process_logger)
         self._manager._camera_switch = MagicMock()
         self._manager._camera_scanner = MagicMock()
 
