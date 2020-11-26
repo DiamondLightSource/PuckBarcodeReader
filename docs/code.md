@@ -1,21 +1,21 @@
 Using the Source Code - Windows
 ===============================
-This application is written in Python (v3.5) and was developed under Windows but should be portable to other platforms.
+This application is written in Python (v3.7) and was developed under Windows but should be portable to other platforms.
 
-The following steps will help you prepare an appropriate Python environment to run this program. These instructions assume that you will use the 32-bit version of Python 3.5.1, but the barcode scanner should also run correctly under other versions of Python (e.g. 2.7, 3.4, 64bit).
+The following steps will help you prepare an appropriate Python environment to run this program. These instructions assume that you will use the 32-bit version of Python 3.7.9, but the barcode scanner should also run correctly under other versions of Python (e.g. 2.7, 3.4, 64bit).
 
-* Install the appropriate version of Python by downloading the Windows binary installer from <https://www.python.org/downloads/release/python-351/>
+* Install the appropriate version of Python by downloading the Windows binary installer from <https://www.python.org/downloads/release/python-379/>
     * You want the one labelled 'Windows x86 MSI installer'
     * During installation, make sure you check ‘Add python.exe to system path’.
     
-* The following packages are required:
-    * pyperclip
+* The following packages are required (versions compatibile with python 3.7.9):
+    * pyperclip==1.8.1
     * enum [only if using Python v2.7]
-    * numpy
-    * scipy
-    * opencv-python==3.1.0.5
-    * PyQt5
-    
+    * numpy==1.19.4
+    * scipy==1.5.4
+    * opencv-python==4.4.0.46
+    * PyQt5==5.15.1
+
 * All of these packages can be installed using `pip`. To do this:
     * Create a new virtual environment eg.`python3 -m venv my-env`
     * activate the environment - run `my-env\Scripts\activate.bat`
