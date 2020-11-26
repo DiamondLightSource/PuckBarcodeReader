@@ -73,10 +73,14 @@ class ScanRecordTable(QGroupBox):
         self._discard_session_button = QtWidgets.QPushButton("Discard Session")
         self._discard_session_button.setStatusTip("Discard the current session without saving")
         self._discard_session_button.clicked.connect(self._discard_session_clicked)
+        self._edit_visit_code_button = QtWidgets.QPushButton("Edit Visit Code")
+        self._edit_visit_code_button.setStatusTip("Edit the visit code")
+        self._edit_visit_code_button.clicked.connect(self._edit_visit_code_clicked)
 
         self._new_session_button.setMaximumWidth(120)
         self._end_session_button.setMaximumWidth(120)
         self._discard_session_button.setMaximumWidth(120)
+        self._edit_visit_code_button.setMaximumWidth(120)
 
         vbox = QVBoxLayout()
 
@@ -96,6 +100,7 @@ class ScanRecordTable(QGroupBox):
         hbox = QHBoxLayout()
         hbox.setSpacing(0)
         hbox.addWidget(self._current_session_id_label)
+        hbox.addWidget(self._edit_visit_code_button)
         vbox.addLayout(hbox)
 
         # Delete button - deletes selected records
@@ -209,11 +214,13 @@ class ScanRecordTable(QGroupBox):
                 self._session_manager.visit_code,
                 self._session_manager.current_session_timestamp)
             )
+            self._edit_visit_code_button.setVisible(True)
         else:
             self._session_active_label.setText("No Session Active")
             self._current_session_id_label.setText("Showing all results in store")
             self._end_session_button.setEnabled(False)
             self._discard_session_button.setEnabled(False)
+            self._edit_visit_code_button.setVisible(False)
         self._imageFrame.clear_frame("")
         self._load_store_records()
 
@@ -227,8 +234,6 @@ class ScanRecordTable(QGroupBox):
         QTimer.singleShot(1000, lambda: self._new_session_button.setEnabled(False))
 
         visit_code, ok = self._input_visit_code()
-        while(ok and not visit_code):
-            visit_code, ok = self._input_visit_code()
         if ok:
             self._session_manager.new_session(visit_code)
             self._update_session()
@@ -246,6 +251,12 @@ class ScanRecordTable(QGroupBox):
         self._new_session_button.setEnabled(True)
         self._session_manager.end_session()
         self._update_session()
+
+    def _edit_visit_code_clicked(self):
+        if self._session_manager.current_session_id:
+            visit_code, ok = self._input_visit_code()
+            self._session_manager.edit_visit_code(visit_code)
+            self._update_session()
 
     def _discard_session_clicked(self):
         """Called when the 'Discard Session' button is clicked.
@@ -268,15 +279,17 @@ class ScanRecordTable(QGroupBox):
 
     def _input_visit_code(self):
         """Called from _new_session_clicked to get visit code"""
-        visit_code_dialog = QInputDialog(self)
-        visit_code_dialog.resize(300, 50)
-        visit_code_dialog.setWindowTitle("Input visit code")
-        visit_code_dialog.setInputMode(QInputDialog.TextInput)
-        visit_code_dialog.setLabelText("Visit code:")
-        visit_code_dialog.setWhatsThis("Enter the visit code. "
-            "Illegal filename characters will be removed.")
-        ok = visit_code_dialog.exec_()
-        visit_code = visit_code_dialog.textValue()
+        visit_code, ok = ("", True)
+        while(ok and not visit_code):
+            visit_code_dialog = QInputDialog(self)
+            visit_code_dialog.resize(300, 50)
+            visit_code_dialog.setWindowTitle("Input visit code")
+            visit_code_dialog.setInputMode(QInputDialog.TextInput)
+            visit_code_dialog.setLabelText("Visit code:")
+            visit_code_dialog.setWhatsThis("Enter the visit code. "
+                "Illegal filename characters will be removed.")
+            ok = visit_code_dialog.exec_()
+            visit_code = visit_code_dialog.textValue()
         return visit_code, ok
 
     def _check_discard(self):
