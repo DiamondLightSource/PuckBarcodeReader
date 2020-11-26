@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QMessageBox
 
@@ -20,6 +22,8 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def __init__(self, config, version, flags, *args, **kwargs):
 
         super().__init__(flags, *args, **kwargs)
+        self._log = logging.getLogger(".".join([__name__]))
+
         self._config = config
         self._version = version
         self._cleanup = None
@@ -117,7 +121,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
     def _on_scan_action_clicked(self):
-        print("MAIN: Scan menu clicked")
+        self._log.debug("MAIN: Scan menu clicked")
         if not self._camera_capture_alive():
             self._initialise_scanner()
             self._scan_button.setDelayedStopLayout()

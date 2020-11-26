@@ -1,5 +1,6 @@
 from __future__ import division
 
+import logging
 import math
 
 import cv2
@@ -27,6 +28,7 @@ class SquareLocator:
     TXT_OFFSET = 0.5 * (1 + TXT_HEIGHT) + GAP
 
     def __init__(self):
+        self._log = logging.getLogger(".".join([__name__]))
         self.metric_cache = dict()
         self.count = 0
 
@@ -58,7 +60,7 @@ class SquareLocator:
         if self.DEBUG and fp is not None:
             img = _draw_finder_pattern(binary_image, best_transform, fp)
             img.rescale(4).popup()
-            print(self.count)
+            self._log.debug(self.count)
 
         return fp
 

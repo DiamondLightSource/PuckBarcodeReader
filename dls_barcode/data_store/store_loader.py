@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dls_barcode.data_store.record import Record
@@ -7,6 +8,7 @@ from dls_util.file import FileManager
 class StoreLoader:
 
     def __init__(self, directory, file_name, file_manager=FileManager()):
+        self._log = logging.getLogger(".".join([__name__]))
         self._directory = directory
         self._file_name = file_name
         self._file_manager= file_manager
@@ -36,4 +38,4 @@ class StoreLoader:
                 record = Record.from_string(line)
                 self._records.append(record)
             except Exception:
-                print("Failed to parse store Record: {}".format(line))
+                self._log.debug("Failed to parse store Record: {}".format(line))
