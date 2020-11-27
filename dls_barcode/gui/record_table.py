@@ -1,5 +1,7 @@
 from __future__ import division
 
+import logging
+
 from datetime import datetime
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer
@@ -27,6 +29,8 @@ class ScanRecordTable(QGroupBox):
 
     def __init__(self, barcode_table, image_frame, options):
         super(ScanRecordTable, self).__init__()
+
+        self._log = logging.getLogger(".".join([__name__]))
 
         # Read the store from file
         store_writer = StoreWriter(options.get_store_directory(), "store")
@@ -237,6 +241,7 @@ class ScanRecordTable(QGroupBox):
         if ok:
             self._session_manager.new_session(visit_code)
             self._update_session()
+            self._log.info("New session with visit code {}".format(visit_code))
         else:
             self._discard_session_button.setEnabled(False)
             self._end_session_button.setEnabled(False)
@@ -257,6 +262,7 @@ class ScanRecordTable(QGroupBox):
             visit_code, ok = self._input_visit_code()
             self._session_manager.edit_visit_code(visit_code)
             self._update_session()
+            self._log.info("Visit code changed to {}".format(visit_code))
 
     def _discard_session_clicked(self):
         """Called when the 'Discard Session' button is clicked.
@@ -276,6 +282,7 @@ class ScanRecordTable(QGroupBox):
             "Records saved to {}".format(self._session_manager.last_saved_file)
             if were_records_saved else "No records to save")
         reply = QMessageBox.information(self, 'Save Session', saved_msg, QMessageBox.Ok)
+        self._log.info("Save session requested: {}".format(saved_msg))
 
     def _input_visit_code(self):
         """Called from _new_session_clicked to get visit code"""
