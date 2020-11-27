@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QMessageBox
 
@@ -20,6 +22,8 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def __init__(self, config, version, flags, *args, **kwargs):
 
         super().__init__(flags, *args, **kwargs)
+        self._log = logging.getLogger(".".join([__name__]))
+
         self._config = config
         self._version = version
         self._cleanup = None
@@ -98,8 +102,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
-    def set_actions_triger(self, cleanup, initialise_scanner, camera_capture_alive):
+    def set_actions_triger(self, cleanup, cleanup_logging, initialise_scanner, camera_capture_alive):
         self._cleanup = cleanup
+        self._cleanup_logging = cleanup_logging
         self._initialise_scanner = initialise_scanner
         self._camera_capture_alive = camera_capture_alive
         self._scan_button.click_action(self._on_scan_action_clicked)
@@ -116,7 +121,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
     def _on_scan_action_clicked(self):
-        print("MAIN: Scan menu clicked")
+        self._log.debug("MAIN: Scan menu clicked")
         if not self._camera_capture_alive():
             self._initialise_scanner()
             self._scan_button.setDelayedStopLayout()
@@ -133,6 +138,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
         self._cleanup()
+        self._cleanup_logging()
         event.accept()
 
     def displayScanCompleteMessage(self):

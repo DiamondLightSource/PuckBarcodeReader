@@ -9,6 +9,7 @@ from .scanner_worker import ScannerWorker
 from .camera_position import CameraPosition
 from .stream_action import StreamAction
 from .capture_command import CaptureCommand
+from dls_util.logging.process_logging import ProcessWithLogging
 
 
 class CameraScanner:
@@ -42,7 +43,7 @@ class CameraScanner:
                         self._camera_configs)
 
         # The capture process is always running: we initialise the cameras only once because it's time consuming
-        self._capture_process = multiprocessing.Process(target=CameraScanner._capture_worker, args=capture_args)
+        self._capture_process = ProcessWithLogging(target=CameraScanner._capture_worker, args=capture_args)
         self._capture_process.start()
 
         self._scanner_process = None
@@ -53,7 +54,7 @@ class CameraScanner:
         log = logging.getLogger(".".join([__name__, self.__class__.__name__]))
         log.debug("8) scan start triggered")
         scanner_args = (self._task_q, self._overlay_q, self._result_q, self._message_q, self._scanner_kill_q, self._config, cam_position)
-        self._scanner_process = multiprocessing.Process(target=CameraScanner._scanner_worker, args=scanner_args)
+        self._scanner_process = ProcessWithLogging(target=CameraScanner._scanner_worker, args=scanner_args)
 
         self._capture_command_q.put(CaptureCommand(StreamAction.START, cam_position))
         self._scanner_process.start()

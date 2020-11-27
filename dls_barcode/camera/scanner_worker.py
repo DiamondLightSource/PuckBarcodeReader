@@ -1,3 +1,4 @@
+import logging
 import time
 
 from dls_util.image import Image
@@ -18,8 +19,11 @@ class ScannerWorker:
     this previous plates so that we don't have to re-read any of the previously captured barcodes
     (because this is a relatively expensive operation).
     """
+    def __init__(self):
+        self._log = logging.getLogger(".".join([__name__]))
+
     def run(self, task_queue, overlay_queue, result_queue, message_queue, kill_queue, config, cam_position):
-        print("SCANNER start")
+        self._log.debug("SCANNER start")
         self._last_puck_time = time.time()
 
         SlotScanner.DEBUG = config.slot_images.value()
@@ -30,7 +34,7 @@ class ScannerWorker:
         display = True
         while kill_queue.empty():
             if display:
-                print("--- scanner inside loop")
+                self._log.debug("--- scanner inside loop")
                 display = False
 
             if task_queue.empty():
@@ -39,7 +43,7 @@ class ScannerWorker:
             frame = task_queue.get(True)
             self._process_frame(frame, config, overlay_queue, result_queue, message_queue)
 
-        print("SCANNER stop & kill")
+        self._log.debug("SCANNER stop & kill")
 
     def _process_frame(self, frame, config, overlay_queue, result_queue, message_queue):
         image = Image(frame)
