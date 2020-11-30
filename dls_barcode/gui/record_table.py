@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QInputDialog, QTableWidget, QMessageBox
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QFileDialog, QHBoxLayout, QInputDialog, QTableWidget, QMessageBox
 
 from dls_barcode.data_store import Store
 from dls_barcode.data_store.store_loader import StoreLoader
@@ -250,12 +250,13 @@ class ScanRecordTable(QGroupBox):
         """Called when the 'Save and End Session' button is clicked.
         Ends the active session"""
         # Save before ending
-        self._save_session()
-        self._discard_session_button.setEnabled(False)
-        self._end_session_button.setEnabled(False)
-        self._new_session_button.setEnabled(True)
-        self._session_manager.end_session()
-        self._update_session()
+        ok = self._save_session()
+        if ok:
+            self._discard_session_button.setEnabled(False)
+            self._end_session_button.setEnabled(False)
+            self._new_session_button.setEnabled(True)
+            self._session_manager.end_session()
+            self._update_session()
 
     def _edit_visit_code_clicked(self):
         if self._session_manager.current_session_id:
@@ -277,12 +278,21 @@ class ScanRecordTable(QGroupBox):
     def _save_session(self):
         """Called when the 'Save Session' button is clicked.
         Saves csv file with records in current session"""
-        were_records_saved = self._session_manager.save_session()
-        saved_msg = (
-            "Records saved to {}".format(self._session_manager.last_saved_file)
-            if were_records_saved else "No records to save")
-        reply = QMessageBox.information(self, 'Save Session', saved_msg, QMessageBox.Ok)
-        self._log.info("Save session requested: {}".format(saved_msg))
+        session_dir = QFileDialog.getExistingDirectory(
+            self,
+            "Select folder to save session",
+            self._options.get_session_directory(),
+            QFileDialog.ShowDirsOnly
+        )
+        if session_dir:
+            self._session_manager.set_save_directory(session_dir)
+            were_records_saved = self._session_manager.save_session()
+            saved_msg = (
+                "Records saved to {}".format(self._session_manager.last_saved_file)
+                if were_records_saved else "No recordqs to save")
+            reply = QMessageBox.information(self, 'Save Session', saved_msg, QMessageBox.Ok)
+            self._log.info("Save session requested: {}".format(saved_msg))
+        return bool(session_dir)
 
     def _input_visit_code(self):
         """Called from _new_session_clicked to get visit code"""

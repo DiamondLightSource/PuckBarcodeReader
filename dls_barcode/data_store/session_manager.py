@@ -16,6 +16,9 @@ class SessionManager:
         self._store = store
         self._last_saved_file = ""
 
+    def set_save_directory(self, session_save_directory):
+        self._session_writer.set_directory(session_save_directory)
+
     def new_session(self, visit_code):
         """Start a new session"""
         self.current_session_id = time.time()
