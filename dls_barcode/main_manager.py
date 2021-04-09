@@ -10,6 +10,7 @@ from dls_barcode.camera.scanner_message import CameraErrorMessage
 
 from dls_util import Beeper
 from dls_util.cv.capture_manager import CaptureManager
+from dls_util.logging.process_logging import configure_new_process, ProcessLogger
 
 RESULT_TIMER_PERIOD = 1000  # ms
 VIEW_TIMER_PERIOD = 1  # ms
@@ -18,7 +19,7 @@ MESSAGE_TIMER_PERIOD = 1  # ms
 
 class MainManager:
 
-    def __init__(self, ui, config):
+    def __init__(self, ui, config, process_logger):
 
         self._ui = ui
         self._config = config
@@ -28,12 +29,17 @@ class MainManager:
         self._camera_switch = None
         self._scan_completed_message_flag = False
 
+        # Set the logger
+        self._process_logger = process_logger
+        self._log = logging.getLogger(".".join([__name__]))
+
         # Queue that holds new results generated in continuous scanning mode
         self._result_queue = multiprocessing.Queue()
         self._view_queue = multiprocessing.Queue()
         self._message_queue = multiprocessing.Queue()
         # initialise all actions
-        self._ui.set_actions_triger(self._cleanup, self.initialise_scanner, self._camera_capture_alive)
+        self._ui.set_actions_triger(self._cleanup, self._cleanup_logging,
+            self.initialise_scanner, self._camera_capture_alive)
         # breaks the cameras - need something better
         #e = self.test_cameras()
         #if e is not None:
@@ -63,11 +69,14 @@ class MainManager:
         self._camera_switch = None
         self._ui.resetCountdown()
 
+    def _cleanup_logging(self):
+        self._process_logger.stop()
+        self._process_logger.join()
+
     def initialise_scanner(self):
-        log = logging.getLogger(".".join([__name__]))
-        log.debug("3) camera scanner initialisation")
+        self._log.debug("3) camera scanner initialisation")
         self._camera_scanner = CameraScanner(self._result_queue, self._view_queue, self._message_queue, self._config)
-        log.debug("4) camera switch initialisation")
+        self._log.debug("4) camera switch initialisation")
         self._camera_switch = CameraSwitch(self._camera_scanner, self._config.top_camera_timeout)
 
         self._restart_live_capture_from_side()
@@ -76,14 +85,12 @@ class MainManager:
         return self._camera_scanner is not None and self._camera_switch is not None
 
     def _restart_live_capture_from_top(self):
-        log = logging.getLogger(".".join([__name__]))
-        log.debug("starting live capture form top")
+        self._log.debug("starting live capture form top")
         self._camera_switch.restart_live_capture_from_top()
         self._ui.startCountdown(self._config.top_camera_timeout.value())
 
     def _restart_live_capture_from_side(self):
-        log = logging.getLogger(".".join([__name__]))
-        log.debug("5) starting live capture form side")
+        self._log.debug("5) starting live capture form side")
         self._reset_msg_timer()
         self._camera_switch.restart_live_capture_from_side()
 
@@ -158,8 +165,7 @@ class MainManager:
 
         # Barcode successfully read
         Beeper.beep()
-        log = logging.getLogger(".".join([__name__]))
-        log.debug("puck barcode recorded")
+        self._log.debug("puck barcode recorded")
         holder_barcode = plate.barcodes()[0]
         if not self._ui.isLatestHolderBarcode(holder_barcode):
             self._latest_holder_barcode = holder_barcode
@@ -168,9 +174,8 @@ class MainManager:
 
     def _read_top_scan(self):
         if self._camera_switch.is_top_scan_timeout():
-            log = logging.getLogger(".".join([__name__]))
             extra = ({"timeout_value": 1})
-            log = logging.LoggerAdapter(log, extra)
+            log = logging.LoggerAdapter(self._log, extra)
             log.info("scan timeout", extra)
             if self._scan_completed_message_flag:
                 self._ui.displayScanCompleteMessage()
@@ -196,9 +201,8 @@ class MainManager:
 
         # Barcodes successfully read
         Beeper.beep()
-        log = logging.getLogger(".".join([__name__]))
         extra = ({"scan_time": self._camera_switch.get_scan_time(), "timeout_value": 0})
-        log = logging.LoggerAdapter(log, extra)
+        log = logging.LoggerAdapter(self._log, extra)
         log.info("Scan Completed", extra)
         self._ui.displayScanCompleteMessage()
         self._ui.scanCompleted()

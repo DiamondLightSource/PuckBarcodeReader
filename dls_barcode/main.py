@@ -12,6 +12,7 @@ from PyQt5 import QtWidgets
 import argparse
 from dls_barcode.version import VERSION
 from dls_util.file import FileManager
+from dls_util.logging.process_logging import configure_new_process, ProcessLogger
 
 path.append(dirname(path[0]))
 
@@ -28,22 +29,27 @@ else:
 
 
 def main(config_file, version):
+    # Start process logger
+    process_logger = ProcessLogger.create_global_logger()
+    process_logger.start()
+    configure_new_process(process_logger.queue)
+
+    log = logging.getLogger(".".join([__name__]))
+    log.info("CONFIG: " + config_file)
+
     app = QtWidgets.QApplication(sys.argv)
     config = BarcodeConfig(config_file, FileManager())
     ui = DiamondBarcodeMainWindow(config, version, None)
-    manager = MainManager(ui, config)
+    manager = MainManager(ui, config, process_logger)
     manager.initialise_timers()
-    log = logging.getLogger(".".join([__name__]))
+
     log.debug('2) timers initialised')
     manager.initialise_scanner()
     sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
-    logconfig.setup_logging()
-    #logconfig.set_additional_handler("log.log")
     # Multiprocessing support for PyInstaller bundling in Windows
-    log = logging.getLogger(".".join([__name__]))
     if sys.platform.startswith('win'):
         import multiprocessing
         multiprocessing.freeze_support()
@@ -52,7 +58,5 @@ if __name__ == '__main__':
     parser.add_argument("-cf", "--config_file", type=str, default=DEFAULT_CONFIG_FILE,
                         help="The path of the configuration file (default=" + DEFAULT_CONFIG_FILE + ")")
     args = parser.parse_args()
-    log.info("CONFIG: " + args.config_file)
-    #print("CONFIG: " + args.config_file)
 
     main(args.config_file, VERSION)

@@ -6,6 +6,8 @@ class DatamatrixByteInterpreter:
     def interpret_bytes(data_bytes):
         """ Converts the raw set of bytes from the datamatrix into an ASCII .
         """
+        log = logging.getLogger(".".join([__name__]))
+
         DBI = DatamatrixByteInterpreter
         message = []
 
@@ -65,9 +67,9 @@ class DatamatrixByteInterpreter:
                 raise error
             elif byte == 0:
                 error = ValueError("Code {} is not used in Datamatrix specification".format(byte))
-                print(error)
-                raise error
 
+                log.error(error)
+                
         return ''.join(m for m in message)
 
     @staticmethod

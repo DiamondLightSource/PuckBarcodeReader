@@ -1,5 +1,6 @@
 from __future__ import division
 
+import logging
 import math
 import os
 import time
@@ -17,6 +18,8 @@ class SlotScanner:
     DEBUG_DIR = "./debug"
 
     def __init__(self, image, barcodes):
+        self._log = logging.getLogger(".".join([__name__]))
+
         self.image = image
         self.barcodes = barcodes
 
@@ -127,7 +130,7 @@ class SlotScanner:
             return
 
         if barcode.is_valid():
-            print("DEBUG - WIGGLES SUCCESSFUL - " + locate_type)
+            self._log.debug("WIGGLES SUCCESSFUL - " + locate_type)
             result = "_SUCCESS"
         else:
             result = "_FAIL"

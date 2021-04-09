@@ -1,4 +1,5 @@
 import cv2
+import logging
 import numpy as np
 import math
 import os
@@ -25,6 +26,7 @@ class UnipuckLocator:
     The position of the puck is known once the position of the feature is found."""
 
     def __init__(self, image):
+        self._log = logging.getLogger(".".join([__name__]))
         self.image = image.img.copy()
         self.unipuck_contours = None
 
@@ -105,6 +107,7 @@ class UnipuckLocator:
         if os.path.exists(f_path):
             return cv2.imread(f_path, 0)
         else:
+            self._log.error("Cannot find {}".format(f_path))
             raise IOError(2, "Cannot find", f_path)
 
     @staticmethod

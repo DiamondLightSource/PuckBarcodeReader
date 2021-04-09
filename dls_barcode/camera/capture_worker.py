@@ -1,3 +1,4 @@
+import logging
 import time
 import queue
 
@@ -21,7 +22,8 @@ class CaptureWorker:
     correct camera by reading the command from a start/stop command queue.
     """
     def __init__(self, camera_configs):
-        print("CAPTURE init")
+        self._log = logging.getLogger(".".join([__name__]))
+        self._log.debug("CAPTURE init")
         self._streams = {}
         self._camera_configs = camera_configs
         for cam_position, cam_config in self._camera_configs.items():
@@ -35,15 +37,15 @@ class CaptureWorker:
             command = command_queue.get()
             if command.get_action() == StreamAction.START:
                 camera_position_name = command.get_camera_position_name()
-                print("CAPTURE start: " + camera_position_name)
+                self._log.debug("CAPTURE start: " + camera_position_name)
                 self._run_capture(self._streams[command.get_camera_position()], camera_position_name, task_queue, view_queue, overlay_queue, command_queue, message_queue)
 
         # Clean up
-        print("CAPTURE kill & cleanup")
+        self._log.debug("CAPTURE kill & cleanup")
         for _, stream in self._streams.items():
             stream.release_resources()
 
-        print("- capture all cleaned")
+        self._log.debug("- capture all cleaned")
 
     def _run_capture(self, stream, camera_positon, task_queue, view_queue, overlay_queue, stop_queue, message_queue):
         # Store the latest image overlay which highlights the puck
@@ -53,7 +55,7 @@ class CaptureWorker:
         display = True
         while stop_queue.empty():
             if display:
-                print("--- capture inside loop")
+                self._log.debug("--- capture inside loop")
                 display = False
 
             # Capture the next frame from the camera
@@ -86,11 +88,11 @@ class CaptureWorker:
 
             view_queue.put(Image(frame))
 
-        print("CAPTURE stop & flush queues")
+        self._log.debug("CAPTURE stop & flush queues")
         self._flush_queue(task_queue)
-        print("--- capture task Q flushed")
+        self._log.debug("--- capture task Q flushed")
         self._flush_queue(view_queue)
-        print("--- capture view Q flushed")
+        self._log.debug("--- capture view Q flushed")
 
 
 
