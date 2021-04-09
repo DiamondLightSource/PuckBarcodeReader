@@ -47,7 +47,7 @@ default_config = {
             "level": "INFO",
             # Obviously a DLS-specific configuration: the graylog server address and port
             # Use the input "Load Balanced GELF TCP" on graylog2.
-            "host": "graylog2",# "localhost", - use locaklhost for tests
+            "host": "graylog2.diamond.ac.uk",# "localhost", - use locaklhost for tests
             "port": 12201,
             "debug": True,
             #  The following custom fields will be disabled if setting this False
