@@ -6,23 +6,20 @@ class CameraConfig:
         self.width = width
         self.height = height
 
-    def get_number_item_value(self):
+    def get_number(self):
         return self.camera_number.value()
 
-    def get_width_item_value(self):
-        return self.width.value()
+    def get_width(self):
+        return self.width
 
-    def get_height_item_value(self):
-        return self.height.value()
+    def get_height(self):
+        return self.height
 
-    def set_number_item_value(self, number):
+    def set_number(self, number):
         self.camera_number.set(number)
 
-    def set_width_item_value(self, width):
-        self.width.set(width)
+    def set_width(self, width):
+        self.width = width
 
-    def set_height_item_value(self, height):
-        self.height.set(height)
-
-
-
+    def set_height(self, height):
+        self.height = height

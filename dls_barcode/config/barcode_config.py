@@ -9,6 +9,10 @@ from dls_util.config import Config, DirectoryConfigItem, ColorConfigItem, \
 from .camera_config import CameraConfig
 
 IS_BUNDLED = getattr(sys, 'frozen', False)
+TOP_CAMERA_WIDTH = 1600 # 2048
+TOP_CAMERA_HEIGHT = 1200 # 1536
+SIDE_CAMERA_WIDTH = 640
+SIDE_CAMERA_HEIGHT = 480
 
 
 class BarcodeConfig(Config):
@@ -55,12 +59,8 @@ class BarcodeConfig(Config):
         self.slot_image_directory = add(DirectoryConfigItem, "Debug Directory", default="../debug-output/")
 
         self.top_camera_number = add(IntConfigItem, "Top Camera Number", default=1)
-        self.top_camera_width = add(IntConfigItem, "Top Camera Width", default=1600)
-        self.top_camera_height = add(IntConfigItem, "Top Camera Height", default=1200)
 
         self.side_camera_number = add(IntConfigItem, "Side Camera Number", default=2)
-        self.side_camera_width = add(IntConfigItem, "Side Camera Width", default=1600)
-        self.side_camera_height = add(IntConfigItem, "Side Camera Height", default=1200)
 
         self.initialize_from_file()
 
@@ -83,10 +83,10 @@ class BarcodeConfig(Config):
         return self.color_empty.value()
 
     def get_top_camera_config(self):
-        return CameraConfig(self.top_camera_number, self.top_camera_width, self.top_camera_height)
+        return CameraConfig(self.top_camera_number, TOP_CAMERA_WIDTH, TOP_CAMERA_HEIGHT)
 
     def get_side_camera_config(self):
-        return CameraConfig(self.side_camera_number, self.side_camera_width, self.side_camera_height)
+        return CameraConfig(self.side_camera_number, SIDE_CAMERA_WIDTH, SIDE_CAMERA_HEIGHT)
 
 
 

@@ -28,3 +28,4 @@ class MessageFactory:
         return Message(MessageType.WARNING, "camera can not be found.\nEnter the configuration to select the camera.", lifetime=0)
 
 
+

@@ -67,8 +67,9 @@ class DatamatrixByteInterpreter:
                 raise error
             elif byte == 0:
                 error = ValueError("Code {} is not used in Datamatrix specification".format(byte))
-                log.error(error)
 
+                log.error(error)
+                
         return ''.join(m for m in message)
 
     @staticmethod
