@@ -1,12 +1,13 @@
 import logging
 import time
 
-from dls_util.image import Image
-from dls_util import Beeper
+
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
 from .camera_position import CameraPosition
-from .plate_overlay import PlateOverlay
+from .frame_processor import FrameProcessor
+from .result_processor import ResultPorcessor
+
 from .scanner_message import NoNewBarcodeMessage, ScanErrorMessage, NoNewPuckBarcodeMessage
 
 NO_PUCK_TIME = 2
@@ -46,38 +47,33 @@ class ScannerWorker:
         self._log.debug("SCANNER stop & kill")
 
     def _process_frame(self, frame, config, overlay_queue, result_queue, message_queue):
-        image = Image(frame)
-        gray_image = image.to_grayscale()
 
-        # If we have an existing partial plate, merge the new plate with it and only try to read the
-        # barcodes which haven't already been read. This significantly increases efficiency because
-        # barcode read is expensive.
-        scan_result = self._scanner.scan_next_frame(gray_image)
+        frame_processor = FrameProcessor(frame, self._scanner)
+        frame_processor.convert_to_gray()
+        scan_result = frame_processor.scan_frame()
 
-        if config.console_frame.value():
-            scan_result.print_summary()
+        result_porcessor = ResultPorcessor(scan_result, config)
 
-        if scan_result.success():
-            # Record the time so we can see how long its been since we last saw a puck
+        result_porcessor.print_summary()
+
+        if result_porcessor.result_success():
             self._last_puck_time = time.time()
+            result_porcessor.set_result_palte()
+            if result_porcessor.result_has_any_valid_barcodes():
+                o = result_porcessor.get_overlay()
+                overlay_queue.put(o)
+            if result_porcessor.result_has_any_new_barcode():
+                r = (result_porcessor.get_plate(), frame_processor.get_image())
+                result_queue.put(r)
 
-            plate = scan_result.plate()
-            if scan_result.any_valid_barcodes():
-                overlay_queue.put(PlateOverlay(plate, config))
-                self._plate_beep(plate, config.scan_beep.value())
-
-            if scan_result.any_new_barcodes():
-                result_queue.put((plate, image))
-        elif scan_result.any_valid_barcodes():
-            # We have read valid barcodes but they are not new, so the scanner didn't even output a plate
+        elif result_porcessor.result_has_any_valid_barcodes():
             self._last_puck_time = time.time()
-            if scan_result.geometry() is not None:
-                message_queue.put(NoNewBarcodeMessage()) #important used in the message logic
-            else:
-                message_queue.put(NoNewPuckBarcodeMessage())
-        elif scan_result.error() is not None and (time.time() - self._last_puck_time > NO_PUCK_TIME):
-            #TODO use log
-            message_queue.put(ScanErrorMessage(scan_result.error()))
+            m = result_porcessor.get_message()
+            message_queue.put(m)
+
+        elif result_porcessor.result_error and (time.time() - self._last_puck_time > NO_PUCK_TIME):
+            m = ScanErrorMessage(result_porcessor.get_result_error())
+            message_queue.put(m)
 
     def _create_scanner(self, cam_position, config):
         if cam_position == CameraPosition.SIDE:
@@ -91,12 +87,3 @@ class ScannerWorker:
             self._scanner = OpenScanner(barcode_sizes)
         else:
             self._scanner = GeometryScanner(plate_type, barcode_sizes)
-
-    def _plate_beep(self, plate, do_beep):
-        if not do_beep:
-            return
-
-        empty_fraction = (plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots
-        frequency = int(10000 * empty_fraction + 37)
-        duration = 200
-        Beeper.beep(frequency, duration)

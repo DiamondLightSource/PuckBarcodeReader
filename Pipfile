@@ -1,0 +1,18 @@
+[[source]]
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.org/simple"
+
+[dev-packages]
+
+[packages]
+pygelf = "*"
+pyqt5 = "*"
+opencv-python = "*"
+numpy = "*"
+pyperclip = "*"
+pylint = "*"
+scipy = "*"
+
+[requires]
+python_version = "3.6"

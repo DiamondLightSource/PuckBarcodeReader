@@ -10,7 +10,7 @@ class ContoursManager:
         self.contours = []
 
     def find_all(self):
-        _, self.contours, _ = cv2.findContours(self.image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        self.contours, _ = cv2.findContours(self.image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
     def get_lagerst(self):
         cnts = sorted(self.contours, key=cv2.contourArea, reverse=True)
