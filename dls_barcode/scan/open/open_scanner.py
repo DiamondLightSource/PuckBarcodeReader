@@ -29,6 +29,7 @@ class OpenScanner:
         try:
             barcodes = self._perform_frame_scan()
             result.set_barcodes(barcodes)
+            result.set_frame_image(self._frame_img)
         except NoBarcodesDetectedError as ex:
             # TODO: logging the error
             result.set_error(str(ex))

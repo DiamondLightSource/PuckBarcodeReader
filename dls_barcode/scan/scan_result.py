@@ -15,6 +15,7 @@ class ScanResult:
         self._geometry = None
         self._plate = None
         self._error = None
+        self._image = None
 
         self._start_time = 0
         self._scan_time = 0
@@ -58,7 +59,13 @@ class ScanResult:
 
     def set_error(self, value):
         self._error = value
+        
+    def set_frame_image(self, image):
+        self._image = image
 
+    def get_frame_image(self):
+        return self._image
+    
     ############################
     # Status Functions
     ############################

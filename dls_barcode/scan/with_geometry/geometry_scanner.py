@@ -27,7 +27,7 @@ class GeometryScanner:
         self._is_single_image = False
         self._frame_result = None
 
-    def scan_next_frame(self, frame_img, is_single_image=False):
+    def scan_next_frame(self, frame_img,is_single_image=False):
         self._new_frame()
 
         self._frame_img = frame_img
@@ -36,6 +36,7 @@ class GeometryScanner:
         try:
             self._perform_frame_scan()
             self._frame_result.set_plate(self._plate)
+            self._frame_result.set_frame_image(self._frame_img)
         #TODO: use logs
         except (NoBarcodesDetectedError, GeometryException, GeometryAdjustmentError) as ex:
             self._frame_result.set_error(str(ex))

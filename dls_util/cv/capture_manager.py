@@ -1,3 +1,4 @@
+from dls_util.cv.frame import Frame
 import cv2 as opencv
 
 _OPENCV_MAJOR = opencv.__version__[0]
@@ -36,7 +37,7 @@ class CaptureManager:
         self._set_height(self._camera.get_height())
 
     def get_frame(self):
-        return self._frame
+        return Frame(self._frame)
 
     def is_read_ok(self):
         return self._read_ok
@@ -48,11 +49,7 @@ class CaptureManager:
         if self._cap is not None:
             self._cap.release()
 
-    #def get_width(self):
-    #    return self._cap.get(_get_width_flag())
 
-    #def get_height(self):
-    #    return self._cap.get(_get_height_flag())
 
     def _set_width(self, width):
         # opencv adjusts the setting to the camera specification

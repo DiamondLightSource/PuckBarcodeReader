@@ -27,7 +27,7 @@ class CaptureWorker:
         self._streams = {}
         self._camera_configs = camera_configs
         for cam_position, cam_config in self._camera_configs.items():
-            self._streams[cam_position] = self._initialise_stream(cam_config)
+            self._streams[cam_position] = self._initialise_stream(cam_config, cam_position)
 
     def run(self, task_queue, view_queue, overlay_queue, command_queue, kill_queue, message_queue):
         while kill_queue.empty():

@@ -5,8 +5,7 @@ import time
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
 from .camera_position import CameraPosition
-from .frame_processor import FrameProcessor
-from .result_processor import ResultPorcessor
+
 
 from .scanner_message import NoNewBarcodeMessage, ScanErrorMessage, NoNewPuckBarcodeMessage
 

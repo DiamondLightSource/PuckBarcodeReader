@@ -19,8 +19,7 @@ class ResultPorcessor:
     def get_plate(self):
         return self._plate
 
-    def get_overlay(self):
-       
+    def get_overlay(self):      
         self._plate_beep(self._plate, self._config.scan_beep.value())
         return PlateOverlay(self._plate, self._config)
    
