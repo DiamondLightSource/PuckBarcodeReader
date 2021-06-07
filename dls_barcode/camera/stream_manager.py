@@ -46,9 +46,8 @@ class StreamManager:
         self.stream.read_frame()
         if self.stream.is_read_ok():
             frame = self.stream.get_frame()
-            #gray_frame = frame.convert_to_gray()
-            #result = self._scan_frame(frame)
-            return frame
+            result = self._scan_frame(frame)
+            return result
         else:
             return None # should be a message that read not ok
         

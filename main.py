@@ -1,3 +1,4 @@
+from dls_barcode.scan import scan_result
 import logging
 import sys
 
@@ -38,23 +39,18 @@ def main(config_file, version):
     ui = DiamondBarcodeMainWindow(config, version, None)
     
     manager = NewMainManager(config)
-    ui.set_actions_triger( manager)
-    result = None
-    i =0
     manager.initialise_scanner()
-    while  i<10:
-        
+    ui.set_actions_triger( manager)
+    result = scan_result.ScanResult(0)
 
-        result = manager.get_result()
+   
+    while  len(result.barcodes()) == 0:
         
-      
+        result = manager.get_result()
         if result is not None :
      
-            ui.displayPuckImage(result.convert_to_gray() )
-            i= i+1
-             
-        else:
-            result = None
+            ui.displayHolderImage(result.get_frame_image())
+ 
     manager.cleanup()
     sys.exit(app.exec_())
 

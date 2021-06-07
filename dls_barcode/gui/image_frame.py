@@ -20,7 +20,7 @@ class ImageFrame(QGroupBox):
         # Image frame - displays image of the currently selected scan record
         self._frame = ImageWidget()
         self._frame.setStyleSheet("background-color: white; color: red; font-size: 30pt; text-align: center")
-        self._frame.setMinimumWidth(700)
+        
         self._frame.setAlignment(Qt.AlignCenter)
         vbox = QVBoxLayout()
         vbox.addWidget(self._frame)
@@ -31,11 +31,12 @@ class ImageFrame(QGroupBox):
         self._frame.clear()
         self._frame.setText(message)
 
-    def display_puck_image(self, image):
+    def display_image(self, image):
         """ Called when a new row is selected on the record table. Displays the specified
         image (image of the highlighted scan) in the image frame
         """
         self._frame.clear()
+        self._frame.setMinimumWidth(700)
         self._frame.setAlignment(Qt.AlignCenter)
 
         if image is not None and image.is_valid():
@@ -43,3 +44,4 @@ class ImageFrame(QGroupBox):
             self._frame.setPixmap(pixmap)
         else:
             self._frame.setText("Image Not Found")
+            
