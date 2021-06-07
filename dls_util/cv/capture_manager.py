@@ -44,7 +44,7 @@ class CaptureManager:
 
     def read_frame(self):
         self._read_ok, self._frame = self._cap.read()
-
+       
     def release_resources(self):
         if self._cap is not None:
             self._cap.release()

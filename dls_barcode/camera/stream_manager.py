@@ -17,6 +17,9 @@ class StreamManager:
     def create_capture(self):
         self.stream.create_capture()
         
+    def release_capture(self):
+        self.stream.release_resources()
+        
    # def get_capture(self):
     #    return stream
     
@@ -43,9 +46,9 @@ class StreamManager:
         self.stream.read_frame()
         if self.stream.is_read_ok():
             frame = self.stream.get_frame()
-            gray_frame = frame.convert_to_gray()
-            result = self._scan_frame(gray_frame)
-            return result
+            #gray_frame = frame.convert_to_gray()
+            #result = self._scan_frame(frame)
+            return frame
         else:
             return None # should be a message that read not ok
         

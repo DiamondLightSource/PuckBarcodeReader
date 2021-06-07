@@ -102,9 +102,12 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
-    def set_actions_triger(self, cleanup, initialise_scanner):
-        self._cleanup = cleanup
-        self._initialise_scanner = initialise_scanner
+    def set_actions_triger(self,manager):
+        self._manager = manager
+        manager.initialise_scanner() 
+        result = manager.get_result()
+        if result is not None:
+            self.displayPuckImage(result.convert_to_gray() )
         self._scan_button.click_action(self._on_scan_action_clicked)
         self._menu_bar.exit_action_triggered(self._cleanup)
         self._menu_bar.about_action_trigerred(self._on_about_action_clicked)
@@ -120,7 +123,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def _on_scan_action_clicked(self):
         self._log.debug("MAIN: Scan menu clicked")
-        self._initialise_scanner()
+        self._manager.initialise_scanner()
         self._scan_button.setDelayedStopLayout()
         #else:
         #    self._cleanup()
@@ -134,7 +137,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
-        self._cleanup()
+        #self._cleanup()
         event.accept()
 
     def displayScanCompleteMessage(self):
@@ -144,7 +147,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._message_box.display(MessageFactory.puck_scan_completed_message())
 
     def displayCameraErrorMessage(self, scanner_message):
-        self._cleanup()
+        #self._cleanup()
         mgs = QMessageBox(self)
         mgs.setIcon(QMessageBox.Critical)
         mgs.setWindowTitle("Camera Error")

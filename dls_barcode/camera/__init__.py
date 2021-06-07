@@ -1,3 +1,3 @@
-from .camera_switch import CameraSwitch
+from .new_camera_switch import NewCameraSwitch
 from .camera_scanner import CameraScanner
 from .scanner_message import NoNewBarcodeMessage, ScanErrorMessage, NoNewPuckBarcodeMessage

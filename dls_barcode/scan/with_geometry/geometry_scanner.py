@@ -27,19 +27,20 @@ class GeometryScanner:
         self._is_single_image = False
         self._frame_result = None
 
-    def scan_next_frame(self, frame_img,is_single_image=False):
+    def scan_next_frame(self, frame,is_single_image=False):
         self._new_frame()
 
-        self._frame_img = frame_img
+        self._frame_img = frame.convert_to_gray()
         self._is_single_image = is_single_image
 
         try:
             self._perform_frame_scan()
             self._frame_result.set_plate(self._plate)
-            self._frame_result.set_frame_image(self._frame_img)
+            self._frame_result.set_frame(frame)
         #TODO: use logs
         except (NoBarcodesDetectedError, GeometryException, GeometryAdjustmentError) as ex:
             self._frame_result.set_error(str(ex))
+            self._frame_result.set_frame(frame)
 
         self._frame_result.end_timer()
         return self._frame_result

@@ -7,12 +7,12 @@ url = "https://pypi.org/simple"
 
 [packages]
 pygelf = "*"
-pyqt5 = "*"
 opencv-python = "*"
 pyperclip = "*"
 pylint = "*"
 scipy = "==1.5.4"
 numpy = "==1.19.5"
- 
+pyqt5 = "*"
+
 [requires]
 python_version = "3.6"

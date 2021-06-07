@@ -83,7 +83,8 @@ class CameraConfigControl(ConfigControl):
             stream.read_frame()
             res = stream.get_frame().get_frame()
             if res is not None:
-                small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
+                small = res
+               # small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
                 cv2.imshow('Camera Preview', small)
                 cv2.waitKey(50)
             if cv2.getWindowProperty('Camera Preview', 0) < 0:

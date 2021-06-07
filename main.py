@@ -3,8 +3,8 @@ import sys
 
 from os.path import dirname
 from sys import path
-import pygelf
-import logconfig
+
+import cv2
 from dls_barcode.config import BarcodeConfig
 from dls_barcode.gui import DiamondBarcodeMainWindow
 from dls_barcode.new_main_manager import NewMainManager
@@ -12,7 +12,6 @@ from PyQt5 import QtWidgets
 import argparse
 from dls_barcode.version import VERSION
 from dls_util.file import FileManager
-from dls_util.logging.process_logging import configure_new_process, ProcessLogger
 
 path.append(dirname(path[0]))
 
@@ -37,8 +36,26 @@ def main(config_file, version):
     app = QtWidgets.QApplication(sys.argv)
     config = BarcodeConfig(config_file, FileManager())
     ui = DiamondBarcodeMainWindow(config, version, None)
-    manager = NewMainManager(ui, config)
+    
+    manager = NewMainManager(config)
+    ui.set_actions_triger( manager)
+    result = None
+    i =0
     manager.initialise_scanner()
+    while  i<10:
+        
+
+        result = manager.get_result()
+        
+      
+        if result is not None :
+     
+            ui.displayPuckImage(result.convert_to_gray() )
+            i= i+1
+             
+        else:
+            result = None
+    manager.cleanup()
     sys.exit(app.exec_())
 
 

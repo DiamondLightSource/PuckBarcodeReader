@@ -21,8 +21,6 @@ class BarcodeConfigDialog(ConfigDialog):
 
         self.setWindowIcon(self._config_icon)
 
-        self._to_run_before_test_camera()
-
         cfg = self._config
         add = self.add_item
 

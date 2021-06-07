@@ -3,6 +3,7 @@ from random import randint
 from PyQt5.QtGui import QColor
 
 
+
 class Color:
     SEP = ","
     CONSTRUCTOR_ERROR = "Values must be integers in range 0-255"
