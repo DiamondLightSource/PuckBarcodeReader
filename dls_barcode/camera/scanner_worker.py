@@ -1,3 +1,4 @@
+from dls_barcode.camera.result_processor import ResultPorcessor
 import logging
 import time
 

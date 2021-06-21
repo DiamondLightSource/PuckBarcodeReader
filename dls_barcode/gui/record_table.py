@@ -38,8 +38,6 @@ class ScanRecordTable(QGroupBox):
 
         self._init_ui()
 
-        self._load_store_records()
-
     def _init_ui(self):
         # Create record table - lists all the records in the store
         self._table = QTableWidget()
@@ -117,7 +115,7 @@ class ScanRecordTable(QGroupBox):
             record = self._store.get_record(row)
             self._barcodeTable.populate(record.holder_barcode, record.barcodes)
             marked_image = record.marked_image(self._options)
-            holder_marked_image = record.holder_marked_image(self._options)
+            holder_marked_image = record.holder_marked_image()
             self._imageFrame.display_image(marked_image)
             self._holderFrame.display_image(holder_marked_image)
         except IndexError:

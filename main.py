@@ -1,4 +1,5 @@
-from dls_barcode.scan import scan_result
+from dls_barcode.gui.main_window import DiamondBarcodeMainWindow
+
 import logging
 import sys
 
@@ -7,7 +8,7 @@ from sys import path
 
 import cv2
 from dls_barcode.config import BarcodeConfig
-from dls_barcode.gui import DiamondBarcodeMainWindow
+
 from dls_barcode.new_main_manager import NewMainManager
 from PyQt5 import QtWidgets
 import argparse
@@ -41,17 +42,27 @@ def main(config_file, version):
     manager = NewMainManager(config)
     manager.initialise_scanner()
     ui.set_actions_triger( manager)
-    result = scan_result.ScanResult(0)
+    #while  len(SIDE_RESULT.barcodes()) == 0:
+   # result = scan_result.ScanResult(0)
+   # top_result = scan_result.ScanResult(0)
 
    
-    while  len(result.barcodes()) == 0:
+    #while  len(result.barcodes()) == 0:
         
-        result = manager.get_result()
-        if result is not None :
+     #   result = manager.get_side_result()
+      #  if result is not None :
      
-            ui.displayHolderImage(result.get_frame_image())
+       #     ui.displayHolderImage(result.get_frame_image())
+        #    if ui.isLatestHolderBarcode(result.barcodes()[0]):
+        #        break
+         #   else:
+          #      while  len(top_result.barcodes()) == 0:
+           #         top_result = manager.get_top_result()
+                   # ui.displayPuckImage(top_result.get_frame_image())
+                
+       # ui.addRecordFrame(result.barcodes()[0].data(), top_result.plate(), result.get_frame_image(), top_result.get_frame_image())
  
-    manager.cleanup()
+   # manager.cleanup()
     sys.exit(app.exec_())
 
 

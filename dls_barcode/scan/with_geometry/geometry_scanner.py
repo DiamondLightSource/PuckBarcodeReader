@@ -104,9 +104,10 @@ class GeometryScanner:
         return geometry
 
     def _initialize_plate_from_barcodes(self):
+       
         for bc in self._barcodes:
             bc.perform_read()
-
+        
         if self._any_valid_barcodes():
             slot_scanner = self._create_slot_scanner()
             self._plate = Plate(self.plate_type)
