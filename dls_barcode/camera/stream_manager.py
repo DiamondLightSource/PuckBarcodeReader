@@ -1,3 +1,4 @@
+from dls_barcode.scan.scan_result import ScanResult
 from dls_barcode.camera.camera_position import CameraPosition
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
 from dls_barcode.datamatrix import DataMatrix
@@ -39,17 +40,18 @@ class StreamManager:
         else:
             self._scanner = GeometryScanner(plate_type, barcode_sizes)
             
-    def _scan_frame(self, frame):
-        return self._scanner.scan_next_frame(frame)
+
+    def process_frame(self,frame):
+        if frame is None:
+            return ScanResult(0)
             
-    def process_frame(self):
+        return self._scanner.scan_next_frame(frame)
+     
+            
+    def get_frame(self):
         self.stream.read_frame()
         if self.stream.is_read_ok():
             frame = self.stream.get_frame()
-            result = self._scan_frame(frame)
-            return result
-        else:
-            return None # should be a message that read not ok
-        
-        
+            return frame
+        return None
         

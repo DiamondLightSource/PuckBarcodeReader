@@ -80,8 +80,6 @@ class Record:
 
     @staticmethod
     def from_plate(holder_barcode, plate, image_path, holder_image_path):
-        if plate is None:
-            return Record(None,holder_barcode=holder_barcode,barcodes =[], image_path=image_path, holder_image_path=holder_image_path,geometry = None )
         return Record(plate_type=plate.type, holder_barcode=holder_barcode, barcodes=plate.barcodes(),
                       image_path=image_path, holder_image_path=holder_image_path, geometry=plate.geometry())
 
@@ -95,6 +93,7 @@ class Record:
         timestamp = items[Record.IND_TIMESTAMP] #used to convert into float twice
         image = items[Record.IND_IMAGE]
         holder_image_path = items[Record.IND_HOLDER_IMAGE]
+        
         plate_type = items[Record.IND_PLATE]
         all_barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
         holder_barcode = all_barcodes[0]
@@ -125,16 +124,9 @@ class Record:
         items[Record.IND_TIMESTAMP] = str(self.timestamp)
         items[Record.IND_IMAGE] = self.image_path
         items[Record.IND_HOLDER_IMAGE] = self.holder_image_path
+        items[Record.IND_PLATE] = self.plate_type
         items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self._all_barcodes())
-        if self.plate_type is None:
-            items[Record.IND_PLATE] = ''
-        else:    
-            items[Record.IND_PLATE] = self.plate_type
-        
-        if self.geometry is not None:
-           items[Record.IND_GEOMETRY] = self.geometry.serialize()
-        else:
-            items[Record.IND_GEOMETRY] = ''
+        items[Record.IND_GEOMETRY] = self.geometry.serialize()
         return Record.ITEM_SEPARATOR.join(items)
 
     def _all_barcodes(self):
@@ -150,18 +142,17 @@ class Record:
     
     def marked_image(self, options):
         image = self._image()
-        if self.geometry is not None:
-            geo = self.geometry
+        geo = self.geometry
            
 
-            if options.image_puck.value():
-                geo.draw_plate(image, Color.Blue())
+        if options.image_puck.value():
+            geo.draw_plate(image, Color.Blue())
 
-            if options.image_pins.value():
-                self._draw_pins(image, geo, options)
+        if options.image_pins.value():
+            self._draw_pins(image, geo, options)
 
-            if options.image_crop.value():
-                geo.crop_image(image)
+        if options.image_crop.value():
+            geo.crop_image(image)
 
         return image
 

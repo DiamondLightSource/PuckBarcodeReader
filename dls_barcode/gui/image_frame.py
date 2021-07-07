@@ -1,7 +1,5 @@
 from __future__ import division
 
-
-
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout
 
@@ -39,9 +37,10 @@ class ImageFrame(QGroupBox):
         self._frame.setMinimumWidth(700)
         self._frame.setAlignment(Qt.AlignCenter)
 
-        if image is not None and image.is_valid():
-            pixmap = image.to_qt_pixmap(self._frame.size())
-            self._frame.setPixmap(pixmap)
+        if image is not None:
+            if image.is_valid():
+                pixmap = image.to_qt_pixmap(self._frame.size())
+                self._frame.setPixmap(pixmap)
         else:
             self._frame.setText("Image Not Found")
             
