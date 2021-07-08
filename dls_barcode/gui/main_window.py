@@ -143,8 +143,8 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def _on_scan_action_clicked(self):
         self._log.debug("MAIN: Scan menu clicked")
         if  self._scan_button.is_running():
-            self._kill_main_thread()
             self._scan_button.setStartLayout()
+            self._kill_main_thread()
         else: 
             self._scan_button.setStopLayout()
             self._start_main_thread()      
@@ -157,7 +157,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self.main_worker.side_result.connect(self.set_side_result)
         self.main_worker.top_result.connect(self.set_top_result)
         #self.main_worker.scan_finished.connect(self.addRecordFrame)
-        self.main_worker.finished.connect(self.main_thread.quit)
+        #self.main_worker.finished.connect(self.main_thread.quit)
         self.main_thread.start() 
    
     def set_top_result(self, top):
@@ -169,11 +169,12 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     
     def _kill_main_thread(self):
-        self.main_worker.stop()     
-        if self.main_thread.isRunning(): 
-            self.main_thread.kill()
-            self.main_worker.finished.connect(self.main_worker.deleteLater)   
-            self.main_thread.finished.connect(self.main_worker.deleteLater)    
+        self.main_worker.stop()
+        #if self.main_thread.isRunning(): 
+        #    self.main_worker.finished.connect(self.main_worker.deleteLater)   
+        #    self.main_thread.finished.connect(self.main_worker.deleteLater)    
+        self.main_thread.quit()
+        self.main_thread.wait()
        
     def isLatestHolderBarcode(self, result):
             if len(result.barcodes()) == 0:

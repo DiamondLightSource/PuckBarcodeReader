@@ -111,6 +111,8 @@ class ScanRecordTable(QGroupBox):
         image frame).
         """
         try:
+            # Clear all events
+            QtWidgets.QApplication.processEvents()
             row = self._table.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
             self._barcodeTable.populate(record.holder_barcode, record.barcodes)

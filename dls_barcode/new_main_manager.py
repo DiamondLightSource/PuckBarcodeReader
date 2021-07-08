@@ -105,7 +105,7 @@ class MainWorker(QObject):
         self.side_thread.started.connect(self.side_worker.run)
         self.side_worker.finished.connect(self.side_thread.quit)
         self.side_worker.new_frame.connect(self._display_holder)
-        self.side_worker.new_frame.connect(self._process_side_frame)
+        #self.side_worker.new_frame.connect(self._process_side_frame)
         self.side_thread.start() 
         
     def _process_top_thread(self):
@@ -115,7 +115,7 @@ class MainWorker(QObject):
         self.top_thread.started.connect(self.top_worker.run)
         self.top_worker.finished.connect(self.top_thread.quit)
         self.top_worker.new_frame.connect(self._display_pins)
-        self.top_worker.new_frame.connect(self._process_top_frame)
+        #self.top_worker.new_frame.connect(self._process_top_frame)
         self.top_thread.start() 
    
     def stop(self):
@@ -123,17 +123,22 @@ class MainWorker(QObject):
         self._run_flag = False
         
     def _kill_threads(self):
+        self.side_worker.stop()
+        self.top_worker.stop() 
 
-        if self.side_thread.isRunning():
-            self.side_worker.stop()
+        #if self.side_thread.isRunning():
+        #    self.side_worker.finished.connect(self.side_worker.deleteLater)
+        #    self.side_thread.finished.connect(self.side_thread.deleteLater)
 
-        if self.top_thread.isRunning():
-            self.top_worker.stop() 
+        #if self.top_thread.isRunning():
+        #    self.top_worker.finished.connect(self.top_worker.deleteLater)
+        #    self.top_thread.finished.connect(self.top_thread.deleteLater)
         
-        #self.side_worker.finished.connect(self.side_worker.deleteLater)
-        #self.side_thread.finished.connect(self.side_thread.deleteLater)
-        #self.top_worker.finished.connect(self.top_worker.deleteLater)
-        #self.top_thread.finished.connect(self.top_thread.deleteLater)
+        self.side_thread.quit()
+        self.side_thread.wait()
+        self.top_thread.quit()
+        self.top_thread.wait()
+        
      
 class SideWorker(QObject):
     finished = pyqtSignal()
