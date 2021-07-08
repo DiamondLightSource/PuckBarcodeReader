@@ -2,7 +2,7 @@
 from dls_util.cv.frame import Frame
 from dls_barcode.scan import scan_result
 from dls_barcode.scan.scan_result import ScanResult
-from dls_barcode.new_main_manager import MainWorker, SideWorker, TopProcessor, TopWorker
+from dls_barcode.new_main_manager import MainWorker
 import logging
 from os.path import getatime
 
@@ -71,9 +71,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         # Image frame - displays image of the currently selected scan record
         self._image_frame = ImageFrame("Plate Image")
         self._holder_frame = ImageFrame("Holder Image")
-        
-        self.side_result = None
-        self.top_result = None
 
         # Scan record table - lists all the records in the store
         self._record_table = ScanRecordTable(self._barcode_table, self._image_frame, self._holder_frame , self._config)
@@ -151,23 +148,14 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             
     def _start_main_thread(self):
         self.main_thread = QThread()
-        self.main_worker = MainWorker(self._manager.side_camera_stream,self._manager.top_camera_stream, 30,self.displayHolderFrame,self.displayPuckFrame,self.isLatestHolderBarcode)
+        self.main_worker = MainWorker(self._manager.side_camera_stream,self._manager.top_camera_stream, 30, self.isLatestHolderBarcode, self.addRecordFrame)
         self.main_worker.moveToThread(self.main_thread)
         self.main_thread.started.connect(self.main_worker.run)
-        self.main_worker.side_result.connect(self.set_side_result)
-        self.main_worker.top_result.connect(self.set_top_result)
-        #self.main_worker.scan_finished.connect(self.addRecordFrame)
-        #self.main_worker.finished.connect(self.main_thread.quit)
-        self.main_thread.start() 
-   
-    def set_top_result(self, top):
-        self.top_result = top 
-    
-    def set_side_result(self, side):
-        self.side_result =side
-        
+        self.main_worker.new_side_frame.connect(self.displayHolderFrame)
+        self.main_worker.new_top_frame.connect(self.displayPuckFrame)
+        self.main_worker.finished.connect(self.main_thread.quit)
+        self.main_thread.start()
 
-    
     def _kill_main_thread(self):
         self.main_worker.stop()
         #if self.main_thread.isRunning(): 
@@ -242,15 +230,16 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def _load_store_records(self):
         self._record_table._load_store_records()
     
-    def addRecordFrame(self):
-        #latest_holder_barcode, plate, latest_holder_image, pins_image
-        latest_holder_barcode = self.side_result.barcodes()[0].data()
-        plate = self.top_result.plate()
-        latest_holder_image = self.side_result.get_frame_image()
-        pins_image = self.top_result.get_frame_image()
-        self._record_table.add_record_frame(latest_holder_barcode, plate, latest_holder_image, pins_image)
-        self.side_result = None
-        self.top_result = None
+    @pyqtSlot(ScanResult, ScanResult)
+    def addRecordFrame(self, side_result, top_result):
+
+        latest_holder_barcode = side_result.barcodes()[0].data()
+        plate = top_result.plate()
+        if plate is not None:
+            latest_holder_image = side_result.get_frame_image()
+            pins_image = top_result.get_frame_image()
+            self._record_table.add_record_frame(latest_holder_barcode, plate, latest_holder_image, pins_image)
+  
     
 
         
