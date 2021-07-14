@@ -102,6 +102,8 @@ class BarcodeTable(QGroupBox):
         barcodes for the currently selected records to the clipboard so that the user
         can paste it elsewhere.
         """
+        if self._holder_barcode is None:
+            self._holder_barcode = NOT_FOUND_SLOT_SYMBOL
         clipboard_barcodes = [self._holder_barcode] + self._barcodes[:]
         for i, barcode in enumerate(clipboard_barcodes):
             if barcode in [NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL]:

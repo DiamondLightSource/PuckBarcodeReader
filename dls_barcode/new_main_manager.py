@@ -45,62 +45,33 @@ class MainWorker(QObject):
     finished = pyqtSignal()
     new_side_frame = pyqtSignal(Frame)
     new_top_frame = pyqtSignal(Frame)
+    images_collected = pyqtSignal(Frame, Frame)
     
-    def __init__(self, side_camera_stream, top_camera_stream, timeout, last_holder_barcode, add_record):
+    def __init__(self, side_camera_stream, top_camera_stream, timeout):
         super().__init__()
         self._side_camera_stream = side_camera_stream
         self._top_camera_stream = top_camera_stream
         self._timeout = timeout
-        self._is_last_holder_barcode = last_holder_barcode
-        self._add_record_frame = add_record
         self._run_flag = True
-        self._stop_flag  = False
-    
+
     def run(self): 
-        self.processor_thread = QThread()
         while self._run_flag:
-            
             side_frame = self._side_camera_stream.get_frame()
             if side_frame is not None:
                 self.new_side_frame.emit(side_frame)
             top_frame = self._top_camera_stream.get_frame()
             if top_frame is not None:
                 self.new_top_frame.emit(top_frame)
-            #print( self.processor_thread.isRunning())
-            print(self._stop_flag)
-            if top_frame is not None and side_frame is not None and not self._stop_flag:
-                   
-                #self.processor_thread = QThread()
-               
-                print('createda new processor')
-                self.processor_worker = Processor(self._side_camera_stream, self._top_camera_stream, side_frame, top_frame, self._is_last_holder_barcode,self._add_record_frame)
-                self.processor_worker.moveToThread(self.processor_thread)
-                self.processor_thread.started.connect(self.processor_worker.run)
-                self.processor_worker.finished.connect(self.my_stop)
-                self.processor_worker.finished.connect(self.processor_worker.deleteLater)
-                self.processor_thread.finished.connect(self.processor_thread.deleteLater)
-                self.processor_worker.finished.connect(self.processor_thread.quit)
-                self.processor_thread.start()
+            if top_frame is not None and side_frame is not None:
+                self.images_collected.emit(side_frame, top_frame)
+                                    
         self.finished.emit()
-   
- #   def _create_processor(self, side_frame, top_frame):
-
-    def my_stop(self):
-        self._stop_flag = True
-        self.processor_thread.quit()
-        self.processor_thread.wait()
-       
-        
+           
     def stop(self):
         self._run_flag = False
-        self.processor_thread.quit()
-        self.processor_thread.wait()
-        
-        
-        
+
 class Processor(QObject):
     finished = pyqtSignal()
-
     
     def __init__(self, side_camera_stream, top_camera_stream, side_frame, top_frame, is_last_holder_barcode, add_record_frame) -> None:
         super().__init__()
@@ -113,7 +84,7 @@ class Processor(QObject):
 
     def run(self):
         side_result = self._side_camera_stream.process_frame(self._sied_frame)
-        #if not self._is_last_holder_barcode:
+       # if not self._is_last_holder_barcode(side_result):
         print("new side code")
         top_result = self._top_camera_stream.process_frame(self._top_frame)   
         self._add_record_frame(side_result, top_result)
