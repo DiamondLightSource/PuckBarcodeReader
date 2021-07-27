@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMessageBox
 from dls_barcode.config import BarcodeConfigDialog
 from dls_barcode.gui.progress_bar import ProgressBox
 from dls_barcode.gui.scan_button import ScanButton
-from dls_barcode.new_main_manager import MainWorker, Processor
+from dls_barcode.scanner_manager import Scanner, Processor
 from dls_barcode.scan import scan_result
 from dls_barcode.scan.scan_result import ScanResult
 from dls_util.cv.frame import Frame
@@ -145,7 +145,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             
     def _start_main_thread(self):
         self.main_thread = QThread()
-        self.main_worker = MainWorker(self._manager.side_camera_stream,self._manager.top_camera_stream)
+        self.main_worker = Scanner(self._manager.side_camera_stream,self._manager.top_camera_stream)
         self.main_worker.moveToThread(self.main_thread)
         self.main_thread.started.connect(self.main_worker.run)
         self.main_worker.new_side_frame.connect(self.displayHolderFrame)

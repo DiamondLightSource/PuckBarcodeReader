@@ -1,12 +1,10 @@
 import time
-from zipfile import error
+
 from PyQt5 import QtCore
 
-from PyQt5.QtCore import QMutex, QObject, QThread, QTime, QTimer, pyqtSignal,pyqtSlot
+from PyQt5.QtCore import QMutex, QObject, QThread, QTime, QTimer, pyqtSignal, pyqtSlot
 
 from dls_barcode.camera.camera_position import CameraPosition
-from dls_barcode.camera.new_camera_switch import NewCameraSwitch
-from dls_barcode.camera.plate_overlay import PlateOverlay
 from dls_barcode.camera.stream_manager import StreamManager
 from dls_barcode.gui import main_window
 from dls_barcode.gui.message_factory import MessageFactory
@@ -14,7 +12,7 @@ from dls_barcode.scan.scan_result import ScanResult
 from dls_util.cv.frame import Frame
 
 
-class NewMainManager:
+class ScannerManager:
 
     def __init__(self, config):
         self._config = config 
@@ -41,7 +39,7 @@ class NewMainManager:
         self.side_camera_stream.release_capture()
         self.top_camera_stream.release_capture()
         
-class MainWorker(QObject):
+class Scanner(QObject):
     finished = pyqtSignal()
     new_side_frame = pyqtSignal(Frame)
     new_top_frame = pyqtSignal(Frame)
