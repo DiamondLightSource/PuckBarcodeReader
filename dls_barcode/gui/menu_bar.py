@@ -50,7 +50,7 @@ class MenuBar(QMainWindow):
         help_menu.addAction(self._about_action)
 
     def exit_action_triggered(self, cleanup):
-#        self._exit_action.triggered.connect(cleanup)
+        self._exit_action.triggered.connect(cleanup)
         self._exit_action.triggered.connect(qApp.quit)
 
     def optiones_action_triggered(self, on_options_action_clicked):

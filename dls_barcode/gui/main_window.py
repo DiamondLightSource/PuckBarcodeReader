@@ -1,19 +1,20 @@
 
-from dls_util.message import message_type
-from dls_util.cv.frame import Frame
-from dls_barcode.scan import scan_result
-from dls_barcode.scan.scan_result import ScanResult
-from dls_barcode.new_main_manager import MainWorker, Processor
 import logging
-from os.path import getatime
+import time
+from datetime import datetime
 
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import QMutex, QThread, pyqtSlot
+from PyQt5.QtCore import QMutex, QThread, QTimer, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
 from dls_barcode.config import BarcodeConfigDialog
 from dls_barcode.gui.progress_bar import ProgressBox
 from dls_barcode.gui.scan_button import ScanButton
+from dls_barcode.new_main_manager import MainWorker, Processor
+from dls_barcode.scan import scan_result
+from dls_barcode.scan.scan_result import ScanResult
+from dls_util.cv.frame import Frame
+from dls_util.message import message_type
 
 from .barcode_table import BarcodeTable
 from .countdown_box import CountdownBox
@@ -22,8 +23,6 @@ from .menu_bar import MenuBar
 from .message_box import MessageBox
 from .message_factory import MessageFactory
 from .record_table import ScanRecordTable
-
-
 
 
 class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
@@ -37,7 +36,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
         self._config = config
         self._version = version
-        self._cleanup = None
 
 
         # UI elements
@@ -50,10 +48,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         
         self.main_thread = QThread()
         self.processor_thread = QThread() 
-
-       # self.top_frame = None
-        #self.side_frame = None
-
+        
         self._init_ui()
 
     def _init_ui(self):
@@ -84,7 +79,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._message_box = MessageBox()
 
         # Count down display
-        #self._countdown_box = CountdownBox()
         self._countdown_box = ProgressBox()
 
         # Create layout
@@ -128,7 +122,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._scan_button.click_action(self._on_scan_action_clicked)
         self._scan_button.setStopLayout()
         self._start_main_thread() 
-        self._menu_bar.exit_action_triggered(self._cleanup)
+        self._menu_bar.exit_action_triggered(self._kill_main_thread)
         self._menu_bar.about_action_trigerred(self._on_about_action_clicked)
         self._menu_bar.optiones_action_triggered(self._on_options_action_clicked)
         self._record_table.cell_pressed_action_triggered(self._to_run_on_table_clicked)
@@ -138,7 +132,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._scan_button.setStartLayout()
         self._kill_main_thread()
     
-
     def _on_about_action_clicked(self):
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
@@ -153,7 +146,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             
     def _start_main_thread(self):
         self.main_thread = QThread()
-        self.main_worker = MainWorker(self._manager.side_camera_stream,self._manager.top_camera_stream, 30)
+        self.main_worker = MainWorker(self._manager.side_camera_stream,self._manager.top_camera_stream)
         self.main_worker.moveToThread(self.main_thread)
         self.main_thread.started.connect(self.main_worker.run)
         self.main_worker.new_side_frame.connect(self.displayHolderFrame)
@@ -168,28 +161,19 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self.main_worker.stop() 
         self.main_thread.quit()
         self.main_thread.wait()
-       
-    @pyqtSlot(Frame, Frame)
-    def start_processor(self, side_frame, top_frame):
-       
-        if self.processor_thread.isRunning():
-             print("Is running "+str(self.processor_thread.isRunning()))
+              
         
+    @pyqtSlot(Frame, Frame)
+    def start_processor(self, side_frame, top_frame):    
         if  not self.processor_thread.isRunning():
-                print('createda new processor')
-                self.processor_worker = Processor(self._manager.side_camera_stream, self._manager.top_camera_stream, side_frame, top_frame, self.isLatestHolderBarcode, self.addRecordFrame)
+                self.processor_worker = Processor(self._manager.side_camera_stream, self._manager.top_camera_stream, side_frame, top_frame)
                 self.processor_worker.moveToThread(self.processor_thread)
                 self.processor_thread.started.connect(self.processor_worker.run)
                 self.processor_worker.finished.connect(self.processor_thread.quit)
                 self.processor_worker.finished.connect(self.processor_thread.wait)
-                self.processor_thread.start() 
-                
-    
-    def isLatestHolderBarcode(self, result):
-            if len(result.barcodes()) == 0:
-                return True # this is turu otherwise record from frame fall over on result.barcodes
-            return self._record_table.is_latest_holder_barcode(result.barcodes()[0].data())
-        
+                self.processor_thread.start()
+                self.processor_worker.side_top_result.connect(self.addRecordFrame)
+ 
     def _on_options_action_clicked(self):
         dialog = BarcodeConfigDialog(self._config, self._cleanup)
         self._scan_button.setStartLayout()
@@ -199,6 +183,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
+        self._kill_main_thread()
         event.accept()
 
     def displayScanCompleteMessage(self):
@@ -228,11 +213,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def displayScanTimeoutMessage(self):
         self._message_box.display(MessageFactory.scan_timeout_message())
 
-    def displayPuckImage(self, image):
-        self._image_frame.display_image(image)
-        
-    def displayHolderImage(self, image):
-        self._holder_frame.display_image(image)
 
     @pyqtSlot(Frame)
     def displayPuckFrame(self, frame):
@@ -250,16 +230,15 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._record_table._load_store_records()
     
     @pyqtSlot(ScanResult, ScanResult)
-    
     def addRecordFrame(self, side_result, top_result):
         if len(side_result.barcodes()) > 0:
             latest_holder_barcode = side_result.barcodes()[0].data()
-        
             if  top_result.success() and latest_holder_barcode != '':
                 plate = top_result.plate()
                 latest_holder_image = side_result.get_frame_image()
                 pins_image = top_result.get_frame_image()
                 self._record_table.add_record_frame(latest_holder_barcode, plate, latest_holder_image, pins_image)
+  
 
     def startCountdown(self, count):
         self._countdown_box.start_countdown(count)
