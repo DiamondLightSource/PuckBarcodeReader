@@ -43,6 +43,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._barcode_table = None
         self._image_frame = None
         self._holder_frame = None
+        self._result_frame = None
         self._scan_button = None
         self._countdown_box = None
         
@@ -69,11 +70,12 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._scan_button = ScanButton('Start/stop scan')
 
         # Image frame - displays image of the currently selected scan record
-        self._image_frame = ImageFrame("Plate Image")
-        self._holder_frame = ImageFrame("Holder Image")
+        self._image_frame = ImageFrame("Plate")
+        self._holder_frame = ImageFrame("Holder")
+        self._result_frame = ImageFrame("Result")
 
         # Scan record table - lists all the records in the store
-        self._record_table = ScanRecordTable(self._barcode_table, self._image_frame, self._holder_frame , self._config)
+        self._record_table = ScanRecordTable(self._barcode_table, self._image_frame, self._holder_frame, self._result_frame, self._config)
 
         # Message display
         self._message_box = MessageBox()
@@ -95,8 +97,12 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
       
 
         img_vbox = QtWidgets.QVBoxLayout()
-        img_vbox.addWidget(self._image_frame)
-        img_vbox.addWidget(self._holder_frame)
+        img_vbox.addWidget(self._result_frame)
+        
+        img_hbox = QtWidgets.QHBoxLayout()
+        img_hbox.addWidget(self._holder_frame)
+        img_hbox.addWidget(self._image_frame)
+        img_vbox.addLayout(img_hbox)
 
         msg_hbox = QtWidgets.QHBoxLayout()
         msg_hbox.setSpacing(10)

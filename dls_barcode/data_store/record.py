@@ -132,16 +132,16 @@ class Record:
     def _all_barcodes(self):
         return [self.holder_barcode] + self.barcodes
 
-    def _image(self):
+    def get_image(self):
         image = Image.from_file(self.image_path)
         return image
     
-    def _holder_image(self):
+    def get_holder_image(self):
         image = Image.from_file(self.holder_image_path)
         return image
     
-    def marked_image(self, options):
-        image = self._image()
+    def get_marked_image(self, options):
+        image = self.get_image()
         geo = self.geometry
            
 
@@ -156,9 +156,6 @@ class Record:
 
         return image
 
-
-    def holder_marked_image(self):
-        return self._holder_image()
 
 
     # marking the top image
