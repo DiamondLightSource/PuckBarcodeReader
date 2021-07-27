@@ -12,7 +12,6 @@ class MenuBar(QMainWindow):
         super().__init__(flags, *args, **kwargs)
         self._version = version
 
-        self._exit_icon = self.style().standardIcon(QStyle.SP_DialogCloseButton)
         self._config_icon = self.style().standardIcon(QStyle.SP_FileDialogDetailedView)
         self._about_icon = self.style().standardIcon(QStyle.SP_FileDialogInfoView)
 
@@ -26,10 +25,6 @@ class MenuBar(QMainWindow):
     def _init_ui(self):
         """Create and populate the menu bar.
               """
-        # Exit Application
-        self._exit_action = QAction(self._exit_icon, '&Exit', self)
-        self._exit_action.setShortcut('Ctrl+Q')
-        self._exit_action.setStatusTip('Exit application')
 
         # Open options dialog
         self._options_action = QAction(self._config_icon, '&Config', self)
@@ -39,19 +34,12 @@ class MenuBar(QMainWindow):
         # Show version number
         self._about_action = QAction(self._about_icon, "About", self)
 
-        # Create menu bar
-        file_menu = self._mainMenu.addMenu('&File')
-        file_menu.addAction(self._exit_action)
-
         option_menu = self._mainMenu.addMenu('&Options')
         option_menu.addAction(self._options_action)
 
         help_menu = self._mainMenu.addMenu('?')
         help_menu.addAction(self._about_action)
 
-    def exit_action_triggered(self, cleanup):
-        self._exit_action.triggered.connect(cleanup)
-        self._exit_action.triggered.connect(qApp.quit)
 
     def optiones_action_triggered(self, on_options_action_clicked):
         self._options_action.triggered.connect(on_options_action_clicked)

@@ -9,9 +9,8 @@ class BarcodeConfigDialog(ConfigDialog):
     """ Dialog to edit the configuration options for the program. Provides a custom control for
     setting up the camera.
     """
-    def __init__(self, config, to_run_before_test_camera):
+    def __init__(self, config):
         ConfigDialog.__init__(self, config)
-        self._to_run_before_test_camera = to_run_before_test_camera
         self._config_icon = self.style().standardIcon(QStyle.SP_FileDialogDetailedView)
         self._init_ui()
         self.finalize_layout()

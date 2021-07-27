@@ -122,7 +122,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._scan_button.click_action(self._on_scan_action_clicked)
         self._scan_button.setStopLayout()
         self._start_main_thread() 
-        self._menu_bar.exit_action_triggered(self._kill_main_thread)
         self._menu_bar.about_action_trigerred(self._on_about_action_clicked)
         self._menu_bar.optiones_action_triggered(self._on_options_action_clicked)
         self._record_table.cell_pressed_action_triggered(self._to_run_on_table_clicked)
@@ -175,9 +174,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
                 self.processor_worker.side_top_result.connect(self.addRecordFrame)
  
     def _on_options_action_clicked(self):
-        dialog = BarcodeConfigDialog(self._config, self._cleanup)
-        self._scan_button.setStartLayout()
         self._kill_main_thread()
+        dialog = BarcodeConfigDialog(self._config)
+        self._scan_button.setStartLayout()
         dialog.exec_()
 
     def closeEvent(self, event):
