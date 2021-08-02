@@ -87,6 +87,9 @@ class BarcodeConfig(Config):
 
     def get_side_camera_config(self):
         return CameraConfig(self.side_camera_number, SIDE_CAMERA_WIDTH, SIDE_CAMERA_HEIGHT)
+    
+    def get_top_camera_tiemout(self):
+        return self.top_camera_timeout.value()
 
 
 

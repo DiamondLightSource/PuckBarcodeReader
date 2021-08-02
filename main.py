@@ -38,9 +38,8 @@ def main(config_file, version):
     config = BarcodeConfig(config_file, FileManager())
     ui = DiamondBarcodeMainWindow(config, version, None)
     
-    manager = ScannerManager(config)
-    manager.initialise_scanner()
-    ui.set_actions_triger( manager)
+   
+    ui.set_actions_triger()
 
     sys.exit(app.exec_())
 

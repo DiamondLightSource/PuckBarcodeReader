@@ -1,3 +1,4 @@
+from dls_barcode.gui.message_factory import MessageFactory
 from dls_barcode.scan.scan_result import ScanResult
 from dls_barcode.camera.camera_position import CameraPosition
 from dls_barcode.scan import GeometryScanner, SlotScanner, OpenScanner
@@ -20,12 +21,6 @@ class StreamManager:
         
     def release_capture(self):
         self.stream.release_resources()
-        
-   # def get_capture(self):
-    #    return stream
-    
-    #def get_camera_position(self):
-    #     return self.camera_position
     
     def create_scanner(self,config):
         if self.camera_position == CameraPosition.SIDE:
@@ -39,14 +34,12 @@ class StreamManager:
             self._scanner = OpenScanner(barcode_sizes)
         else:
             self._scanner = GeometryScanner(plate_type, barcode_sizes)
-            
 
     def process_frame(self,frame):
         if frame is None:
             return ScanResult(0)
             
         return self._scanner.scan_next_frame(frame)
-     
             
     def get_frame(self):
         self.stream.read_frame()
@@ -54,4 +47,4 @@ class StreamManager:
             frame = self.stream.get_frame()
             return frame
         return None
-        
+      

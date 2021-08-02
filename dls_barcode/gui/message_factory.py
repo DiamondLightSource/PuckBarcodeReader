@@ -16,10 +16,6 @@ class MessageFactory:
         return Message(MessageType.WARNING, "Scan timeout")
 
     @staticmethod
-    def scan_completed_message():
-        return Message(MessageType.INFO, "Scan completed")
-
-    @staticmethod
     def puck_scan_completed_message():
         return Message(MessageType.INFO, "Scan completed!")
 
