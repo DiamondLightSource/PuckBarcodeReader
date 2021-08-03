@@ -45,6 +45,7 @@ class Scanner(QObject):
     camera_error = pyqtSignal()
     start_time_signal = pyqtSignal()
     stop_time_signal = pyqtSignal()
+    success_stop_time_signal = pyqtSignal()
     
     def __init__(self, side_camera_stream, top_camera_stream, duration):
         super().__init__()
@@ -54,6 +55,8 @@ class Scanner(QObject):
         self._duration = duration
         self._start_time = None
         self._new_side_code = True
+        self._stop_emitted = False
+        self._successful_scan = False
 
     def run(self): 
         while self._run_flag: 
@@ -82,18 +85,26 @@ class Scanner(QObject):
     def set_new_side_code(self):
         print("setting new")
         self._new_side_code = True
+        
+    def set_successful_scan(self):
+        self._successful_scan = True
     
     def start_time(self):
         if self._new_side_code:
             self._start_time = datetime.now()
-            print("start " + str(self._start_time))
             self.start_time_signal.emit()
             self._new_side_code = False
+            self._stop_emitted = False
+            self._successful_scan = False
       
     def stop_time(self):
         if self._time_run_out():
-            print("Stop " + str(datetime.now()))
-            self.stop_time_signal.emit()
+            if not self._stop_emitted:
+                if self._successful_scan:
+                    self.success_stop_time_signal.emit()
+                else:
+                    self.stop_time_signal.emit()
+                self._stop_emitted = True
             
     def _time_run_out(self):
         return (datetime.now() - self._start_time).total_seconds() > self._duration

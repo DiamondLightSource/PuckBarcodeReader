@@ -1,5 +1,6 @@
 
 
+from dls_util.beeper import Beeper
 import logging
 import time
 from datetime import datetime
@@ -52,6 +53,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self.processor_thread = QThread() 
         self._manager = ScannerManager(self._config)
         self._last_barcode = None
+        self._new_record_in_table = False
         self._duration = self._config.get_top_camera_tiemout()
         self._init_ui()
 
@@ -154,7 +156,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             
     def _start_main_thread(self):
         self.main_thread = QThread()
-
         self._manager.initialise_scanner()
         self.main_worker = Scanner(self._manager.side_camera_stream,self._manager.top_camera_stream, self._duration)
         self.main_worker.moveToThread(self.main_thread)
@@ -166,7 +167,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self.main_worker.finished.connect(self.main_thread.quit)
         self.main_worker.images_collected.connect(self.start_processor)
         self.main_worker.camera_error.connect(self.displayCameraErrorMessage)
+   
         self.main_worker.stop_time_signal.connect(self.displayScanTimeoutMessage)
+        self.main_worker.success_stop_time_signal.connect(self.displayPuckScanCompleteMessage)
         self.main_worker.start_time_signal.connect(self.startCountdown)
         self.main_thread.start()
             
@@ -174,12 +177,11 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self.main_worker.stop() 
         self.main_thread.quit()
         self.main_thread.wait()
-        self._manager.cleanup()
-              
+        self._manager.cleanup()        
         
     @pyqtSlot(Frame, Frame)
     def start_processor(self, side_frame, top_frame):    
-        if  not self.processor_thread.isRunning():
+        if  not self.processor_thread.isRunning():# and not self._freeze:
                 self.processor_worker = Processor(self._manager.side_camera_stream, self._manager.top_camera_stream, side_frame, top_frame)
                 self.processor_worker.moveToThread(self.processor_thread)
                 self.processor_thread.started.connect(self.processor_worker.run)
@@ -197,16 +199,14 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         dialog.exec_()
        
     @pyqtSlot(ScanResult)
-    def isLatestHolderBarcode(self, result):
+    def isLatestHolderBarcode(self, result): 
         if self._last_barcode is None:
             self._last_barcode = result.barcodes()[0].data()
-        
+               
         if result.barcodes()[0].data() != self._last_barcode:
             self._last_barcode = result.barcodes()[0].data()
-
             self.main_worker.set_new_side_code()
             
-
     def closeEvent(self, event):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
@@ -229,15 +229,15 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             self.close()
 
     def displayPuckScanCompleteMessage(self):
+        Beeper.beep()
         self._message_box.display(MessageFactory.puck_scan_completed_message())
     
     def displayScanErrorMessage(self, scanner_msg): # not sure when should it be displayed 
         self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
 
     def displayScanTimeoutMessage(self):
+        Beeper.beep()
         self._message_box.display(MessageFactory.scan_timeout_message())
-
-
 
     @pyqtSlot(Frame)
     def displayPuckFrame(self, frame):
@@ -257,20 +257,19 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(ScanResult, ScanResult)
     def addRecordFrame(self, side_result, top_result):
         latest_holder_barcode = side_result.barcodes()[0].data()
-       # print('side OK' + latest_holder_barcode)
-        #print(top_result.success())
         if  top_result.success() and latest_holder_barcode != '':
-            #print("adding result")
             plate = top_result.plate()
             latest_holder_image = side_result.get_frame_image()
             pins_image = top_result.get_frame_image()
             self._record_table.add_record_frame(latest_holder_barcode, plate, latest_holder_image, pins_image)
-  
+            self.main_worker.set_successful_scan()
 
     def startCountdown(self):
+        #self._new_record_in_table = False
         self._countdown_box.start_countdown(self._duration)
 
     def resetCountdown(self):
+        #self._new_record_in_table = False
         self._countdown_box.reset_countdown()
 
     def scanCompleted(self):
