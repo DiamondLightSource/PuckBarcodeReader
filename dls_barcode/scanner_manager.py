@@ -1,3 +1,4 @@
+from dls_barcode.camera.scanner_message import ScanErrorMessage
 from PyQt5 import QtCore
 
 from PyQt5.QtCore import QMutex, QObject, QThread, QTime, QTimer, pyqtSignal, pyqtSlot
@@ -113,7 +114,12 @@ class Scanner(QObject):
 class Processor(QObject):
     finished = pyqtSignal()
     side_result_signal = pyqtSignal(ScanResult)
-    side_top_result =pyqtSignal(ScanResult, ScanResult)
+    side_top_result_signal = pyqtSignal(ScanResult, ScanResult)
+    top_scan_error_signal = pyqtSignal(ScanErrorMessage)
+    side_scan_error_signal = pyqtSignal(ScanErrorMessage)
+    #successfull_scan_signal = pyqtSignal()
+    
+    
     
     def __init__(self, side_camera_stream, top_camera_stream, side_frame, top_frame) -> None:
         super().__init__()
@@ -126,8 +132,15 @@ class Processor(QObject):
         side_result = self._side_camera_stream.process_frame(self._side_frame)
         if len(side_result.barcodes()) > 0:
             self.side_result_signal.emit(side_result)
+            if side_result.error() is not None:
+                self.side_scan_error_signal.emit(side_result.error())
             top_result = self._top_camera_stream.process_frame(self._top_frame)   
-            self.side_top_result.emit(side_result,top_result)
+            if top_result.error() is not None:
+                self.top_scan_error_signal.emit(top_result.error())
+            if  side_result.error() is None and top_result.success():
+                self.side_top_result_signal.emit(side_result,top_result)
+               # self.successfull_scan_signal.emit()
+                
         self.finished.emit()
 
         

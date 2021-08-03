@@ -1,3 +1,4 @@
+from dls_barcode.camera.scanner_message import ScanErrorMessage
 from dls_barcode.datamatrix import DataMatrix
 
 from dls_barcode.plate import Plate
@@ -33,9 +34,8 @@ class OpenScanner:
             result.set_barcodes(barcodes)
             result.set_frame(self._frame)
         except NoBarcodesDetectedError as ex:
-            # TODO: logging the error
             result.set_frame(self._frame)
-            result.set_error(str(ex))
+            result.set_error(ScanErrorMessage(str(ex)))
 
         # Create a 'blank' geometry object to store the barcode locations
         new_barcodes = result.new_barcodes()

@@ -1,4 +1,6 @@
 from __future__ import division
+from dls_barcode.camera.scanner_message import ScanErrorMessage
+
 
 from dls_barcode.datamatrix import DataMatrix
 from dls_barcode.geometry.exception import GeometryAlignmentError
@@ -39,7 +41,7 @@ class GeometryScanner:
             self._frame_result.set_frame(frame)
         #TODO: use logs
         except (NoBarcodesDetectedError, GeometryException, GeometryAdjustmentError) as ex:
-            self._frame_result.set_error(str(ex))
+            self._frame_result.set_error(ScanErrorMessage(str(ex)))
             self._frame_result.set_frame(frame)
 
         self._frame_result.end_timer()

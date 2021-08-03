@@ -1,5 +1,6 @@
 
 
+from dls_barcode.camera.scanner_message import ScanErrorMessage
 from dls_util.beeper import Beeper
 import logging
 import time
@@ -188,7 +189,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
                 self.processor_worker.finished.connect(self.processor_thread.quit)
                 self.processor_worker.finished.connect(self.processor_thread.wait)
                 self.processor_thread.start()
-                self.processor_worker.side_top_result.connect(self.addRecordFrame)
+                self.processor_worker.side_top_result_signal.connect(self.addRecordFrame)
+                self.processor_worker.side_scan_error_signal.connect(self.displayScanErrorMessage)
+                self.processor_worker.top_scan_error_signal.connect(self.displayScanErrorMessage)
                 self.processor_worker.side_result_signal.connect(self.isLatestHolderBarcode)
  
     def _on_options_action_clicked(self):
@@ -232,7 +235,8 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         Beeper.beep()
         self._message_box.display(MessageFactory.puck_scan_completed_message())
     
-    def displayScanErrorMessage(self, scanner_msg): # not sure when should it be displayed 
+    @pyqtSlot(ScanErrorMessage)
+    def displayScanErrorMessage(self, scanner_msg): 
         self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
 
     def displayScanTimeoutMessage(self):
