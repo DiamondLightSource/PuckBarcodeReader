@@ -55,7 +55,7 @@ class Scanner(QObject):
         self._run_flag = True
         self._duration = duration
         self._start_time = None
-        self._new_side_code = True
+        self._new_side_code = False
         self._stop_emitted = False
         self._successful_scan = False
 
@@ -73,7 +73,7 @@ class Scanner(QObject):
             else:
                 self.camera_error.emit()
                 break
-            if top_frame is not None and side_frame is not None:
+            if top_frame is not None and side_frame is not None: 
                 self.images_collected.emit(side_frame, top_frame)
                 self.start_time()
                 self.stop_time()
@@ -85,7 +85,8 @@ class Scanner(QObject):
         
     def set_new_side_code(self):
         print("setting new")
-        self._new_side_code = True
+        if not self._new_side_code:
+            self._new_side_code = True
         
     def set_successful_scan(self):
         self._successful_scan = True
@@ -108,6 +109,8 @@ class Scanner(QObject):
                 self._stop_emitted = True
             
     def _time_run_out(self):
+        if self._start_time is None:
+            return False
         return (datetime.now() - self._start_time).total_seconds() > self._duration
         
 
@@ -117,9 +120,7 @@ class Processor(QObject):
     side_top_result_signal = pyqtSignal(ScanResult, ScanResult)
     top_scan_error_signal = pyqtSignal(ScanErrorMessage)
     side_scan_error_signal = pyqtSignal(ScanErrorMessage)
-    #successfull_scan_signal = pyqtSignal()
-    
-    
+    successfull_scan_signal = pyqtSignal()
     
     def __init__(self, side_camera_stream, top_camera_stream, side_frame, top_frame) -> None:
         super().__init__()
@@ -130,18 +131,21 @@ class Processor(QObject):
 
     def run(self):
         side_result = self._side_camera_stream.process_frame(self._side_frame)
-        if len(side_result.barcodes()) > 0:
+        if side_result.error() is not None:
+            self.side_scan_error_signal.emit(side_result.error())
+        if side_result.has_valid_barcodes():
+            print(side_result.barcodes()[0].data())
             self.side_result_signal.emit(side_result)
-            if side_result.error() is not None:
-                self.side_scan_error_signal.emit(side_result.error())
-            top_result = self._top_camera_stream.process_frame(self._top_frame)   
-            if top_result.error() is not None:
-                self.top_scan_error_signal.emit(top_result.error())
-            if  side_result.error() is None and top_result.success():
-                self.side_top_result_signal.emit(side_result,top_result)
-               # self.successfull_scan_signal.emit()
+        
+        top_result = self._top_camera_stream.process_frame(self._top_frame)   
+        if top_result.error() is not None:             
+            self.top_scan_error_signal.emit(top_result.error())    
+                 
+        if  side_result.has_valid_barcodes() and top_result.success():
+            self.side_top_result_signal.emit(side_result,top_result)
+            self.successfull_scan_signal.emit()
                 
         self.finished.emit()
 
-        
-        
+
+

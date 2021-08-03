@@ -38,6 +38,16 @@ class ScanResult:
 
     def barcodes(self):
         return self._barcodes
+    
+    def get_first_barcode(self):
+        return self._barcodes[0]
+    
+    def has_valid_barcodes(self):
+        if len(self._barcodes) > 0:
+            if self._barcodes[0].data() != '':
+                return True
+            
+        return False
 
     def geometry(self):
         return self._geometry
