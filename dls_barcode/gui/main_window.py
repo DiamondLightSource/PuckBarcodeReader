@@ -189,6 +189,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
                 self.processor_thread.start()
                 self.processor_worker.side_top_result_signal.connect(self.addRecordFrame)
                 self.processor_worker.side_scan_error_signal.connect(self.displayScanErrorMessage)
+                self.processor_worker.side_scan_error_signal.connect(self.clear_frame)
                 self.processor_worker.top_scan_error_signal.connect(self.displayScanErrorMessage)
                 self.processor_worker.side_result_signal.connect(self.set_new_side_code)
                 self.processor_worker.successfull_scan_signal.connect(self.set_successfull_scan)
@@ -240,6 +241,10 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(ScanErrorMessage)
     def displayScanErrorMessage(self, scanner_msg): 
         self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
+    
+    @pyqtSlot(ScanErrorMessage)
+    def clear_frame(self, scanner_msg):     
+        self._result_frame.clear_frame(scanner_msg.content())
 
     def displayScanTimeoutMessage(self):
         Beeper.beep()
@@ -262,11 +267,12 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     
     @pyqtSlot(ScanResult, ScanResult)
     def addRecordFrame(self, side_result, top_result):
-        holder_barcode = side_result.get_first_barcode().data()
-        plate = top_result.plate()
-        holder_image = side_result.get_frame_image()
-        pins_image = top_result.get_frame_image()
-        self._record_table.add_record_frame(holder_barcode, plate, holder_image, pins_image)
+        if not self.main_worker._time_run_out():
+            holder_barcode = side_result.get_first_barcode().data()
+            plate = top_result.plate()
+            holder_image = side_result.get_frame_image()
+            pins_image = top_result.get_frame_image()
+            self._record_table.add_record_frame(holder_barcode, plate, holder_image, pins_image)
 
 
     def startCountdown(self):

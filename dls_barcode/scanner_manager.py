@@ -134,7 +134,7 @@ class Processor(QObject):
         if side_result.error() is not None:
             self.side_scan_error_signal.emit(side_result.error())
         if side_result.has_valid_barcodes():
-            print(side_result.barcodes()[0].data())
+           # print(side_result.barcodes()[0].data())
             self.side_result_signal.emit(side_result)
         
         top_result = self._top_camera_stream.process_frame(self._top_frame)   
