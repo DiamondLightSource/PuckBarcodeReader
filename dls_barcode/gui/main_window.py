@@ -193,6 +193,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
                 self.processor_worker.top_scan_error_signal.connect(self.displayScanErrorMessage)
                 self.processor_worker.side_result_signal.connect(self.set_new_side_code)
                 self.processor_worker.successfull_scan_signal.connect(self.set_successfull_scan)
+                self.processor_worker.full_and_valid_signal.connect(self.set_full_and_valid_scan)
  
     def _on_options_action_clicked(self):
         self._kill_main_thread()
@@ -211,6 +212,10 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             
     def set_successfull_scan(self):
         self.main_worker.set_successful_scan()
+        
+    def set_full_and_valid_scan(self):
+        self.main_worker.set_full_and_valid_scan()
+        self.scanCompleted()
         
             
     def closeEvent(self, event):
@@ -268,6 +273,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(ScanResult, ScanResult)
     def addRecordFrame(self, side_result, top_result):
         if not self.main_worker._time_run_out():
+            print("time run out")
             holder_barcode = side_result.get_first_barcode().data()
             plate = top_result.plate()
             holder_image = side_result.get_frame_image()

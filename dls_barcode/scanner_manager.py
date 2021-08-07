@@ -58,6 +58,7 @@ class Scanner(QObject):
         self._new_side_code = False
         self._stop_emitted = False
         self._successful_scan = False
+        self._full_and_valid = False
 
     def run(self): 
         while self._run_flag: 
@@ -90,6 +91,9 @@ class Scanner(QObject):
         
     def set_successful_scan(self):
         self._successful_scan = True
+        
+    def set_full_and_valid_scan(self):
+        self._full_and_valid = True
     
     def start_time(self):
         if self._new_side_code:
@@ -98,6 +102,7 @@ class Scanner(QObject):
             self._new_side_code = False
             self._stop_emitted = False
             self._successful_scan = False
+            self._full_and_valid = False
       
     def stop_time(self):
         if self._time_run_out():
@@ -111,6 +116,10 @@ class Scanner(QObject):
     def _time_run_out(self):
         if self._start_time is None:
             return False
+        if self._full_and_valid: # take a shortcut when full and valid 
+            print("FULL")
+            return True
+       
         return (datetime.now() - self._start_time).total_seconds() > self._duration
         
 
@@ -121,6 +130,7 @@ class Processor(QObject):
     top_scan_error_signal = pyqtSignal(ScanErrorMessage)
     side_scan_error_signal = pyqtSignal(ScanErrorMessage)
     successfull_scan_signal = pyqtSignal()
+    full_and_valid_signal = pyqtSignal()
     
     def __init__(self, side_camera_stream, top_camera_stream, side_frame, top_frame) -> None:
         super().__init__()
@@ -144,6 +154,8 @@ class Processor(QObject):
         if  side_result.has_valid_barcodes() and top_result.success():
             self.side_top_result_signal.emit(side_result,top_result)
             self.successfull_scan_signal.emit()
+            if top_result.is_full_valid():
+                self.full_and_valid_signal.emit()
                 
         self.finished.emit()
 

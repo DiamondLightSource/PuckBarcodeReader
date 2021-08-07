@@ -50,4 +50,3 @@ class ProgressBox(QGroupBox):
     def scan_completed(self):
         self.count = 100
         self.pbar.setValue(self.count)
-        Beeper.beep()
