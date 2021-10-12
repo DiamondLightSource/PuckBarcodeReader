@@ -1,6 +1,6 @@
 pyperclip
 numpy
 scipy
-opencv-python==3.1.0.5
+opencv-python==3.4.0.12
 mock
 PyQt5
