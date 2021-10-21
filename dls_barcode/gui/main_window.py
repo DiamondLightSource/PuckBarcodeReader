@@ -40,7 +40,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._config = config
         self._version = version
 
-
         # UI elements
         self._record_table = None
         self._barcode_table = None
@@ -52,6 +51,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         
         self.main_thread = QThread()
         self.processor_thread = QThread() 
+        self.main_worker = None
         self._manager = ScannerManager(self._config)
         self._last_barcode = None
         self._duration = self._config.get_top_camera_tiemout()
@@ -130,6 +130,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def set_actions_triger(self):
         self._load_store_records()
         self._scan_button.click_action(self._on_scan_action_clicked)
+        self._start_scanner()
         self._menu_bar.about_action_trigerred(self._on_about_action_clicked)
         self._menu_bar.options_action_triggered(self._on_options_action_clicked)
         self._record_table.cell_pressed_action_triggered(self._stop_scanner)
@@ -172,10 +173,11 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self.main_thread.start()
             
     def _kill_main_thread(self):
-        self.main_worker.stop() 
         self.main_thread.quit()
         self.main_thread.wait()
-        self._manager.cleanup()        
+        if self.main_worker is not None:
+            self.main_worker.stop()     
+            self._manager.cleanup()
         
     @pyqtSlot(Frame, Frame)
     def start_processor(self, side_frame, top_frame):    
