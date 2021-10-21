@@ -130,29 +130,28 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def set_actions_triger(self):
         self._load_store_records()
         self._scan_button.click_action(self._on_scan_action_clicked)
-        self._scan_button.setStopLayout()
-        self._start_main_thread() 
         self._menu_bar.about_action_trigerred(self._on_about_action_clicked)
-        self._menu_bar.optiones_action_triggered(self._on_options_action_clicked)
-        self._record_table.cell_pressed_action_triggered(self._to_run_on_table_clicked)
+        self._menu_bar.options_action_triggered(self._on_options_action_clicked)
+        self._record_table.cell_pressed_action_triggered(self._stop_scanner)
 
-
-    def _to_run_on_table_clicked(self):
+    def _stop_scanner(self):
         self._scan_button.setStartLayout()
+        self.resetCountdown()
         self._kill_main_thread()
-    
+        
+    def _start_scanner(self):
+        self._scan_button.setStopLayout()
+        self._start_main_thread()      
+          
     def _on_about_action_clicked(self):
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
     def _on_scan_action_clicked(self):
         self._log.debug("MAIN: Scan menu clicked")
         if  self._scan_button.is_running():
-            self._scan_button.setStartLayout()
-            self.resetCountdown()
-            self._kill_main_thread()
+            self._stop_scanner()
         else: 
-            self._scan_button.setStopLayout()
-            self._start_main_thread()      
+            self._start_scanner()
             
     def _start_main_thread(self):
         self.main_thread = QThread()
@@ -198,8 +197,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def _on_options_action_clicked(self):
         self._kill_main_thread()
         dialog = BarcodeConfigDialog(self._config)
-        self._scan_button.setStartLayout()
-        self.resetCountdown()
+        self._stop_scanner()
         dialog.exec_()
        
     @pyqtSlot(ScanResult)
@@ -216,8 +214,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def set_full_and_valid_scan(self):
         self.main_worker.set_full_and_valid_scan()
         self.scanCompleted()
-        
-            
+                
     def closeEvent(self, event):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
@@ -225,15 +222,15 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         event.accept()
 
     def displayCameraErrorMessage(self):
-        mgs = QMessageBox(self)
-        mgs.setIcon(QMessageBox.Critical)
-        mgs.setWindowTitle("Camera Error")
-        mgs.setText( MessageFactory.camera_not_found_message().content())
-        configure_button = mgs.addButton("Configure", QMessageBox.ActionRole)
-        mgs.addButton("Quit", QMessageBox.ActionRole)
-        mgs.setEscapeButton(configure_button)
-        mgs.exec_()
-        if mgs.clickedButton() == configure_button:
+        message_box = QMessageBox(self)
+        message_box.setIcon(QMessageBox.Critical)
+        message_box.setWindowTitle("Camera Error")
+        message_box.setText( MessageFactory.camera_not_found_message().content())
+        configure_button = message_box.addButton("Configure", QMessageBox.ActionRole)
+        message_box.addButton("Quit", QMessageBox.ActionRole)
+        message_box.setEscapeButton(configure_button)
+        message_box.exec_()
+        if message_box.clickedButton() == configure_button:
             self._on_options_action_clicked()
             self._on_scan_action_clicked()
         else:

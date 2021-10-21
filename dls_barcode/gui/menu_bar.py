@@ -41,7 +41,7 @@ class MenuBar(QMainWindow):
         help_menu.addAction(self._about_action)
 
 
-    def optiones_action_triggered(self, on_options_action_clicked):
+    def options_action_triggered(self, on_options_action_clicked):
         self._options_action.triggered.connect(on_options_action_clicked)
 
     def about_action_trigerred(self, on_about_action_clicked):

@@ -32,7 +32,6 @@ class Store:
     def _add_record(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new record to the store and save to the backing file.
         """
-        #merged_img = self._merge_holder_image_into_pins_image(holder_img, pins_img)
         guid = str(uuid.uuid4())
         self._store_writer.to_image(pins_img, holder_img, guid)
         img_path = self._store_writer.get_img_path()
