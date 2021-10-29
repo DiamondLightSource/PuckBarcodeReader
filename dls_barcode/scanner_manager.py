@@ -127,7 +127,6 @@ class Processor(QObject):
     finished = pyqtSignal()
     side_result_signal = pyqtSignal(ScanResult)
     side_top_result_signal = pyqtSignal(ScanResult, ScanResult)
-    top_scan_error_signal = pyqtSignal(ScanErrorMessage)
     side_scan_error_signal = pyqtSignal(ScanErrorMessage)
     successfull_scan_signal = pyqtSignal()
     full_and_valid_signal = pyqtSignal()
@@ -144,12 +143,9 @@ class Processor(QObject):
         if side_result.error() is not None:
             self.side_scan_error_signal.emit(side_result.error())
         if side_result.has_valid_barcodes():
-           # print(side_result.barcodes()[0].data())
             self.side_result_signal.emit(side_result)
         
-        top_result = self._top_camera_stream.process_frame(self._top_frame)   
-        if top_result.error() is not None:             
-            self.top_scan_error_signal.emit(top_result.error())    
+        top_result = self._top_camera_stream.process_frame(self._top_frame)    
                  
         if  side_result.has_valid_barcodes() and top_result.success():
             self.side_top_result_signal.emit(side_result,top_result)
