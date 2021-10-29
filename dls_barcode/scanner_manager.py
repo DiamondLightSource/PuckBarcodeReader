@@ -52,12 +52,18 @@ class Scanner(QObject):
         super().__init__()
         self._side_camera_stream = side_camera_stream
         self._top_camera_stream = top_camera_stream
+        # run flag is used to stop the main scan loop in a clean way
         self._run_flag = True
         self._duration = duration
+        # start time flag is used in tiemout calculation
         self._start_time = None
+        # flag used to pass the information from the processing thread - there is additional logic in mian_widnow ???
         self._new_side_code = False
+        # flag used  in the stop time - to make sure stop time is emmited only once 
         self._stop_emitted = False
+        # flag used to pass information from the processing thread - to distinguish between timeout scan and successful one ???
         self._successful_scan = False
+        # flag used by to pass information from the processin thread - to shorten the scan duration if scan is successfull earlier ???
         self._full_and_valid = False
 
     def run(self): 
