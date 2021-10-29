@@ -8,7 +8,7 @@ from sys import path
 
 from dls_barcode.config import BarcodeConfig
 
-from dls_barcode.scanner_manager import ScannerManager
+
 from PyQt5 import QtWidgets
 import argparse
 from dls_barcode.version import VERSION

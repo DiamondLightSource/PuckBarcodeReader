@@ -3,24 +3,21 @@
 from dls_barcode.camera.scanner_message import ScanErrorMessage
 from dls_util.beeper import Beeper
 import logging
-import time
-from datetime import datetime
 
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import QMutex, QThread, QTimer, pyqtSlot
+from PyQt5.QtCore import  QThread, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
 from dls_barcode.config import BarcodeConfigDialog
 from dls_barcode.gui.progress_bar import ProgressBox
 from dls_barcode.gui.scan_button import ScanButton
-from dls_barcode.scanner_manager import Scanner, Processor, ScannerManager
-from dls_barcode.scan import scan_result
+from dls_barcode.scanner_manager import ScannerManager
+from dls_barcode.scanner import Scanner 
+from dls_barcode.processor import Processor
 from dls_barcode.scan.scan_result import ScanResult
 from dls_util.cv.frame import Frame
-from dls_util.message import message_type
 
 from .barcode_table import BarcodeTable
-from .countdown_box import CountdownBox
 from .image_frame import ImageFrame
 from .menu_bar import MenuBar
 from .message_box import MessageBox
