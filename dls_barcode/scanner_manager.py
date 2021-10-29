@@ -85,7 +85,7 @@ class Scanner(QObject):
         self._run_flag = False
         
     def set_new_side_code(self):
-        print("setting new")
+        print("setting new side code")
         if not self._new_side_code:
             self._new_side_code = True
         

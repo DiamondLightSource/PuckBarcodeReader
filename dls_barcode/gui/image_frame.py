@@ -25,10 +25,13 @@ class ImageFrame(QGroupBox):
 
         self.setLayout(vbox)
 
-    def clear_frame(self, message):
-        self._frame.clear()
+    def clear_frame_and_set_text(self, message):
+        self._frame.clear()   
         self._frame.setText(message)
-
+        
+    def clear_frame(self):
+        self._frame.clear()
+        
     def display_image(self, image):
         """ Called when a new row is selected on the record table. Displays the specified
         image (image of the highlighted scan) in the image frame

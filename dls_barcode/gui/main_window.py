@@ -170,14 +170,15 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self.main_worker.stop_time_signal.connect(self.displayScanTimeoutMessage)
         self.main_worker.success_stop_time_signal.connect(self.displayPuckScanCompleteMessage)
         self.main_worker.start_time_signal.connect(self.startCountdown)
+        self.main_worker.start_time_signal.connect(self.clear_frame)
         self.main_thread.start()
             
     def _kill_main_thread(self):
-        self.main_thread.quit()
-        self.main_thread.wait()
         if self.main_worker is not None:
             self.main_worker.stop()     
-            self._manager.cleanup()
+        self.main_thread.quit()
+        self.main_thread.wait()
+        self._manager.cleanup()
         
     @pyqtSlot(Frame, Frame)
     def start_processor(self, side_frame, top_frame):    
@@ -189,9 +190,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
                 self.processor_worker.finished.connect(self.processor_thread.wait)
                 self.processor_thread.start()
                 self.processor_worker.side_top_result_signal.connect(self.addRecordFrame)
-                self.processor_worker.side_scan_error_signal.connect(self.displayScanErrorMessage)
-                self.processor_worker.side_scan_error_signal.connect(self.clear_frame)
-                self.processor_worker.top_scan_error_signal.connect(self.displayScanErrorMessage)
+                self.processor_worker.side_scan_error_signal.connect(self.clear_frame_display_message)
                 self.processor_worker.side_result_signal.connect(self.set_new_side_code)
                 self.processor_worker.successfull_scan_signal.connect(self.set_successfull_scan)
                 self.processor_worker.full_and_valid_signal.connect(self.set_full_and_valid_scan)
@@ -201,7 +200,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         dialog = BarcodeConfigDialog(self._config)
         self._stop_scanner()
         dialog.exec_()
-       
+    
     @pyqtSlot(ScanResult)
     def set_new_side_code(self, result): 
         result_first_barcode = result.get_first_barcode().data()
@@ -247,8 +246,11 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
     
     @pyqtSlot(ScanErrorMessage)
-    def clear_frame(self, scanner_msg):     
-        self._result_frame.clear_frame(scanner_msg.content())
+    def clear_frame_display_message(self, scanner_msg):     
+        self._result_frame.clear_frame_and_set_text(scanner_msg.content())
+        
+    def clear_frame(self):
+        self._result_frame.clear_frame()
 
     def displayScanTimeoutMessage(self):
         Beeper.beep()
