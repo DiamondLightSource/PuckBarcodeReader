@@ -36,8 +36,6 @@ class Scanner(QObject):
                 break
             if top_frame is not None and side_frame is not None: 
                 self.images_collected.emit(side_frame, top_frame)
-                #self.start_time() ??
-                #self.stop_time() ??
                                     
         self.finished.emit()
    

@@ -3,19 +3,14 @@ from dls_barcode.camera.scanner_message import ScanErrorMessage
 from dls_barcode.scan.scan_result import ScanResult
 
 
-class Processor(QObject):
+class SideProcessor(QObject):
     finished = pyqtSignal()
     side_result_signal = pyqtSignal(ScanResult)
-    side_top_result_signal = pyqtSignal(ScanResult, ScanResult)
     side_scan_error_signal = pyqtSignal(ScanErrorMessage)
-    successfull_scan_signal = pyqtSignal()
-    full_and_valid_signal = pyqtSignal()
     
-    def __init__(self, side_camera_stream, top_camera_stream, side_frame, top_frame) -> None:
+    def __init__(self, side_camera_stream, side_frame) -> None:
         super().__init__()
         self._side_camera_stream = side_camera_stream
-        self._top_camera_stream = top_camera_stream
-        self._top_frame= top_frame
         self._side_frame = side_frame 
 
     def run(self):
@@ -24,12 +19,25 @@ class Processor(QObject):
             self.side_scan_error_signal.emit(side_result.error())
         if side_result.has_valid_barcodes():
             self.side_result_signal.emit(side_result)
-        
+            
+        self.finished.emit()
+    
+    
+class TopProcessor(QObject):
+    finished = pyqtSignal()
+    top_result_signal = pyqtSignal(ScanResult)
+    full_and_valid_signal = pyqtSignal()
+    
+    def __init__(self, top_camera_stream, top_frame) -> None:
+        super().__init__()
+        self._top_camera_stream = top_camera_stream
+        self._top_frame= top_frame
+
+    def run(self):
         top_result = self._top_camera_stream.process_frame(self._top_frame)    
                  
-        if  side_result.has_valid_barcodes() and top_result.success():
-            self.side_top_result_signal.emit(side_result,top_result)
-            self.successfull_scan_signal.emit()
+        if  top_result.success():
+            self.top_result_signal.emit(top_result)
             if top_result.is_full_valid():
                 self.full_and_valid_signal.emit()
                 
