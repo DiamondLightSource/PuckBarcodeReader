@@ -30,9 +30,9 @@ class ScanRecordTable(QGroupBox):
         self._options = options
 
         self._barcodeTable = barcode_table
-        self._imageFrame = image_frame
-        self._holderFrame = holder_frame
-        self._resultFrame = result_frame
+        self._image_frame = image_frame
+        self._holder_frame = holder_frame
+        self._result_frame = result_frame
 
         self.setTitle("Scan Records")
         self.setMaximumWidth(730)
@@ -120,9 +120,9 @@ class ScanRecordTable(QGroupBox):
             marked_image = record.get_marked_image(self._options)
             image = record.get_image()
             holder_image = record.get_holder_image()
-            self._imageFrame.display_image(image)
-            self._holderFrame.display_image(holder_image)
-            self._resultFrame.display_image(marked_image)
+            self._image_frame.display_image(image)
+            self._holder_frame.display_image(holder_image)
+            self._result_frame.display_image(marked_image)
         except IndexError:
             self._barcodeTable.clear()
 #            self._imageFrame.clear_frame("Record table empty\nNothing to display")
