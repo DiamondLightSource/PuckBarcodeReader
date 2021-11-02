@@ -156,6 +156,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         else: 
             self._start_scanner()
             
+    # TODO: move the threads out of this class 
     def _start_main_thread(self):
         self.main_thread = QThread()
         self._manager.initialise_scanner()
@@ -209,7 +210,9 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         dialog = BarcodeConfigDialog(self._config)
         self._stop_scanner()
         dialog.exec_()
-        
+       
+    # TODO: find a way to display one or the other message - successful scan gets scan complete 
+    # scan timeout message for non-successful result     
     def _on_time_out(self):
         self.processing_flag = False
         self.displayScanTimeoutMessage() # need to know more to display the correct
