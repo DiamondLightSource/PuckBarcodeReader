@@ -19,7 +19,7 @@ class BarcodeTable(QGroupBox):
 
         self.setTitle("Plate Barcodes")
         self.setMaximumWidth(160)
-        self.setMinimumWidth(160)
+        self.setMinimumWidth(260)
         self._init_ui()
         self.clear()
 

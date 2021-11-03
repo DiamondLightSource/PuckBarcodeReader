@@ -64,7 +64,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         """
         self._window_icon = QtGui.QIcon("..\\resources\\icons\\qr_code_32.png")
 
-        self.setGeometry(50, 50, 1500, 650) #950
+        self.setGeometry(50, 50, 1500, 950) #950
         self.setWindowTitle('Diamond Puck Barcode Scanner')
         self.setWindowIcon(self._window_icon)
 
@@ -97,6 +97,10 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
         table_vbox = QtWidgets.QVBoxLayout()
         table_vbox.addWidget(self._record_table)
+        img_hbox = QtWidgets.QHBoxLayout()
+        img_hbox.addWidget(self._holder_frame)
+        img_hbox.addWidget(self._image_frame)
+        table_vbox.addLayout(img_hbox)
         table_vbox.addWidget(self._scan_button)
 
         hbox.addLayout(table_vbox)
@@ -106,10 +110,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         img_vbox = QtWidgets.QVBoxLayout()
         img_vbox.addWidget(self._result_frame)
         
-        img_hbox = QtWidgets.QHBoxLayout()
-        img_hbox.addWidget(self._holder_frame)
-        img_hbox.addWidget(self._image_frame)
-        img_vbox.addLayout(img_hbox)
+       
 
         msg_hbox = QtWidgets.QHBoxLayout()
         msg_hbox.setSpacing(10)

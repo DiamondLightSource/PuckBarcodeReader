@@ -37,7 +37,8 @@ class ImageFrame(QGroupBox):
         image (image of the highlighted scan) in the image frame
         """
         self._frame.clear()
-        self._frame.setMinimumWidth(700)
+        self._frame.setMinimumWidth(500)
+        self._frame.setMinimumHeight(300)
         self._frame.setAlignment(Qt.AlignCenter)
 
         if image is not None:
