@@ -31,16 +31,6 @@ class TestCircleDetector(unittest.TestCase):
         decorator = CircleDetector()
         self.assertEquals(decorator._max_radius, 150)
 
-    def test_init_sets_method(self):
-        decorator = CircleDetector()
-        _OPENCV_MAJOR = cv2.__version__[0]
-        if _OPENCV_MAJOR == '3':
-            _HOUGH_METHOD = cv2.HOUGH_GRADIENT
-        else:
-            from cv2 import cv
-            _HOUGH_METHOD = cv.CV_HOUGH_GRADIENT
-        self.assertEquals(decorator._method, _HOUGH_METHOD)
-
     def test_set_canny_thresh_sets_the_value_correctly(self):
         decorator = CircleDetector()
         decorator.set_canny_threshold(400)

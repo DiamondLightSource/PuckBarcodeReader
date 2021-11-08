@@ -79,8 +79,8 @@ class TestStoreWriter(unittest.TestCase):
         cm.remove_img_file(MagicMock())
 
         # Assert
-        cm._file_manager.remove.assert_called_once()
-
+        self.assertEqual(cm._file_manager.remove.call_count, 2)
+                 
     def test_remove_image_file_does_not_attempt_to_remove_file_when_it_does_not_exists(self):
         # Arrange
         cm = StoreWriter(self.directory, self.file_name)
@@ -94,34 +94,60 @@ class TestStoreWriter(unittest.TestCase):
         cm._file_manager.remove.assert_not_called()
 
     def test_to_image_calls_image_save_as(self):
+        # Arrange
         cm = StoreWriter(self.directory, self.file_name)
-        image = MagicMock()
-        cm.to_image(image, 'test_image')
-        image.save_as.assert_called_once()
+        pin_image = MagicMock()
+        holder_image = MagicMock()
+        
+        # Act
+        cm.to_image(pin_image, holder_image, 'test_image')
+         
+         # Assert
+        pin_image.save_as.assert_called_once()
 
     def test_to_image_sets_image_path(self):
+        # Arrange
         cm = StoreWriter(self.directory, self.file_name)
+        
+        # Act
         self.assertIsNone((cm.get_img_path()))
-        cm.to_image(MagicMock(), 'name')
+        cm.to_image(MagicMock(), MagicMock(), 'name')
+        
+        # Assert
         self.assertIsNotNone((cm.get_img_path()))
 
     def test_to_image_makes_img_dir(self):
+         # Arrange
         cm = StoreWriter(self.directory, self.file_name)
         cm._make_img_dir = MagicMock()
         cm._make_img_dir.return_value = 'dir'
-        cm.to_image(MagicMock(), 'name')
+        
+        # Act
+        cm.to_image(MagicMock(), MagicMock(), 'name')
+        
+        # Assert
         cm._make_img_dir.assert_called_once()
 
     def test_get_img_path_returns_none_if_to_image_not_called(self):
+        # Arrange
         cm = StoreWriter(self.directory, self.file_name)
         cm.to_image = MagicMock()
+        
+        # Act
         cm.to_image.assert_not_called()
+        
+        # Assert
         self.assertIsNone(cm.get_img_path())
 
     def test_get_image_returns_image_path(self):
+        # Arrange
         cm = StoreWriter(self.directory, self.file_name)
-        cm.to_image(MagicMock(), 'test_image')
+        cm.to_image(MagicMock(), MagicMock(), 'test_image')
+        
+        # Act
         path = cm.get_img_path()
+        
+        # Assert
         self.assertIsNotNone(path)
         self.assertIn('test_image', path)
         self.assertIn("img_dir", path)

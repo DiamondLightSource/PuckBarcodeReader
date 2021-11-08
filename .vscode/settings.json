@@ -1,5 +1,16 @@
 {
    "python.pythonPath": "C:\\Users\\rqq82173\\.virtualenvs\\PuckBarcodeReader-6rTXUiM6\\Scripts\\python.exe",
    "python.linting.pylintArgs": ["--init-hook",
-      "import sys; sys.path.append('C:\\Users\\rqq82173\\Documents\\PuckBarcodeReader')"],
+      "import sys; sys.path.append('C:\\Users\\rqq82173\\Documents\\PuckBarcodeReader')"
+   ],
+   "python.testing.unittestArgs": [
+      "-v",
+      "-s",
+      "./tests",
+      "-p",
+      "test_*.py"
+   ],
+   "python.testing.pytestEnabled": false,
+   "python.testing.unittestEnabled": true,
+  
 } 

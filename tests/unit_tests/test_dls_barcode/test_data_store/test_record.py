@@ -8,7 +8,7 @@ class TestRecord(unittest.TestCase):
 
     def test_from_string_creates_new_record_with_all_given_parameters(self):
         # Arrange
-        str = "f59c92c1;1494238920.0;test.png;None;DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        str = "f59c92c1;1494238920.0;test.png;test_holder.png;None;DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
 
         # Act
         r = Record.from_string(str)
@@ -26,7 +26,7 @@ class TestRecord(unittest.TestCase):
 
     def test_from_string_creates_new_record_time_stamp_missing(self):
         # Arrange
-        str = "f59c92c1; ;test.png;None;DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        str = "f59c92c1; ;test.png;test_holder.png;None;DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
 
         # Act
         r = Record.from_string(str)
@@ -44,7 +44,7 @@ class TestRecord(unittest.TestCase):
 
     def test_to_string_recreates_given_values_excluding_serial_number(self):
         # Arrange
-        str = "f59c92c1;1494238920.0;test.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        str = "f59c92c1;1494238920.0;test.png;test_holder.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
         r = Record.from_string(str)
 
         # Act
@@ -63,7 +63,7 @@ class TestRecord(unittest.TestCase):
         # Full human readable timestamp is "2017-09-20 14:18:36" but Travis CI server runs on a different time zone so can't compare the hours
         human_readable_timestamp_day = "2017-09-20 "
         human_readable_timestamp_minutes = ":18:36"
-        source_string = "f59c92c1;" + str(timestamp) + ";test.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        source_string = "f59c92c1;" + str(timestamp) + ";test.png;test_holder.png;None;DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
         record = Record.from_string(source_string)
 
         # Act
@@ -80,11 +80,12 @@ class TestRecord(unittest.TestCase):
         holder_barcode = "ABCD"
         barcodes = ["barcode1", "barcode2"]
         image_path = "a_path"
+        holder_image_path = "holder_path"
         mock_geometry = MagicMock()
         mock_plate = self._create_mock_plate(plate_type, barcodes, mock_geometry)
 
         # Act
-        r = Record.from_plate(holder_barcode, mock_plate, image_path)
+        r = Record.from_plate(holder_barcode, mock_plate, image_path, holder_image_path)
 
         # Assert
         self.assertIsNotNone(r.timestamp)
@@ -101,7 +102,7 @@ class TestRecord(unittest.TestCase):
         mock_plate = self._create_mock_plate("plate type", barcodes, MagicMock())
 
         # Act
-        r = Record.from_plate(holder_barcode="ABCD", plate=mock_plate, image_path="a_path")
+        r = Record.from_plate(holder_barcode="ABCD", plate=mock_plate, image_path="a_path", holder_image_path="path")
 
         # Assert
         self.assertEquals(r.num_slots, len(barcodes))
