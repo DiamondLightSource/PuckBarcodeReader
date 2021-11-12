@@ -227,4 +227,4 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._countdown_box.scan_completed()
         
     def is_latest_holder_barcode(self, result_barcode):
-        self._record_table.is_latest_holder_barcode(result_barcode)
+        return self._record_table.is_latest_holder_barcode(result_barcode)
