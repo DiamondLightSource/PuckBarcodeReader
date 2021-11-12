@@ -4,7 +4,7 @@ from dls_util.cv.frame import Frame
 
 
 
-class Scanner(QObject):
+class FrameGrabber(QObject):
     finished = pyqtSignal()
     new_side_frame = pyqtSignal(Frame)
     new_top_frame = pyqtSignal(Frame)
