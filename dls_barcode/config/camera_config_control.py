@@ -57,9 +57,13 @@ class CameraConfigControl(ConfigControl):
 
     def _test_camera(self):
         self.save_to_config()
-        self._test_camera_settings()
-        self._display_camera_preview()
-
+        try:
+           self._test_camera_settings()
+           self._display_camera_preview()
+        except ValueError:
+            QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
+        
+    
     def _open_camera_controls(self):
         camera_num = int(self.txt_number.text())
         CaptureManager.open_camera_controls(camera_num)
@@ -73,8 +77,7 @@ class CameraConfigControl(ConfigControl):
         stream.release_resources()
         if not read_ok:
             # Capture the next frame from the camera
-            QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
-            return
+            raise ValueError
 
     def _display_camera_preview(self):
         stream = CaptureManager(self._camera_config)
