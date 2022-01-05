@@ -3,20 +3,21 @@ verify_ssl = true
 name = "pypi"
 url = "https://pypi.org/simple"
 
-[dev-packages]
+[dev-packages] 
 autopep8 = "*"
+pytest = "*"
+pytest-qt = "*"
+pytest-mock = "*"
+mock = "*"
+pylint = "*"
 
 [packages]
 pygelf = "*"
 opencv-python = "*"
 pyperclip = "*"
-pylint = "*"
 scipy = "==1.5.4"
 numpy = "==1.19.5"
 pyqt5 = "*"
-pytest = "*"
-pytest-qt = "*"
-pytest-mock = "*"
 
 [requires]
 python_version = "3.6"
