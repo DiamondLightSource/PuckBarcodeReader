@@ -41,6 +41,7 @@ def test_side_processor_therad_doesnt_start_if_top_processor_is_running(qtbot, f
     frame_processor_side_camera_stream.top_processor_thread.isRunning = MagicMock(return_value = True)
     with qtbot.assertNotEmitted(frame_processor_side_camera_stream.side_processor_thread.started):
         frame_processor_side_camera_stream.start_processor(Mock(), Mock())
+
 # fixture 2       
 def test_process_side_triggers_top_processor_thread_if_processing_flag_is_on(qtbot, frame_processor_top_camera_stream):
     frame_processor_top_camera_stream.processing_flag = True
@@ -51,7 +52,7 @@ def test_process_side_triggers_top_processor_thread_if_processing_flag_is_on(qtb
     assert blocker.signal_triggered, "started"
     
 def test_process_side_starts_timer_if_not_active(qtbot, frame_processor_top_camera_stream):
-
+    
     frame_processor_top_camera_stream.processing_flag = True
     frame_processor_top_camera_stream.timer.start = Mock()
     frame_processor_top_camera_stream.timer.isActive = MagicMock(return_value = False)
@@ -62,4 +63,44 @@ def test_process_side_starts_timer_if_not_active(qtbot, frame_processor_top_came
     assert frame_processor_top_camera_stream.startCountdown.call_count == 1
     assert frame_processor_top_camera_stream.clear_frame.call_count == 1
     
+def test_on_time_out_sets_processing_flag_to_false( frame_processor_side_camera_stream):
+    frame_processor_side_camera_stream.processing_flag = True
+    frame_processor_side_camera_stream._side_result = Mock(return_value = ScanResult(1))
+    
+    frame_processor_side_camera_stream._on_time_out()
+    
+    assert frame_processor_side_camera_stream.processing_flag == False
+    
+def test_on_time_out_triggers_scan_timeout_if_holder_barcode_not_new( frame_processor_side_camera_stream):
+    frame_processor_side_camera_stream._side_result = Mock(return_value = ScanResult(1))
+    frame_processor_side_camera_stream.is_latest_holder_barcode = Mock(return_value = False)
+    
+    frame_processor_side_camera_stream._on_time_out()
+    
+    assert frame_processor_side_camera_stream.displayScanTimeoutMessage.call_count == 1
+    assert frame_processor_side_camera_stream.displayPuckScanCompleteMessage.call_count == 0
+    
+def test_on_time_out_triggers_scan_complete_for_new_holder_barcode(frame_processor_side_camera_stream):
 
+    frame_processor_side_camera_stream._side_result = Mock(return_value = ScanResult(1))
+    frame_processor_side_camera_stream.is_latest_holder_barcode = Mock(return_value = True)
+    
+    frame_processor_side_camera_stream._on_time_out()
+    
+    assert frame_processor_side_camera_stream.displayPuckScanCompleteMessage.call_count == 1
+    assert frame_processor_side_camera_stream.displayScanTimeoutMessage.call_count == 0
+    
+def test_set_top_processing_flag_only_sets_the_flag_if_a_new_holder_barcode_detected(frame_processor_side_camera_stream):
+    frame_processor_side_camera_stream.processing_flag = False
+    frame_processor_side_camera_stream._side_result = Mock(return_value = ScanResult(1))
+    frame_processor_side_camera_stream.is_latest_holder_barcode = Mock(return_value = True)
+    
+    frame_processor_side_camera_stream._set_top_porcessing_flag()
+    
+    assert frame_processor_side_camera_stream.processing_flag == False
+    
+    frame_processor_side_camera_stream.is_latest_holder_barcode = Mock(return_value = False)
+    
+    frame_processor_side_camera_stream._set_top_porcessing_flag()
+    
+    assert frame_processor_side_camera_stream.processing_flag == True

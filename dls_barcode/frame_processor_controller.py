@@ -39,7 +39,7 @@ class FrameProcessorController(QObject):
                 self.processor_worker.finished.connect(self.side_processor_thread.wait)
                 self.side_processor_thread.start()
                 #self.processor_worker.side_scan_error_signal.connect(self.clear_frame_display_message)
-                self.processor_worker.side_result_signal.connect(self.set_new_side_result)
+                self.processor_worker.side_result_signal.connect(self._set_new_side_result)
                 self.processor_worker.finished.connect(lambda: self.process_side(top_frame))
                 
               
@@ -56,8 +56,8 @@ class FrameProcessorController(QObject):
             self.top_processor_worker.finished.connect(self.top_processor_thread.wait)
             self.top_processor_worker.finished.connect(self.top_processor_worker.deleteLater) 
             self.top_processor_thread.start()
-            self.top_processor_worker.full_and_valid_signal.connect(self.set_full_and_valid_scan)
-            self.top_processor_worker.top_result_signal.connect(self.set_new_top_result)
+            self.top_processor_worker.full_and_valid_signal.connect(self._set_full_and_valid_scan)
+            self.top_processor_worker.top_result_signal.connect(self._set_new_top_result)
             
     def _on_time_out(self):
         self.processing_flag = False
@@ -68,12 +68,12 @@ class FrameProcessorController(QObject):
             self.displayScanTimeoutMessage() 
 
     @pyqtSlot(ScanResult)
-    def set_new_side_result(self, result): 
+    def _set_new_side_result(self, result): 
         self._side_result = result 
         self._set_top_porcessing_flag()
         
     @pyqtSlot(ScanResult)
-    def set_new_top_result(self, result): 
+    def _set_new_top_result(self, result): 
         self._top_result = result 
         self.addRecordFrame(self._top_result, self._side_result) #UI
     
@@ -82,8 +82,8 @@ class FrameProcessorController(QObject):
         if not self.is_latest_holder_barcode(result_first_barcode):
             self.processing_flag = True
         
-    def set_full_and_valid_scan(self): #fast track time_out
+    def _set_full_and_valid_scan(self): #fast track time_out
         self.timer.stop()
         self.processing_flag = False
-        self.displayPuckScanCompleteMessage()
+        self.displayPuckScanCompleteMessage() #UI
         self.scanCompleted() #UI
