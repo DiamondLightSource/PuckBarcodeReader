@@ -3,7 +3,7 @@ from dls_barcode.frame_grabber import FrameGrabber
 from dls_barcode.frame_processor_controller import FrameProcessorController
 from dls_barcode.scanner_manager import ScannerManager
 
-#from dls_barcode.scanner_manager import ScannerManager
+
 from dls_util.cv.frame import Frame
 
 
