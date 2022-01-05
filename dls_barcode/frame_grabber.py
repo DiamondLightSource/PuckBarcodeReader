@@ -2,8 +2,6 @@ from PyQt5.QtCore import  QObject, pyqtSignal
 
 from dls_util.cv.frame import Frame
 
-
-
 class FrameGrabber(QObject):
     finished = pyqtSignal()
     new_side_frame = pyqtSignal(Frame)
@@ -38,9 +36,7 @@ class FrameGrabber(QObject):
                 self.images_collected.emit(side_frame, top_frame)
                                     
         self.finished.emit()
-   
+
     def stop(self):
         self._run_flag = False
         
- 
-   

@@ -10,7 +10,7 @@ from dls_util.cv.frame import Frame
 class FrameGrabberController(QObject):
     
     def __init__(self, config, displayPuckScanCompleteMessage, displayScanTimeoutMessage, is_latest_holder_barcode,
-                 startCountdown, addRecordFrame, clear_frame, scanCompleted ):
+                 startCountdown, addRecordFrame, clear_frame, scanCompleted):
         super().__init__()
         self.grabber_thread = QThread()
         self.grabber_worker = None

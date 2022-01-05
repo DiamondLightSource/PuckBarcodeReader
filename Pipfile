@@ -14,6 +14,9 @@ pylint = "*"
 scipy = "==1.5.4"
 numpy = "==1.19.5"
 pyqt5 = "*"
+pytest = "*"
+pytest-qt = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3.6"

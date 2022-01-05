@@ -23,7 +23,7 @@ class ScannerManager:
         self.top_camera_stream.initialise_stream()
         self.top_camera_stream.create_capture()
         self.top_camera_stream.create_scanner(self._config)
-   
+
     def cleanup(self):
         self.side_camera_stream.release_capture()
         self.top_camera_stream.release_capture()

@@ -1,20 +1,16 @@
-
-
-#from dls_barcode.camera.scanner_message import ScanErrorMessage
-#from dls_barcode.frame_grabber_controller import FrameGrabberController
 from dls_barcode.frame_grabber_controller import FrameGrabberController
 from dls_util.beeper import Beeper
+
 import logging
 
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import  QThread, QTime, QTimer, pyqtSlot
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
 from dls_barcode.config import BarcodeConfigDialog
 from dls_barcode.gui.progress_bar import ProgressBox
 from dls_barcode.gui.scan_button import ScanButton
-from dls_barcode.scanner_manager import ScannerManager  
-from dls_barcode.scan.scan_result import ScanResult
+
 from dls_util.cv.frame import Frame
 
 from .barcode_table import BarcodeTable
@@ -137,7 +133,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._scan_button.setStopLayout()
         self._frame_grabber_controller.start_grabber_thread(self.displayHolderFrame, self.displayPuckFrame, 
                                                             self.displayCameraErrorMessage)      
-          
+
     def _on_about_action_clicked(self):
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
@@ -147,14 +143,13 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             self._stop_frame_grabber()
         else: 
             self._start_frame_grabber()
-                        
+
     def _on_options_action_clicked(self):
         self._frame_grabber_controller.kill_grabber_thread()
         dialog = BarcodeConfigDialog(self._config)
         self._stop_frame_grabber()
         dialog.exec_()
 
-                
     def closeEvent(self, event):
         """This overrides the method from the base class.
         It is called when the user closes the window from the X on the top right."""
@@ -179,15 +174,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     def displayPuckScanCompleteMessage(self):
         Beeper.beep()
         self._message_box.display(MessageFactory.puck_scan_completed_message())
-    
-    #@pyqtSlot(ScanErrorMessage)
-    #def displayScanErrorMessage(self, scanner_msg): 
-    #    self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
-    
-    #@pyqtSlot(ScanErrorMessage)
-    #def clear_frame_display_message(self, scanner_msg):     
-    #    self._result_frame.clear_frame_and_set_text(scanner_msg.content())
-        
+
     def clear_frame(self):
         self._result_frame.clear_frame()
 
@@ -228,3 +215,11 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         
     def is_latest_holder_barcode(self, result_barcode):
         return self._record_table.is_latest_holder_barcode(result_barcode)
+    
+    #@pyqtSlot(ScanErrorMessage)
+    #def displayScanErrorMessage(self, scanner_msg): 
+    #    self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
+    
+    #@pyqtSlot(ScanErrorMessage)
+    #def clear_frame_display_message(self, scanner_msg):     
+    #    self._result_frame.clear_frame_and_set_text(scanner_msg.content())
