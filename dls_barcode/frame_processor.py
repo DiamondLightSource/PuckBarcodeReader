@@ -31,12 +31,12 @@ class TopProcessor(QObject):
     def __init__(self, top_camera_stream, top_frame) -> None:
         super().__init__()
         self._top_camera_stream = top_camera_stream
-        self._top_frame= top_frame
+        self._top_frame = top_frame
 
     def run(self):
         top_result = self._top_camera_stream.process_frame(self._top_frame)    
                  
-        if  top_result.success():
+        if top_result.success():
             self.top_result_signal.emit(top_result)
             if top_result.is_full_valid():
                 self.full_and_valid_signal.emit()
