@@ -9,7 +9,7 @@ class FrameGrabber(QObject):
     images_collected = pyqtSignal(Frame, Frame)
     camera_error = pyqtSignal()
 
-    
+
     def __init__(self, side_camera_stream, top_camera_stream):
         super().__init__()
         self._side_camera_stream = side_camera_stream
@@ -34,9 +34,9 @@ class FrameGrabber(QObject):
                 break
             if top_frame is not None and side_frame is not None: 
                 self.images_collected.emit(side_frame, top_frame)
-                                    
+
         self.finished.emit()
 
     def stop(self):
         self._run_flag = False
-        
+

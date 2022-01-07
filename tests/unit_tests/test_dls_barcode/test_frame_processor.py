@@ -1,8 +1,8 @@
 import pytest
-from dls_barcode.camera.scanner_message import ScanErrorMessage
-from dls_barcode.frame_processor import SideProcessor, TopProcessor
 from mock.mock import Mock
 
+from dls_barcode.camera.scanner_message import ScanErrorMessage
+from dls_barcode.frame_processor import SideProcessor, TopProcessor
 from dls_barcode.scan.scan_result import ScanResult
 
 @pytest.fixture(scope='module')
