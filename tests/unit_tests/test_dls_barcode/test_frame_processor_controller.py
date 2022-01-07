@@ -4,7 +4,7 @@ from mock.mock import MagicMock, Mock
 from dls_barcode.frame_processor_controller import FrameProcessorController
 from dls_barcode.scan.scan_result import ScanResult
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def frame_processor_side_camera_stream():
     config = Mock()
     config.get_top_camera_tiemout=Mock(return_value = 10)

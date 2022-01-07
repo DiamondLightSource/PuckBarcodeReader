@@ -4,7 +4,7 @@ from mock.mock import MagicMock, Mock
 from dls_barcode.frame_grabber import FrameGrabber
 from dls_util.cv.frame import Frame
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def frame_grabber():
     side_camera_stream = Mock()
     top_camera_stream = Mock()

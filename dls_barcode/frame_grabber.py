@@ -21,18 +21,15 @@ class FrameGrabber(QObject):
     def run(self): 
         while self._run_flag: 
             side_frame = self._side_camera_stream.get_frame()
-            if side_frame is not None:
-                self.new_side_frame.emit(side_frame)
-            else:
-                self.camera_error.emit()
-                break
             top_frame = self._top_camera_stream.get_frame()
-            if top_frame is not None:
-                self.new_top_frame.emit(top_frame)
-            else:
+            if side_frame is None:
+                self.camera_error.emit()
+                break 
+            self.new_side_frame.emit(side_frame)
+            if top_frame is None:
                 self.camera_error.emit()
                 break
-            
+            self.new_top_frame.emit(top_frame)
             self.images_collected.emit(side_frame, top_frame)
 
         self.finished.emit()
