@@ -61,12 +61,13 @@ def test_camera_error_emitted_if_top_frame_is_none(qtbot, frame_grabber):
         
     assert blocker.signal_triggered, "camera_error"
     
-def test_new_side_emitted_if_both_frames_not_none(qtbot, frame_grabber):
-    # no test for new_top_frame still - infinite loop
-    side_frame = Frame(MagicMock())
-    top_frame = Frame(MagicMock())
-    frame_grabber._side_camera_stream.get_frame = Mock(return_value=side_frame)
-    frame_grabber._top_camera_stream.get_frame = Mock(return_value=top_frame, side_effect=frame_grabber.stop)
-    with qtbot.waitSignal(frame_grabber.new_side_frame, timeout=100) as blocker:
+def test_new_side_and_images_collected_emitted_if_both_frames_not_none(qtbot, frame_grabber):
+    frame = Frame(MagicMock())
+    frame_grabber._side_camera_stream.get_frame = Mock(return_value=frame)
+    frame_grabber._side_camera_stream.get_frame.side_effect = [frame, None] # None to stop while loop
+    frame_grabber._top_camera_stream.get_frame = Mock(return_value=frame)
+    with qtbot.waitSignals([frame_grabber.new_side_frame,frame_grabber.new_top_frame,frame_grabber.images_collected], timeout=100) as blocker:
         frame_grabber.run()
     assert blocker.signal_triggered, "new_side_frame"
+    assert blocker.signal_triggered, "new_top_frame"
+    assert blocker.signal_triggered, "images_collected"

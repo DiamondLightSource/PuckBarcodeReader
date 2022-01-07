@@ -32,8 +32,8 @@ class FrameGrabber(QObject):
             else:
                 self.camera_error.emit()
                 break
-            if top_frame is not None and side_frame is not None: 
-                self.images_collected.emit(side_frame, top_frame)
+            
+            self.images_collected.emit(side_frame, top_frame)
 
         self.finished.emit()
 
