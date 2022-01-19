@@ -18,10 +18,10 @@ class TestRecord(unittest.TestCase):
         barcodes = r.barcodes
         self.assertEqual(len(barcodes), 3)
         self.assertTrue('DLSL-010' in barcodes)
-        self.assertEquals(r.id, 'f59c92c1')
-        self.assertEquals(r.timestamp, 1494238920.0)
-        self.assertEquals(r.image_path, 'test.png')
-        self.assertEquals(r.plate_type, 'None')
+        self.assertEqual(r.id, 'f59c92c1')
+        self.assertEqual(r.timestamp, 1494238920.0)
+        self.assertEqual(r.image_path, 'test.png')
+        self.assertEqual(r.plate_type, 'None')
         self.assertTrue(isinstance(r.geometry, BlankGeometry))
 
     def test_from_string_creates_new_record_time_stamp_missing(self):
@@ -36,10 +36,10 @@ class TestRecord(unittest.TestCase):
         barcodes = r.barcodes
         self.assertEqual(len(barcodes), 3)
         self.assertTrue('DLSL-010' in barcodes)
-        self.assertEquals(r.id, 'f59c92c1')
-        self.assertEquals(r.timestamp, 0.0) #could possibly generate a new timestamp instead
-        self.assertEquals(r.image_path, 'test.png')
-        self.assertEquals(r.plate_type, 'None')
+        self.assertEqual(r.id, 'f59c92c1')
+        self.assertEqual(r.timestamp, 0.0) #could possibly generate a new timestamp instead
+        self.assertEqual(r.image_path, 'test.png')
+        self.assertEqual(r.plate_type, 'None')
         self.assertTrue(isinstance(r.geometry, BlankGeometry))
 
     def test_to_string_recreates_given_values_excluding_serial_number(self):
@@ -89,11 +89,11 @@ class TestRecord(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(r.timestamp)
-        self.assertEquals(r.image_path, image_path)
-        self.assertEquals(r.plate_type, plate_type)
-        self.assertEquals(r.holder_barcode, holder_barcode)
+        self.assertEqual(r.image_path, image_path)
+        self.assertEqual(r.plate_type, plate_type)
+        self.assertEqual(r.holder_barcode, holder_barcode)
         self.assertListEqual(r.barcodes, barcodes)
-        self.assertEquals(r.geometry, mock_geometry)
+        self.assertEqual(r.geometry, mock_geometry)
         self.assertIsNotNone(r.id)
 
     def test_the_number_of_slots_are_counted_correctly_from_the_pin_barcodes(self):
@@ -105,10 +105,10 @@ class TestRecord(unittest.TestCase):
         r = Record.from_plate(holder_barcode="ABCD", plate=mock_plate, image_path="a_path", holder_image_path="path")
 
         # Assert
-        self.assertEquals(r.num_slots, len(barcodes))
-        self.assertEquals(r.num_empty_slots, 2)
-        self.assertEquals(r.num_unread_slots, 1)
-        self.assertEquals(r.num_valid_barcodes, 3)
+        self.assertEqual(r.num_slots, len(barcodes))
+        self.assertEqual(r.num_empty_slots, 2)
+        self.assertEqual(r.num_unread_slots, 1)
+        self.assertEqual(r.num_valid_barcodes, 3)
 
     def _create_mock_plate(self, plate_type, barcodes, geometry):
         mock_plate = MagicMock()

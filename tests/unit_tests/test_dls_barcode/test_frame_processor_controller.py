@@ -3,6 +3,7 @@ from mock.mock import MagicMock, Mock
 
 from dls_barcode.frame_processor_controller import FrameProcessorController
 from dls_barcode.scan.scan_result import ScanResult
+# https://pytest-qt.readthedocs.io/en/latest/signals.html
 
 @pytest.fixture()
 def frame_processor_side_camera_stream():

@@ -21,17 +21,17 @@ class TestColor(unittest.TestCase):
             Color(400, 50, 100)
 
     def test_init_sets_alpha_255_if_not_set(self):
-        self.assertEquals(self.firstColor.a, 255)
+        self.assertEqual(self.firstColor.a, 255)
 
 
     def test_bgra_returns_rgb_plus_alpha_tuple(self):
-        self.assertEquals(Color.bgra(self.firstColor), (100,50,10,255))
+        self.assertEqual(Color.bgra(self.firstColor), (100,50,10,255))
 
     def test_bgr_returns_blue_green_red(self):
-        self.assertEquals(self.firstColor.bgr(), (100,50,10))
+        self.assertEqual(self.firstColor.bgr(), (100,50,10))
 
     def test_mono_returns_one_value_function_of_rgb(self):
-        self.assertEquals(Color.mono(self.firstColor), round(0.3*10 + 0.6*50 + 0.1*100))
+        self.assertEqual(Color.mono(self.firstColor), round(0.3*10 + 0.6*50 + 0.1*100))
 
     def test_to_qt_returns_QColour_of_rgba_values_zeroone(self):
 
@@ -46,7 +46,7 @@ class TestColor(unittest.TestCase):
         self.assertEqual(Color.bgra(actual),  (100, 50, 10, 255))
 
     def test_to_hex_10_50_100_returns_0a3264(self):
-        self.assertEquals(Color.to_hex(self.firstColor), '#0a3264')
+        self.assertEqual(Color.to_hex(self.firstColor), '#0a3264')
 
     def test_to_string_returns_csv_rgba(self):
         self.assertEqual(str(self.firstColor), "10,50,100,255")

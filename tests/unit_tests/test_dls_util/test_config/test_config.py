@@ -15,7 +15,7 @@ class TestConfig(unittest.TestCase):
 
         # Assert
         items = conf.get_items()
-        self.assertEquals(len(items), 0)
+        self.assertEqual(len(items), 0)
 
     def test_an_item_of_given_class_tag_and_default_value_can_be_added_to_config(self):
         # Arrange
@@ -30,9 +30,9 @@ class TestConfig(unittest.TestCase):
         # Assert
         item = conf.get_items()[0]
         self.assertTrue(isinstance(item, IntConfigItem))
-        self.assertEquals(item.tag(), tag)
+        self.assertEqual(item.tag(), tag)
         self.assertEqual(item._default, default)
-        self.assertEquals(item.value(), expected_value)
+        self.assertEqual(item.value(), expected_value)
 
     def test_an_item_of_given_class_tag_default_value_and_extra_arg_can_be_added_to_config(self):
         # Arrange
@@ -48,10 +48,10 @@ class TestConfig(unittest.TestCase):
         # Assert
         item = conf.get_items()[0]
         self.assertTrue(isinstance(item, IntConfigItem))
-        self.assertEquals(item.tag(), tag)
+        self.assertEqual(item.tag(), tag)
         self.assertEqual(item._default, default)
         self.assertEqual(item.units(), units)
-        self.assertEquals(item.value(), expected_value)
+        self.assertEqual(item.value(), expected_value)
 
     def test_reset_all_sets_value_of_all_items_to_default(self):
         # Arrange
@@ -69,15 +69,15 @@ class TestConfig(unittest.TestCase):
         number_item.set(new_number)
         width_item.set(new_width)
 
-        self.assertEquals(number_item.value(), new_number)
-        self.assertEquals(width_item.value(), new_width)
+        self.assertEqual(number_item.value(), new_number)
+        self.assertEqual(width_item.value(), new_width)
 
         # Act
         conf.reset_all()
 
         # Assert
-        self.assertEquals(number_item.value(), default_number)
-        self.assertEquals(width_item.value(), default_width)
+        self.assertEqual(number_item.value(), default_number)
+        self.assertEqual(width_item.value(), default_width)
 
     def test_config_can_be_saved_to_file(self):
         # Arrange
@@ -151,7 +151,7 @@ class TestConfig(unittest.TestCase):
         conf.initialize_from_file()
 
         # Assert
-        self.assertEquals(item.value(), default)
+        self.assertEqual(item.value(), default)
 
     def test_initialise_from_file_sets_default_if_tags_dont_match(self):
         # Arrange
@@ -168,7 +168,7 @@ class TestConfig(unittest.TestCase):
         conf.initialize_from_file()
 
         # Assert
-        self.assertEquals(item.value(), default)
+        self.assertEqual(item.value(), default)
 
     def test_initialize_from_file_sets_value_from_file_if_tags_match(self):
         # Arrange
@@ -183,7 +183,7 @@ class TestConfig(unittest.TestCase):
 
         # Assert
         item = conf.get_items()[0]
-        self.assertEquals(item.value(), expected_value)
+        self.assertEqual(item.value(), expected_value)
 
     def _create_config(self):
         return Config(self._file, self._mock_file_manager)
