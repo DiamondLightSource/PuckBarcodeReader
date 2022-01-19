@@ -20,6 +20,7 @@ pyperclip = "*"
 scipy = "==1.5.4"
 numpy = "==1.19.5"
 pyqt5 = "*"
+pytest-flake8 = "*"
 
 [requires]
 python_version = "3.6"
