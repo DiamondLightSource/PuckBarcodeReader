@@ -22,7 +22,7 @@ pyperclip = "*"
 scipy = "*"
 pyqt5 = "*"
 numpy = "*"
-
+pytest-isort = "*"
 
 [scripts]
 tests_dls_util = "python -m pytest --cov dls_util tests/unit_tests"
