@@ -32,8 +32,7 @@ A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used t
 
 Activate your virtual environment (e.g.run in command line C:\Users\rqq82173\PycharmProjects\python_environments\barcode_qt5\Scripts\activate.bat) 
 
-To create the executable file, run the `build.bat` file. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). 
-'build.bat' includes hardcoded paths to the main file and the icon. This needs to be updated accordingly.
+To create the executable file, run the `build.bat` in PuckBarcodeReader folder. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). 
 Once .exe file is created add 'resources' folder to th bin folder (resources include the icon and the shape patter). 
 Zip the bin folder and add it to release files.
 
