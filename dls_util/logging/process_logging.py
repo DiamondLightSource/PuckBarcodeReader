@@ -45,7 +45,6 @@ class ProcessLogger(multiprocessing.Process):
             except Exception:
                 import sys, traceback
 
-                print("Problem:", file=sys.stderr)
                 traceback.print_exc(file=sys.stderr)
 
     def new_process(self, target, args=[], kwargs={}):

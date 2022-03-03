@@ -54,7 +54,6 @@ class CaptureManager:
     def _set_width(self, width):
         # opencv adjusts the setting to the camera specification
         self._cap.set(_get_width_flag(), width)
-        print(self._cap.get(_get_width_flag()))
 
     def _set_height(self, height):
         self._cap.set(_get_height_flag(), height)
