@@ -1,4 +1,4 @@
-from dls_util.beeper import Beeper
+
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout, QProgressBar
 

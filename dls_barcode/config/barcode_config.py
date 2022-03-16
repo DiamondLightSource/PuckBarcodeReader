@@ -90,6 +90,9 @@ class BarcodeConfig(Config):
     
     def get_top_camera_tiemout(self):
         return self.top_camera_timeout.value()
+    
+    def get_scan_beep(self):
+        return self.scan_beep.value()
 
 
 

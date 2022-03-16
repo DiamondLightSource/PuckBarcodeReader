@@ -172,14 +172,16 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             self.close()
 
     def displayPuckScanCompleteMessage(self):
-        Beeper.beep()
+        if self._config.get_scan_beep():
+            Beeper.beep()
         self._message_box.display(MessageFactory.puck_scan_completed_message())
 
     def clear_frame(self):
         self._result_frame.clear_frame()
 
     def displayScanTimeoutMessage(self):
-        Beeper.beep()
+        if self._config.get_scan_beep():
+            Beeper.beep()
         self._message_box.display(MessageFactory.scan_timeout_message())
 
     @pyqtSlot(Frame)
