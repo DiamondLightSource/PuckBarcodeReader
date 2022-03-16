@@ -10,7 +10,8 @@ class FrameProcessorController(QObject):
         super().__init__()
         self.side_processor_thread = QThread() 
         self.top_processor_thread = QThread()
-        self._duration = config.get_top_camera_tiemout()
+        self.config = config
+        #self._duration = config.get_top_camera_tiemout()
         self._manager = manager
         self.timer = QTimer()
         self.timer.setSingleShot(True) #timer which fies only once 
@@ -46,8 +47,8 @@ class FrameProcessorController(QObject):
     def process_side(self, top_frame):
         if self.processing_flag:
             if not self.timer.isActive():
-                self.timer.start(self._duration*1000) # convert duration to miliseconds
-                self.startCountdown(self._duration) #UI
+                self.timer.start(self.config.get_top_camera_tiemout()*1000) # convert duration to miliseconds
+                self.startCountdown(self.config.get_top_camera_tiemout()) #UI
                 self.clear_frame() #UI  
             self.top_processor_worker = TopProcessor(self._manager.top_camera_stream, top_frame)
             self.top_processor_worker.moveToThread(self.top_processor_thread)
