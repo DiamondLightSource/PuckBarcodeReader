@@ -90,7 +90,7 @@ class CameraConfigControl(ConfigControl):
                     small = res
                     cv2.imshow('Camera Preview', small)
                     cv2.waitKey(50)
-            if cv2.getWindowProperty('Camera Preview', 0) < 0:
+            if cv2.getWindowProperty('Camera Preview', cv2.WND_PROP_VISIBLE) == 0:
                 break
             
         cv2.destroyAllWindows()
