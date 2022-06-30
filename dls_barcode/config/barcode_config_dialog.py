@@ -59,7 +59,3 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.backup)
         add(cfg.backup_directory)
 
-        self.start_group("Debug")
-        add(cfg.console_frame)
-        add(cfg.slot_images)
-        add(cfg.slot_image_directory)
