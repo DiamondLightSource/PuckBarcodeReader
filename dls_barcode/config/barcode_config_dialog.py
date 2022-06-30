@@ -1,8 +1,11 @@
+from PyQt5.QtWidgets import QStyle
+from typing_extensions import Text
+
 from dls_util.config import ConfigDialog
+
 from .camera_config_control import CameraConfigControl
 from .store_directory_config_control import StoreDirectoryConfigControl
 
-from PyQt5.QtWidgets import QStyle
 
 
 class BarcodeConfigDialog(ConfigDialog):
@@ -16,9 +19,10 @@ class BarcodeConfigDialog(ConfigDialog):
         self.finalize_layout()
 
     def _init_ui(self):
-        self.setGeometry(100, 100, 450, 400)
+        self.setGeometry(50, 50, 450, 400)
 
         self.setWindowIcon(self._config_icon)
+        self.setWhatsThis("Configuration window")
 
         cfg = self._config
         add = self.add_item
@@ -59,5 +63,3 @@ class BarcodeConfigDialog(ConfigDialog):
         add(cfg.console_frame)
         add(cfg.slot_images)
         add(cfg.slot_image_directory)
-
-

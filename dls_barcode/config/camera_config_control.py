@@ -30,10 +30,12 @@ class CameraConfigControl(ConfigControl):
 
         # Preview camera
         btn_camera_test = QPushButton("Test Camera")
+        btn_camera_test.setAutoDefault(False)
         btn_camera_test.setFixedWidth(self.BUTTON_WIDTH)
         btn_camera_test.clicked.connect(self._test_camera)
 
         btn_camera_settings = QPushButton("Camera Settings")
+        btn_camera_settings.setAutoDefault(False)
         btn_camera_settings.setFixedWidth(self.BUTTON_WIDTH)
         btn_camera_settings.clicked.connect(self._open_camera_controls)
 
