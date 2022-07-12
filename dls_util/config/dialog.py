@@ -94,10 +94,13 @@ class ConfigDialog(QDialog):
     def _make_dialog_buttons(self):
         """ Create the OK/Cancel/Reset buttons. """
         btn_cancel = QPushButton("Cancel")
+        btn_cancel.setAutoDefault(False)
         btn_cancel.pressed.connect(self._dialog_close_cancel)
         btn_ok = QPushButton("OK")
+        btn_ok.setAutoDefault(False)
         btn_ok.pressed.connect(self._dialog_close_ok)
         btn_reset = QPushButton("Reset All")
+        btn_reset.setAutoDefault(False)
         btn_reset.pressed.connect(self._dialog_reset)
 
         hbox = QHBoxLayout()

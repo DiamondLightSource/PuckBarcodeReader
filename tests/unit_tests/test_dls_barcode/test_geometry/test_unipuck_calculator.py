@@ -50,7 +50,7 @@ class TestUnipuckCalculator(unittest.TestCase):
      #   numbers = [1, 2, 3, int(), 5, 10, 12, 13, 15, 14]
      #   with self.assertRaises(GeometryAlignmentError) as cm:
      #       break_point = _partition(numbers)
-     #   self.assertEquals("Empty slice", str(cm.exception))
+     #   self.assertEqual("Empty slice", str(cm.exception))
 
     def test_partition_when_less_than_3_numbers_passed(self):
         #the number is never going to be <3 becouse of other the exeptions in method that calls _partitioning

@@ -1,18 +1,18 @@
+from dls_barcode.gui.main_window import DiamondBarcodeMainWindow
+
 import logging
 import sys
 
 from os.path import dirname
 from sys import path
-import pygelf
-import logconfig
+
 from dls_barcode.config import BarcodeConfig
-from dls_barcode.gui import DiamondBarcodeMainWindow
-from dls_barcode.main_manager import MainManager
+
+
 from PyQt5 import QtWidgets
 import argparse
 from dls_barcode.version import VERSION
 from dls_util.file import FileManager
-from dls_util.logging.process_logging import configure_new_process, ProcessLogger
 
 path.append(dirname(path[0]))
 
@@ -29,10 +29,7 @@ else:
 
 
 def main(config_file, version):
-    # Start process logger
-    process_logger = ProcessLogger.create_global_logger()
-    process_logger.start()
-    configure_new_process(process_logger.queue)
+    # Start process logge
 
     log = logging.getLogger(".".join([__name__]))
     log.info("CONFIG: " + config_file)
@@ -40,20 +37,15 @@ def main(config_file, version):
     app = QtWidgets.QApplication(sys.argv)
     config = BarcodeConfig(config_file, FileManager())
     ui = DiamondBarcodeMainWindow(config, version, None)
-    manager = MainManager(ui, config, process_logger)
-    manager.initialise_timers()
+    
+   
+    ui.set_actions_triger()
 
-    log.debug('2) timers initialised')
-    manager.initialise_scanner()
     sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
     # Multiprocessing support for PyInstaller bundling in Windows
-    if sys.platform.startswith('win'):
-        import multiprocessing
-        multiprocessing.freeze_support()
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-cf", "--config_file", type=str, default=DEFAULT_CONFIG_FILE,
                         help="The path of the configuration file (default=" + DEFAULT_CONFIG_FILE + ")")

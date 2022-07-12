@@ -144,6 +144,7 @@ class DirectoryConfigControl(ConfigControl):
         lbl_dir.setFixedWidth(self.LABEL_WIDTH)
 
         btn_show = QPushButton('Browse...')
+        btn_show.setAutoDefault(False)
         btn_show.setFixedWidth(self.BUTTON_WIDTH)
         btn_show.clicked.connect(self._open_directory)
 
@@ -181,6 +182,7 @@ class ColorConfigControl(ConfigControl):
         lbl_color = QLabel(self._config_item.tag())
         lbl_color.setFixedWidth(self.LABEL_WIDTH)
         self._swatch = QPushButton("")
+        self._swatch.setAutoDefault(False)
         self._swatch.setFixedWidth(25)
         self._swatch.clicked.connect(self._choose_color)
 

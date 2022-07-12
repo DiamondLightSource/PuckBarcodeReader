@@ -19,7 +19,7 @@ class ScanRecordTable(QGroupBox):
     """
     COLUMNS = ['Date', 'Time', 'Plate Barcode', 'Valid', 'Invalid', 'Empty', 'Plate Type']
 
-    def __init__(self, barcode_table, image_frame, options):
+    def __init__(self, barcode_table, image_frame, holder_frame, result_frame, options):
         super(ScanRecordTable, self).__init__()
 
         # Read the store from file
@@ -30,20 +30,20 @@ class ScanRecordTable(QGroupBox):
         self._options = options
 
         self._barcodeTable = barcode_table
-        self._imageFrame = image_frame
+        self._image_frame = image_frame
+        self._holder_frame = holder_frame
+        self._result_frame = result_frame
 
         self.setTitle("Scan Records")
-        self.setMaximumWidth(730)
+        self.setMaximumWidth(1330)
 
         self._init_ui()
-
-        self._load_store_records()
 
     def _init_ui(self):
         # Create record table - lists all the records in the store
         self._table = QTableWidget()
         self._table.setMinimumWidth(720) #900
-        self._table.setMinimumHeight(600)
+        self._table.setMinimumHeight(400)
         self._table.setColumnCount(len(self.COLUMNS))
         self._table.setHorizontalHeaderLabels(self.COLUMNS)
 
@@ -112,11 +112,17 @@ class ScanRecordTable(QGroupBox):
         image frame).
         """
         try:
+            # Clear all events
+            QtWidgets.QApplication.processEvents()
             row = self._table.selectionModel().selectedRows()[0].row()
             record = self._store.get_record(row)
             self._barcodeTable.populate(record.holder_barcode, record.barcodes)
-            marked_image = record.marked_image(self._options)
-            self._imageFrame.display_puck_image(marked_image)
+            marked_image = record.get_marked_image(self._options)
+            image = record.get_image()
+            holder_image = record.get_holder_image()
+            self._image_frame.display_image(image)
+            self._holder_frame.display_image(holder_image)
+            self._result_frame.display_image(marked_image)
         except IndexError:
             self._barcodeTable.clear()
 #            self._imageFrame.clear_frame("Record table empty\nNothing to display")

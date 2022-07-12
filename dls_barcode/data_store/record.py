@@ -17,10 +17,12 @@ class Record:
     IND_ID = 0
     IND_TIMESTAMP = 1
     IND_IMAGE = 2
-    IND_PLATE = 3
-    IND_BARCODES = 4
-    IND_GEOMETRY = 5
-    NUM_RECORD_ITEMS = 6
+    IND_HOLDER_IMAGE = 3
+    IND_PLATE = 4
+    IND_BARCODES = 5
+    IND_GEOMETRY = 6
+    NUM_RECORD_ITEMS = 7
+
 
     # Constants
     ITEM_SEPARATOR = ";"
@@ -29,7 +31,7 @@ class Record:
 
     BAD_SYMBOLS = [EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL]
 
-    def __init__(self, plate_type, holder_barcode, barcodes, image_path, geometry, timestamp=0.0, id=0):
+    def __init__(self, plate_type, holder_barcode, barcodes, image_path, holder_image_path, geometry, timestamp=0.0, id=0):
         """
         :param plate_type: the type of the sample holder plate (string)
         :param holder_barcode: the barcode of the holder plate
@@ -46,6 +48,7 @@ class Record:
             self.timestamp = 0.0
 
         self.image_path = image_path
+        self.holder_image_path = holder_image_path
         self.plate_type = plate_type
         self.holder_barcode = holder_barcode
         self.barcodes = barcodes
@@ -76,9 +79,9 @@ class Record:
         self.num_valid_barcodes = self.num_slots - self.num_unread_slots - self.num_empty_slots
 
     @staticmethod
-    def from_plate(holder_barcode, plate, image_path):
+    def from_plate(holder_barcode, plate, image_path, holder_image_path):
         return Record(plate_type=plate.type, holder_barcode=holder_barcode, barcodes=plate.barcodes(),
-                      image_path=image_path, geometry=plate.geometry())
+                      image_path=image_path, holder_image_path=holder_image_path, geometry=plate.geometry())
 
     @staticmethod
     def from_string(string):
@@ -86,19 +89,27 @@ class Record:
         used when reading a stored record back from file.
         """
         items = string.strip().split(Record.ITEM_SEPARATOR)
-        id = items[Record.IND_ID]
-        timestamp = items[Record.IND_TIMESTAMP] #used to convert into float twice
-        image = items[Record.IND_IMAGE]
-        plate_type = items[Record.IND_PLATE]
-        all_barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
+        id = items[Record.IND_ID] #0
+        timestamp = items[Record.IND_TIMESTAMP] #1
+        image_path = items[Record.IND_IMAGE] #2
+        if len(items) == Record.NUM_RECORD_ITEMS:
+            holder_image_path = items[Record.IND_HOLDER_IMAGE] #3
+            plate_type = items[Record.IND_PLATE] #4
+            all_barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR) #5
+            geo_class = Geometry.get_class(plate_type)
+            geometry = geo_class.deserialize(items[Record.IND_GEOMETRY]) #6
+        else: # old version did not have holder image path 
+            plate_type = items[Record.IND_HOLDER_IMAGE] #3
+            all_barcodes = items[Record.IND_PLATE].split(Record.BC_SEPARATOR) #4
+            holder_image_path = items[Record.IND_IMAGE] #2 - use same path for both images
+            geo_class = Geometry.get_class(plate_type)
+            geometry = geo_class.deserialize(items[Record.IND_BARCODES]) #5
         holder_barcode = all_barcodes[0]
         pin_barcodes = all_barcodes[1:]
-
-        geo_class = Geometry.get_class(plate_type)
-        geometry = geo_class.deserialize(items[Record.IND_GEOMETRY])
+        
 
         return Record(plate_type=plate_type, holder_barcode=holder_barcode, barcodes=pin_barcodes, timestamp=timestamp,
-                      image_path=image, id=id, geometry=geometry)
+                      image_path=image_path, holder_image_path=holder_image_path, id=id, geometry=geometry)
 
     def to_csv_string(self):
         """ Converts a scan record object into a string that can be stored in a csv file.
@@ -114,25 +125,30 @@ class Record:
         """ Converts a scan record object into a string that can be stored in a file
         and retrieved later.
         """
-        items = [0] * Record.NUM_RECORD_ITEMS
-        items[Record.IND_ID] = str(self.id)
-        items[Record.IND_TIMESTAMP] = str(self.timestamp)
-        items[Record.IND_IMAGE] = self.image_path
-        items[Record.IND_PLATE] = self.plate_type
-        items[Record.IND_BARCODES] = Record.BC_SEPARATOR.join(self._all_barcodes())
-        items[Record.IND_GEOMETRY] = self.geometry.serialize()
+        items = list()
+        items.append(str(self.id))
+        items.append(str(self.timestamp))
+        items.append(self.image_path)
+        items.append(self.holder_image_path)
+        items.append(self.plate_type)
+        items.append(Record.BC_SEPARATOR.join(self._all_barcodes()))
+        items.append(self.geometry.serialize())
         return Record.ITEM_SEPARATOR.join(items)
 
     def _all_barcodes(self):
         return [self.holder_barcode] + self.barcodes
 
-    def _image(self):
+    def get_image(self):
         image = Image.from_file(self.image_path)
         return image
-
-    def marked_image(self, options):
+    
+    def get_holder_image(self):
+        image = Image.from_file(self.holder_image_path)
+        return image
+    
+    def get_marked_image(self, options):
+        image = self.get_image()
         geo = self.geometry
-        image = self._image()
 
         if options.image_puck.value():
             geo.draw_plate(image, Color.Blue())
@@ -144,6 +160,8 @@ class Record:
             geo.crop_image(image)
 
         return image
+
+
 
     # marking the top image
     def _draw_pins(self, image, geometry, options):

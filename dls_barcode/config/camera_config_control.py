@@ -30,10 +30,12 @@ class CameraConfigControl(ConfigControl):
 
         # Preview camera
         btn_camera_test = QPushButton("Test Camera")
+        btn_camera_test.setAutoDefault(False)
         btn_camera_test.setFixedWidth(self.BUTTON_WIDTH)
         btn_camera_test.clicked.connect(self._test_camera)
 
         btn_camera_settings = QPushButton("Camera Settings")
+        btn_camera_settings.setAutoDefault(False)
         btn_camera_settings.setFixedWidth(self.BUTTON_WIDTH)
         btn_camera_settings.clicked.connect(self._open_camera_controls)
 
@@ -57,9 +59,13 @@ class CameraConfigControl(ConfigControl):
 
     def _test_camera(self):
         self.save_to_config()
-        self._test_camera_settings()
-        self._display_camera_preview()
-
+        try:
+           self._test_camera_settings()
+           self._display_camera_preview()
+        except ValueError:
+            QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
+        
+    
     def _open_camera_controls(self):
         camera_num = int(self.txt_number.text())
         CaptureManager.open_camera_controls(camera_num)
@@ -73,20 +79,21 @@ class CameraConfigControl(ConfigControl):
         stream.release_resources()
         if not read_ok:
             # Capture the next frame from the camera
-            QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
-            return
+            raise ValueError
 
     def _display_camera_preview(self):
         stream = CaptureManager(self._camera_config)
         stream.create_capture()
         while True:
             stream.read_frame()
-            res = stream.get_frame()
-            if res is not None:
-                small = cv2.resize(res, (0, 0), fx=0.5, fy=0.5)
-                cv2.imshow('Camera Preview', small)
-                cv2.waitKey(50)
-            if cv2.getWindowProperty('Camera Preview', 0) < 0:
+            if stream.is_read_ok():
+                res = stream.get_frame().get_frame()
+                if res is not None:
+                    small = res
+                    cv2.imshow('Camera Preview', small)
+                    cv2.waitKey(50)
+            if cv2.getWindowProperty('Camera Preview', cv2.WND_PROP_VISIBLE) == 0:
                 break
+            
         cv2.destroyAllWindows()
         stream.release_resources()

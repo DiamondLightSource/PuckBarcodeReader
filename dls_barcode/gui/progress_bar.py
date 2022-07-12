@@ -1,3 +1,4 @@
+
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout, QProgressBar
 
@@ -44,7 +45,7 @@ class ProgressBox(QGroupBox):
     def display(self):
         if self.count <= self.max:
             self.count = self.count + 1
-            self.pbar.setValue(100 * (self.count / self.max))
+            self.pbar.setValue(100 * (self.count / self.max))          
 
     def scan_completed(self):
         self.count = 100

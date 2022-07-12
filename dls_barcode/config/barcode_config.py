@@ -53,11 +53,6 @@ class BarcodeConfig(Config):
         self.backup = add(BoolConfigItem, "Backup before Delete", default=True)
         self.backup_directory = add(DirectoryConfigItem, "Backup Directory", default=default_backup)
 
-
-        self.console_frame = add(BoolConfigItem, "Print Frame Summary", default=False)
-        self.slot_images = add(BoolConfigItem, "Save Debug Images", default=False)
-        self.slot_image_directory = add(DirectoryConfigItem, "Debug Directory", default="../debug-output/")
-
         self.top_camera_number = add(IntConfigItem, "Top Camera Number", default=1)
 
         self.side_camera_number = add(IntConfigItem, "Side Camera Number", default=2)
@@ -87,6 +82,12 @@ class BarcodeConfig(Config):
 
     def get_side_camera_config(self):
         return CameraConfig(self.side_camera_number, SIDE_CAMERA_WIDTH, SIDE_CAMERA_HEIGHT)
+    
+    def get_top_camera_tiemout(self):
+        return self.top_camera_timeout.value()
+    
+    def get_scan_beep(self):
+        return self.scan_beep.value()
 
 
 

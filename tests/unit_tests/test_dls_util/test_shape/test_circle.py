@@ -11,26 +11,26 @@ class TestCircle(unittest.TestCase):
 
     def test_string_representation_of_circle(self):
         new_circle = Circle(Point(0, 0), 10)
-        self.assertEquals(new_circle.__str__(), "Circle - center = (0.00, 0.00); radius = 10.00")
+        self.assertEqual(new_circle.__str__(), "Circle - center = (0.00, 0.00); radius = 10.00")
 
     def test_center_returns_correct_point(self):
         new_circle = Circle(Point(1, 2), 3)
-        self.assertEquals(new_circle.center().x, 1)
-        self.assertEquals(new_circle.center().y, 2)
+        self.assertEqual(new_circle.center().x, 1)
+        self.assertEqual(new_circle.center().y, 2)
 
     def test_x_y_radius_return_correct_values(self):
         new_circle = Circle(Point(4, 5), 10)
-        self.assertEquals(new_circle.x(), 4)
-        self.assertEquals(new_circle.y(), 5)
-        self.assertEquals(new_circle.radius(), 10)
+        self.assertEqual(new_circle.x(), 4)
+        self.assertEqual(new_circle.y(), 5)
+        self.assertEqual(new_circle.radius(), 10)
 
     def test_diameter_twice_radius(self):
         new_circle = Circle(Point(0, 0), 4)
-        self.assertEquals(new_circle.diameter(), 8)
+        self.assertEqual(new_circle.diameter(), 8)
 
     def test_circumference_is_2pi_r(self):
         new_circle = Circle(Point(4, 0), 4)
-        self.assertEquals(new_circle.circumference(), math.pi * 8)
+        self.assertEqual(new_circle.circumference(), math.pi * 8)
 
     def test_area_is_2pi_r2(self):
         new_circle = Circle(Point(9, 0), 10)

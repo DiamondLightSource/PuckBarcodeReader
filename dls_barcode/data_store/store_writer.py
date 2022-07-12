@@ -13,6 +13,7 @@ class StoreWriter:
         self._directory = directory
         self._file_name = file_name
         self._image_path = None
+        self._holder_image_path = None
 
     def to_file(self, records):
         """ Save the contents of the store to the backing file
@@ -30,13 +31,18 @@ class StoreWriter:
         record_lines = [rec.to_csv_string() + "\n" for rec in records]
         self._file_manager.write_lines(csv_file, record_lines)
 
-    def to_image(self, image, name):
+    def to_image(self, pin_image, holder_image, name):
         dr = self._make_img_dir()
         self._image_path = os.path.abspath(os.path.join(dr, name + '.png'))
-        image.save_as(self._image_path)
+        self._holder_image_path = os.path.abspath(os.path.join(dr, name + '_holder.png'))
+        pin_image.save_as(self._image_path)
+        holder_image.save_as(self._holder_image_path)
 
     def get_img_path(self):
         return self._image_path
+    
+    def get_holder_img_path(self):
+        return self._holder_image_path
 
     def _make_img_dir(self):
         self._file_manager.make_dir_when_no_dir(self._directory)
@@ -47,3 +53,5 @@ class StoreWriter:
     def remove_img_file(self, record):
         if self._file_manager.is_file(record.image_path):
             self._file_manager.remove(record.image_path)
+        if self._file_manager.is_file(record.holder_image_path):
+            self._file_manager.remove(record.holder_image_path)

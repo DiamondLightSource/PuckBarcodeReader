@@ -15,6 +15,7 @@ class ScanResult:
         self._geometry = None
         self._plate = None
         self._error = None
+        self._frame = None
 
         self._start_time = 0
         self._scan_time = 0
@@ -37,6 +38,16 @@ class ScanResult:
 
     def barcodes(self):
         return self._barcodes
+    
+    def get_first_barcode(self):
+        return self._barcodes[0]
+    
+    def has_valid_barcodes(self):
+        if len(self._barcodes) > 0:
+            if self._barcodes[0].data() != '':
+                return True
+            
+        return False
 
     def geometry(self):
         return self._geometry
@@ -58,7 +69,19 @@ class ScanResult:
 
     def set_error(self, value):
         self._error = value
+        
+    def set_frame(self, frame):
+        self._frame = frame
+        
+    def get_frame(self):
+        return self._frame
 
+    def get_frame_image(self):
+        if self._frame is not None :
+            return self._frame.get_image()
+        else:
+            return self._frame
+    
     ############################
     # Status Functions
     ############################

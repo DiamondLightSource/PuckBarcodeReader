@@ -23,7 +23,7 @@ class Store:
         """
         return len(self.records)
 
-    def get_record(self, index):
+    def get_record(self, index) -> Record:
         """ Get record by index where the 0th record is the most recent
         """
         self._sort_records()
@@ -32,11 +32,11 @@ class Store:
     def _add_record(self, holder_barcode, plate, holder_img, pins_img):
         """ Add a new record to the store and save to the backing file.
         """
-        merged_img = self._merge_holder_image_into_pins_image(holder_img, pins_img)
         guid = str(uuid.uuid4())
-        self._store_writer.to_image(merged_img, guid)
-
-        record = Record.from_plate(holder_barcode, plate, self._store_writer.get_img_path())
+        self._store_writer.to_image(pins_img, holder_img, guid)
+        img_path = self._store_writer.get_img_path()
+        holder_image_path = self._store_writer.get_holder_img_path()
+        record = Record.from_plate(holder_barcode, plate, img_path, holder_image_path)
 
         self.records.append(record)
         self._process_change()
@@ -78,14 +78,6 @@ class Store:
         """ Sort the records in descending date order (most recent first).
         """
         self.records.sort(reverse=True, key=lambda record: record.timestamp)
-
-    def _merge_holder_image_into_pins_image(self, holder_img, pins_img):
-        factor = 0.22 * pins_img.width / holder_img.width
-        small_holder_img = holder_img.rescale(factor)
-
-        merged_img = pins_img.copy()
-        merged_img.paste(small_holder_img, 0, 0)
-        return merged_img
 
     def is_latest_holder_barcode(self, holder_barcode):
         self._sort_records()

@@ -1,27 +1,28 @@
+from PyQt5.QtWidgets import QStyle
+from typing_extensions import Text
+
 from dls_util.config import ConfigDialog
+
 from .camera_config_control import CameraConfigControl
 from .store_directory_config_control import StoreDirectoryConfigControl
 
-from PyQt5.QtWidgets import QStyle
 
 
 class BarcodeConfigDialog(ConfigDialog):
     """ Dialog to edit the configuration options for the program. Provides a custom control for
     setting up the camera.
     """
-    def __init__(self, config, to_run_before_test_camera):
+    def __init__(self, config):
         ConfigDialog.__init__(self, config)
-        self._to_run_before_test_camera = to_run_before_test_camera
         self._config_icon = self.style().standardIcon(QStyle.SP_FileDialogDetailedView)
         self._init_ui()
         self.finalize_layout()
 
     def _init_ui(self):
-        self.setGeometry(100, 100, 450, 400)
+        self.setGeometry(50, 50, 450, 400)
 
         self.setWindowIcon(self._config_icon)
-
-        self._to_run_before_test_camera()
+        self.setWhatsThis("Configuration window")
 
         cfg = self._config
         add = self.add_item
@@ -57,10 +58,4 @@ class BarcodeConfigDialog(ConfigDialog):
         self._add_control(StoreDirectoryConfigControl(cfg.store_directory))
         add(cfg.backup)
         add(cfg.backup_directory)
-
-        self.start_group("Debug")
-        add(cfg.console_frame)
-        add(cfg.slot_images)
-        add(cfg.slot_image_directory)
-
 

@@ -1,7 +1,5 @@
 from __future__ import division
 
-
-
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QLabel, QGroupBox, QVBoxLayout
 
@@ -20,26 +18,33 @@ class ImageFrame(QGroupBox):
         # Image frame - displays image of the currently selected scan record
         self._frame = ImageWidget()
         self._frame.setStyleSheet("background-color: white; color: red; font-size: 30pt; text-align: center")
-        self._frame.setMinimumWidth(700)
+        
         self._frame.setAlignment(Qt.AlignCenter)
         vbox = QVBoxLayout()
         vbox.addWidget(self._frame)
 
         self.setLayout(vbox)
 
-    def clear_frame(self, message):
-        self._frame.clear()
+    def clear_frame_and_set_text(self, message):
+        self._frame.clear()   
         self._frame.setText(message)
-
-    def display_puck_image(self, image):
+        
+    def clear_frame(self):
+        self._frame.clear()
+        
+    def display_image(self, image):
         """ Called when a new row is selected on the record table. Displays the specified
         image (image of the highlighted scan) in the image frame
         """
         self._frame.clear()
+        self._frame.setMinimumWidth(500)
+        self._frame.setMinimumHeight(300)
         self._frame.setAlignment(Qt.AlignCenter)
 
-        if image is not None and image.is_valid():
-            pixmap = image.to_qt_pixmap(self._frame.size())
-            self._frame.setPixmap(pixmap)
+        if image is not None:
+            if image.is_valid():
+                pixmap = image.to_qt_pixmap(self._frame.size())
+                self._frame.setPixmap(pixmap)
         else:
             self._frame.setText("Image Not Found")
+            

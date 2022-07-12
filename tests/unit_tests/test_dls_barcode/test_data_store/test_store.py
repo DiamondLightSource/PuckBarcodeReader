@@ -61,7 +61,7 @@ class TestStore(unittest.TestCase):
 
         # Assert
         self._store_writer.to_image.assert_called_once()
-        ((image, file_name,), kwargs) = self._store_writer.to_image.call_args
+        ((image, image_holder, file_name,), kwargs) = self._store_writer.to_image.call_args
         self.assertIsNotNone(file_name)
 
     def test_given_an_empty_store_when_merging_a_record_then_the_record_is_added_to_the_store(self):
@@ -81,7 +81,7 @@ class TestStore(unittest.TestCase):
     def test_given_a_non_empty_store_when_merging_a_record_with_different_holder_than_the_latest_record_then_the_new_record_is_added(self):
         # Arrange
         holder1_barcode = "AAA"
-        rec_string = "f59c92c1;1494238920.0;test.png;None;" + holder1_barcode + ",DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        rec_string = "f59c92c1;1494238920.0;test.png;test_holder.png;None;" + holder1_barcode + ",DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
         store = self._create_store_with_records([Record.from_string(rec_string)])
         old_store_size = store.size()
 
@@ -100,7 +100,7 @@ class TestStore(unittest.TestCase):
         holder_barcode = "ABCDE123"
         old_pin_barcode = "DLSL-009"
         new_pin_barcodes = ["DLSL-010"]
-        rec_string = "f59c92c1;1494238920.0;test.png;None;" + holder_barcode + "," + old_pin_barcode + ";1569:1106:70-2307:1073:68-1944:1071:68"
+        rec_string = "f59c92c1;1494238920.0;test.png;test_holder.png;None;" + holder_barcode + "," + old_pin_barcode + ";1569:1106:70-2307:1073:68-1944:1071:68"
         store = self._create_store_with_records([Record.from_string(rec_string)])
         old_store_size = store.size()
 
@@ -119,7 +119,7 @@ class TestStore(unittest.TestCase):
         # Arrange
         holder_barcode = "ABD1234"
         recs = self._get_records()
-        duplicate_rec_string = "f59c92c1;1494238900.0;test.png;None;" + holder_barcode + ",DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
+        duplicate_rec_string = "f59c92c1;1494238900.0;test.png;test_holder.png;None;" + holder_barcode + ",DLSL-009,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68"
         recs.append(Record.from_string(duplicate_rec_string))
         store = self._create_store_with_records(recs)
         old_store_size = store.size()
@@ -238,10 +238,10 @@ class TestStore(unittest.TestCase):
 
     def _get_record_strings(self):
         str_rep = list()
-        str_rep.append(ID0 + ";1494238923.0;test" + ID0 + ".png;None;DLSL-001,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
-        str_rep.append(ID1 + ";1494238922.0;test" + ID1 + ".png;None;DLSL-002,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
-        str_rep.append(ID2 + ";1494238921.0;test" + ID2 + ".png;None;DLSL-003,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
-        str_rep.append(ID3 + ";1494238920.0;test" + ID3 + ".png;None;DLSL-004,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID0 + ";1494238923.0;test" + ID0 + ".png;test_holder.png;None;DLSL-001,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID1 + ";1494238922.0;test" + ID1 + ".png;test_holder.png;None;DLSL-002,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID2 + ";1494238921.0;test" + ID2 + ".png;test_holder.png;None;DLSL-003,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
+        str_rep.append(ID3 + ";1494238920.0;test" + ID3 + ".png;test_holder.png;None;DLSL-004,DLSL-010,DLSL-011,DLSL-012;1569:1106:70-2307:1073:68-1944:1071:68")
         return str_rep
 
     def _get_records(self):

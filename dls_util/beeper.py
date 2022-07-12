@@ -11,5 +11,5 @@ else:
 
 class Beeper:
     @staticmethod
-    def beep(frequency=4000, duration=500):
+    def beep(frequency=4000, duration=900):
         playsound(frequency, duration)

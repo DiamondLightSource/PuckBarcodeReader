@@ -37,13 +37,13 @@ class TestReedSolo(unittest.TestCase):
     def test_ecode(self):
         coder = ReedSolomonDecoder()
         encoded = coder.encode(msg_bytes, 8)
-        self.assertEquals(coder.decode(encoded, 8), msg_bytes)
+        self.assertEqual(coder.decode(encoded, 8), msg_bytes)
 
     def test_correctable_barcodes(self):
         decoder = ReedSolomonDecoder()
         for case in msg_bytes_correctable:
             corrected = decoder.decode(case, num_ecc_bytes)
-            self.assertEquals(msg_bytes, corrected)
+            self.assertEqual(msg_bytes, corrected)
 
     def test_uncorrectable_barcode(self):
         decoder = ReedSolomonDecoder()

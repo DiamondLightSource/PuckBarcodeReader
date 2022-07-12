@@ -9,73 +9,63 @@ class TestCircleDetector(unittest.TestCase):
 
     def test_init_sets_canny_thresh(self):
         decorator = CircleDetector()
-        self.assertEquals(decorator._canny_thresh, 150)
+        self.assertEqual(decorator._canny_thresh, 150)
 
     def test_init_sets_accumulator_thresh(self):
         decorator = CircleDetector()
-        self.assertEquals(decorator._accumulator_thresh, 100)
+        self.assertEqual(decorator._accumulator_thresh, 100)
 
     def test_init_sets_dp(self):
         decorator = CircleDetector()
-        self.assertEquals(decorator._dp, 2)
+        self.assertEqual(decorator._dp, 2)
 
     def test_init_sets_min_dist(self):
         decorator = CircleDetector()
-        self.assertEquals(decorator._min_dist, 100)
+        self.assertEqual(decorator._min_dist, 100)
 
     def test_init_sets_min_radius(self):
         decorator = CircleDetector()
-        self.assertEquals(decorator._min_radius, 100)
+        self.assertEqual(decorator._min_radius, 100)
 
     def test_init_sets_max_radius(self):
         decorator = CircleDetector()
-        self.assertEquals(decorator._max_radius, 150)
-
-    def test_init_sets_method(self):
-        decorator = CircleDetector()
-        _OPENCV_MAJOR = cv2.__version__[0]
-        if _OPENCV_MAJOR == '3':
-            _HOUGH_METHOD = cv2.HOUGH_GRADIENT
-        else:
-            from cv2 import cv
-            _HOUGH_METHOD = cv.CV_HOUGH_GRADIENT
-        self.assertEquals(decorator._method, _HOUGH_METHOD)
+        self.assertEqual(decorator._max_radius, 150)
 
     def test_set_canny_thresh_sets_the_value_correctly(self):
         decorator = CircleDetector()
         decorator.set_canny_threshold(400)
-        self.assertEquals(decorator._canny_thresh, 400)
+        self.assertEqual(decorator._canny_thresh, 400)
 
     def test_set_accumulator_threshold_sets_the_value_correctly(self):
         decorator = CircleDetector()
         decorator.set_accumulator_threshold(0)
-        self.assertEquals(decorator._accumulator_thresh, 0)
+        self.assertEqual(decorator._accumulator_thresh, 0)
 
     def test_set_dp_sets_the_value_correctly(self):
         decorator = CircleDetector()
         decorator.set_dp(3)
-        self.assertEquals(decorator._dp, 3)
+        self.assertEqual(decorator._dp, 3)
 
     def test_set_minimum_separation_sets_the_value_correctly(self):
         decorator = CircleDetector()
         decorator.set_minimum_separation(300)
-        self.assertEquals(decorator._min_dist, 300)
+        self.assertEqual(decorator._min_dist, 300)
 
     def test_set_minimum_radius_sets_the_value_correctly(self):
         decorator = CircleDetector()
         decorator.set_minimum_radius(50)
-        self.assertEquals(decorator._min_radius, 50)
+        self.assertEqual(decorator._min_radius, 50)
 
     def test_set_maximum_radius_sets_the_value_correctly(self):
         decorator = CircleDetector()
         decorator.set_maximum_radius(30)
-        self.assertEquals(decorator._max_radius, 30)
+        self.assertEqual(decorator._max_radius, 30)
 
     def test_no_circle_detected_in_blan_image(self):
         img = Image.blank(100,100,1,0)
         decorator = CircleDetector()
         list_of_circle = decorator.find_circles(img);
-        self.assertEquals(list_of_circle.__len__(),0)
+        self.assertEqual(list_of_circle.__len__(),0)
 
     def test_circle_is_correctly_detected_when_there_is_one_circle_in_the_image(self):
         img = Image.blank(40, 40)
@@ -91,11 +81,11 @@ class TestCircleDetector(unittest.TestCase):
 
         list = decorator.find_circles(grey)
 
-        self.assertEquals(list.__len__(), 1)
-       # self.assertEquals(list[0].radius(), circle.radius())
-        #self.assertEquals(list[0].center().x, circle.center().x + 1)
-        #self.assertEquals(list[0].center().y, circle.center().y + 1)
-        self.assertEquals(list[0].area(), circle.area())
+        self.assertEqual(list.__len__(), 1)
+       # self.assertEqual(list[0].radius(), circle.radius())
+        #self.assertEqual(list[0].center().x, circle.center().x + 1)
+        #self.assertEqual(list[0].center().y, circle.center().y + 1)
+        self.assertEqual(list[0].area(), circle.area())
 
 
     def test_circle_is_correctly_detected_when_there_there_are_two_circles_in_the_image_not_intersecting(self):
@@ -116,7 +106,7 @@ class TestCircleDetector(unittest.TestCase):
 
         list = decorator.find_circles(grey)
 
-        self.assertEquals(list.__len__(), 2)
+        self.assertEqual(list.__len__(), 2)
 
     #def test_circle_is_correctly_detected_when_there_there_are_two_circles_and_rectangle_not_intersecting(self):
 
