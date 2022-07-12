@@ -89,21 +89,21 @@ class Record:
         used when reading a stored record back from file.
         """
         items = string.strip().split(Record.ITEM_SEPARATOR)
-        id = items[Record.IND_ID]
-        timestamp = items[Record.IND_TIMESTAMP] #used to convert into float twice
-        image_path = items[Record.IND_IMAGE]
+        id = items[Record.IND_ID] #0
+        timestamp = items[Record.IND_TIMESTAMP] #1
+        image_path = items[Record.IND_IMAGE] #2
         if len(items) == Record.NUM_RECORD_ITEMS:
-            holder_image_path = items[Record.IND_HOLDER_IMAGE]
-            plate_type = items[Record.IND_PLATE]
-            all_barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR)
+            holder_image_path = items[Record.IND_HOLDER_IMAGE] #3
+            plate_type = items[Record.IND_PLATE] #4
+            all_barcodes = items[Record.IND_BARCODES].split(Record.BC_SEPARATOR) #5
             geo_class = Geometry.get_class(plate_type)
-            geometry = geo_class.deserialize(items[Record.IND_GEOMETRY])
-        else: # old version did not have holder image path
-            plate_type = items[Record.IND_HOLDER_IMAGE]
-            all_barcodes = items[Record.IND_PLATE].split(Record.BC_SEPARATOR)
-            holder_image_path = items[Record.IND_IMAGE]
+            geometry = geo_class.deserialize(items[Record.IND_GEOMETRY]) #6
+        else: # old version did not have holder image path 
+            plate_type = items[Record.IND_HOLDER_IMAGE] #3
+            all_barcodes = items[Record.IND_PLATE].split(Record.BC_SEPARATOR) #4
+            holder_image_path = items[Record.IND_IMAGE] #2 - use same path for both images
             geo_class = Geometry.get_class(plate_type)
-            geometry = geo_class.deserialize(items[Record.IND_BARCODES])
+            geometry = geo_class.deserialize(items[Record.IND_BARCODES]) #5
         holder_barcode = all_barcodes[0]
         pin_barcodes = all_barcodes[1:]
         
