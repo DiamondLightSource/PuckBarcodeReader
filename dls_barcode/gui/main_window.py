@@ -172,8 +172,6 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
             self.close()
 
     def displayPuckScanCompleteMessage(self):
-        if self._config.get_scan_beep():
-            Beeper.good_beep()
         self._message_box.display(MessageFactory.puck_scan_completed_message())
 
     def clear_frame(self):
@@ -181,7 +179,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def displayScanTimeoutMessage(self):
         if self._config.get_scan_beep():
-            Beeper.bad_beep()
+            Beeper.beep()
         self._message_box.display(MessageFactory.scan_timeout_message())
 
     @pyqtSlot(Frame)
@@ -205,6 +203,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         holder_image = side_result.get_frame_image()
         pins_image = top_result.get_frame_image()
         self._record_table.add_record_frame(holder_barcode, plate, holder_image, pins_image)
+        self._plate_beep(plate, self._config.get_scan_beep())
 
     def startCountdown(self, duration):
         self._countdown_box.start_countdown(duration)
@@ -217,6 +216,15 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         
     def is_latest_holder_barcode(self, result_barcode):
         return self._record_table.is_latest_holder_barcode(result_barcode)
+    
+    def _plate_beep(self, plate, do_beep):
+        if not do_beep:
+            return
+
+        empty_fraction = (plate.num_slots - plate.num_valid_barcodes()) / plate.num_slots
+        frequency = int(10000 * empty_fraction + 37)
+        duration = 200
+        Beeper.beep(frequency, duration)
     
     #@pyqtSlot(ScanErrorMessage)
     #def displayScanErrorMessage(self, scanner_msg): 
