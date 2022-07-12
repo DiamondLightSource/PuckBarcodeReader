@@ -15,11 +15,10 @@ The following steps will help you prepare an appropriate Python environment to r
     * opencv-python==3.1.0.5
     * PyQt5
     
-* Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> - use the ‘Download ZIP’ link. Open the zip and extract the contents to a suitable folder.
-
-* All of these packages can be installed using `pipenv`. To do this:
+* Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> 
+* All of required packages can be installed using `pipenv`. To do this:
     * To create a new virtual environment with all dependencies installed run `pipenv install --dev`
-    
+*  Activate the virtual envirolment
 *  `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
 Running Tests
@@ -30,9 +29,7 @@ Creating a Self-Contained Executable
 ====================================
 A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used to create a stand-alone windows executable (.exe) file.
 
-Activate your virtual environment (e.g.run in command line C:\Users\rqq82173\PycharmProjects\python_environments\barcode_qt5\Scripts\activate.bat) 
-
-To create the executable file, run the `build.bat` in PuckBarcodeReader folder. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). 
+Activate your virtual environment (e.g.run in command line C:\Users\rqq82173\PycharmProjects\python_environments\barcode_qt5\Scripts\activate.bat) next run the `build.bat` in PuckBarcodeReader folder. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). 
 Once .exe file is created add 'resources' folder to th bin folder (resources include the icon and the shape patter). 
 Zip the bin folder and add it to release files.
 
