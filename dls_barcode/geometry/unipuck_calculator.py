@@ -109,8 +109,8 @@ class UnipuckCalculator:
         original_angle = puck.angle()
 
         # For each angular increment, calculate the sum of squared errors in slot center position
-        for a in range(-16, 16, 1):
-            angle = original_angle + a / (180 / math.pi)
+       for a in range(0, 360, 2):
+            angle = a / (180 / math.pi)
             puck.set_rotation(angle)
             sse = 0
             for p in pin_centers:
