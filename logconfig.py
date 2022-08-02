@@ -8,7 +8,6 @@ import os
 import json
 import logging.config
 import logging.handlers
-import getpass
 import threading
 
 
@@ -41,22 +40,17 @@ default_config = {
             "formatter": "simple",
             "stream": "ext://sys.stdout"
         },
-
-        "graylog_gelf": {
-            "class": "pygelf.GelfUdpHandler",
+        
+        "local_file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            #  "class": "logging.handlers.FileHandler",
             "level": "DEBUG",
-            # Obviously a DLS-specific configuration: the graylog server address and port
-            # Use the input "Load Balanced GELF TCP" on graylog2.
-            "host": "graylog2",#.diamond.ac.uk",# "localhost", - use locaklhost for tests
-            "port": 12201,
-            "debug": True,
-            #  The following custom fields will be disabled if setting this False
-            "include_extra_fields": True,
-            "username": getpass.getuser(),
-            "pid": os.getpid(),
-            "application": "BarcodeScanner",
-            "facility": "XChem",
-            "_version": version.VERSION
+            "formatter": "extended",
+            "filename": "debug.log",
+            "maxBytes": MAXBYTES,
+            "backupCount": BACKUPCOUNT,
+            "encoding": ENCODING,
+            "delay" : True
         },
 
     },
@@ -64,11 +58,9 @@ default_config = {
         # Set the level here to be the default minimum level of log record to be produced
         # If you set a handler to level DEBUG you will need to set either this level
         "level": "DEBUG",
-        "handlers": ["console", "graylog_gelf"]
+        "handlers": ["local_file_handler"] #["console", "local_file_handler"]
     }
 }
-
-
 class ThreadContextFilter(logging.Filter):
     """A logging context filter to add thread name and ID."""
 

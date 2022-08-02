@@ -1,5 +1,4 @@
 from dls_barcode.gui.main_window import DiamondBarcodeMainWindow
-
 import logging
 import logconfig
 import sys
@@ -35,10 +34,10 @@ def main(config_file, version):
 
     log = logging.getLogger(".".join([__name__]))
     log.info("CONFIG: " + config_file)
-
+    log.debug(version)
     app = QtWidgets.QApplication(sys.argv)
     config = BarcodeConfig(config_file, FileManager())
-    ui = DiamondBarcodeMainWindow(config, version, None)
+    ui = DiamondBarcodeMainWindow(config, 'version', None)
     
    
     ui.set_actions_triger()
