@@ -47,8 +47,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
         self._frame_grabber_controller = FrameGrabberController(config, self.displayPuckScanCompleteMessage, 
                                                                 self.displayScanTimeoutMessage, self.is_latest_holder_barcode,
-                                                                self.startCountdown, self.addRecordFrame, self.clear_frame, self.scanCompleted, 
-                                                                self.displayScanErrorMessage)
+                                                                self.startCountdown, self.addRecordFrame, self.clear_frame, self.scanCompleted)
 
 
     def _init_ui(self):
@@ -127,16 +126,19 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._record_table.cell_pressed_action_triggered(self._stop_frame_grabber)
 
     def _stop_frame_grabber(self):
+        self._log.debug("Frame grabber stopper")
         self._scan_button.setStartLayout()
         self.resetCountdown()
         self._frame_grabber_controller.kill_grabber_thread()
         
     def _start_frame_grabber(self):
+        self._log.debug("Frame grabber started")
         self._scan_button.setStopLayout()
         self._frame_grabber_controller.start_grabber_thread(self.displayHolderFrame, self.displayPuckFrame, 
                                                             self.displayCameraErrorMessage)      
 
     def _on_about_action_clicked(self):
+        self._log.debug("About menu clicked")
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
     def _on_scan_action_clicked(self):
@@ -217,6 +219,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._countdown_box.start_countdown(duration)
 
     def resetCountdown(self):
+        self._log.debug("Countdown re-set")
         self._countdown_box.reset_countdown()
 
     def scanCompleted(self):
@@ -235,7 +238,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         duration = 200
         Beeper.beep(frequency, duration)
     
-    @pyqtSlot(ScanErrorMessage)
+    #@pyqtSlot(ScanErrorMessage)
     #def displayScanErrorMessage(self, scanner_msg): 
         #self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
         #self._log.debug("Scan Error message", scanner_msg.content())

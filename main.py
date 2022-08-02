@@ -1,6 +1,7 @@
 from dls_barcode.gui.main_window import DiamondBarcodeMainWindow
 
 import logging
+import logconfig
 import sys
 
 from os.path import dirname
@@ -29,7 +30,8 @@ else:
 
 
 def main(config_file, version):
-    # Start process logge
+    # Start process logger
+    logconfig.setup_logging()
 
     log = logging.getLogger(".".join([__name__]))
     log.info("CONFIG: " + config_file)
