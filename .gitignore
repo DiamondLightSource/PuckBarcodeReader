@@ -12,3 +12,4 @@ dist
 qt.conf
 *.exe
 main.spec
+debug.log

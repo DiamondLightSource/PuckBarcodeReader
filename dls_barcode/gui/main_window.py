@@ -1,3 +1,4 @@
+from dls_barcode.camera.scanner_message import ScanErrorMessage
 from dls_barcode.frame_grabber_controller import FrameGrabberController
 from dls_util.beeper import Beeper
 
@@ -125,26 +126,30 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._record_table.cell_pressed_action_triggered(self._stop_frame_grabber)
 
     def _stop_frame_grabber(self):
+        self._log.debug("Frame grabber stopper")
         self._scan_button.setStartLayout()
         self.resetCountdown()
         self._frame_grabber_controller.kill_grabber_thread()
         
     def _start_frame_grabber(self):
+        self._log.debug("Frame grabber started")
         self._scan_button.setStopLayout()
         self._frame_grabber_controller.start_grabber_thread(self.displayHolderFrame, self.displayPuckFrame, 
                                                             self.displayCameraErrorMessage)      
 
     def _on_about_action_clicked(self):
+        self._log.debug("About menu clicked")
         QtWidgets.QMessageBox.about(self, 'About', "Version: " + self._version)
 
     def _on_scan_action_clicked(self):
-        self._log.debug("MAIN: Scan menu clicked")
+        self._log.debug("Scan menu clicked")
         if  self._scan_button.is_running():
             self._stop_frame_grabber()
         else: 
             self._start_frame_grabber()
 
     def _on_options_action_clicked(self):
+        self._log.debug("Options menu clicked")
         self._frame_grabber_controller.kill_grabber_thread()
         dialog = BarcodeConfigDialog(self._config)
         self._stop_frame_grabber()
@@ -157,6 +162,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         event.accept()
 
     def displayCameraErrorMessage(self):
+        self._log.debug("Camera Error")
         message_box = QMessageBox(self)
         message_box.setIcon(QMessageBox.Critical)
         message_box.setWindowTitle("Camera Error")
@@ -173,6 +179,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
 
     def displayPuckScanCompleteMessage(self):
         self._message_box.display(MessageFactory.puck_scan_completed_message())
+        self._log.debug("Puck scan complete")
 
     def clear_frame(self):
         self._result_frame.clear_frame()
@@ -181,6 +188,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         if self._config.get_scan_beep():
             Beeper.beep()
         self._message_box.display(MessageFactory.scan_timeout_message())
+        self._log.debug("Scan timeout")
 
     @pyqtSlot(Frame)
     def displayPuckFrame(self, frame):
@@ -195,6 +203,7 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._holder_frame.display_image(frame.frame_to_image())
 
     def _load_store_records(self):
+        self._log.debug("Stored records loaded")
         self._record_table._load_store_records()
         
     def addRecordFrame(self, top_result, side_result):
@@ -206,12 +215,15 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._plate_beep(plate, self._config.get_scan_beep())
 
     def startCountdown(self, duration):
+        self._log.debug("Countdown started")
         self._countdown_box.start_countdown(duration)
 
     def resetCountdown(self):
+        self._log.debug("Countdown re-set")
         self._countdown_box.reset_countdown()
 
     def scanCompleted(self):
+        self._log.debug("Countdown completed")
         self._countdown_box.scan_completed()
         
     def is_latest_holder_barcode(self, result_barcode):
@@ -228,8 +240,10 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
     
     #@pyqtSlot(ScanErrorMessage)
     #def displayScanErrorMessage(self, scanner_msg): 
-    #    self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
+        #self._message_box.display(MessageFactory.from_scanner_message(scanner_msg))
+        #self._log.debug("Scan Error message", scanner_msg.content())
     
-    #@pyqtSlot(ScanErrorMessage)
+    #pyqtSlot(ScanErrorMessage)
     #def clear_frame_display_message(self, scanner_msg):     
     #    self._result_frame.clear_frame_and_set_text(scanner_msg.content())
+        
