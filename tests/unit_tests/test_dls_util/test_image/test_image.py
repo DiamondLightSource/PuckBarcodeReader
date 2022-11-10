@@ -232,4 +232,14 @@ class TestImage(unittest.TestCase):
         self.assertEqual(width, 1)
         self.assertEqual(height, 1)
 
-    #def test_calculate_brightness
+    def test_empty_image_returned_when_image_is_none(self):
+        empty_image = Image(None)
+        self.assertEqual(empty_image.width, 1)
+        self.assertEqual(empty_image.height, 1)
+    
+    def test_from_file_returns_none_no_image_found_in_the_path(self):
+        wrong_file_path = "wrong_file.jpg"
+        img = Image.from_file(wrong_file_path)
+        
+        self.assertEqual(img.width, 1)
+        

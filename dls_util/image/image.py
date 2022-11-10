@@ -1,6 +1,7 @@
 import cv2 as opencv
 import math
 import numpy as np
+import logging
 
 from PyQt5 import QtCore
 from PyQt5.QtGui import QImage, QPixmap
@@ -13,6 +14,10 @@ class Image:
     """
     def __init__(self, img):
         self.img = img
+        if img is None:
+            log = logging.getLogger(".".join([__name__]))
+            log.info("image is none")
+            self.img = np.full((1, 1, 3), 0.0, np.uint8)
 
         size = self.img.shape
         self.width = size[1]
@@ -36,7 +41,13 @@ class Image:
     @staticmethod
     def from_file(filename):
         """ Return a new image by loading from the specified image file. """
-        img = opencv.imread(filename, opencv.IMREAD_UNCHANGED)
+        try:
+            img = opencv.imread(filename, opencv.IMREAD_UNCHANGED)
+        except:
+            log = logging.getLogger(".".join([__name__]))
+            log.info("check file path")
+            img = None
+            
         return Image(img)
 
     @staticmethod
