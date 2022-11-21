@@ -24,6 +24,7 @@ scipy = "*"
 numpy = "*"
 pytest-isort = "*"
 pyqt5 = "*"
+pylibdmtx = "*"
 
 [scripts]
 tests_dls_util = "python -m pytest --cov dls_util tests/unit_tests"
