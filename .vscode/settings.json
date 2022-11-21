@@ -4,7 +4,7 @@
       "import sys; sys.path.append('C:\\Users\\rqq82173\\Documents\\PuckBarcodeReader')"
    ],
    "python.testing.pytestArgs": [
-      "./tests/",
+      "tests"
    ],
    "python.testing.pytestEnabled": true,
    "python.testing.unittestEnabled": false,

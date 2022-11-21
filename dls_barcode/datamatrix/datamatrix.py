@@ -154,7 +154,7 @@ class DataMatrix:
         return unread_barcodes
 
     @staticmethod
-    def locate_all_barcodes_in_image_deep(grayscale_img, matrix_sizes=[DEFAULT_SIZE]):
+    def locate_all_barcodes_in_image_deep(grayscale_img, matrix_sizes=[DEFAULT_SIDE_SIZES]):
         """ Searches the image for all datamatrix finder patterns
         """
         # TODO: deep scan is more likely to find some false finder patterns. Filter these out

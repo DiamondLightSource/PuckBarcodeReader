@@ -8,6 +8,7 @@ from dls_barcode.data_store.store_writer import StoreWriter
 from dls_barcode.scan import GeometryScanner
 from dls_util.image import Image
 from dls_util.file import FileManager
+from dls_util.cv.frame import Frame
 
 # SHOULD BE OPEN CV 2.4.10
 
@@ -29,14 +30,15 @@ STORE = Store(comms_manger, MagicMock())
 def test_generator():
     TEST_CASES = generate_test_cases()
     for params in TEST_CASES:
-        yield run_scans, params[0], params[1]
+        run_scans(params[0], params[1])
 
 
 def run_scans(img_file, expected_codes):
     filepath = os.path.join(TEST_IMG_DIR, img_file)
     cv_image = Image.from_file(filepath)
-    gray_image = cv_image.to_grayscale()
-    results = GeometryScanner("Unipuck", [14]).scan_next_frame(gray_image, is_single_image=True)
+    f = Frame(None)
+    f._image = cv_image
+    results = GeometryScanner("Unipuck", [14]).scan_next_frame(f, is_single_image=True)
     plate = results.plate()
     store_scan(img_file, plate, cv_image)
 

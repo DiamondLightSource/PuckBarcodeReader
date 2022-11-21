@@ -1,3 +1,4 @@
+import logging
 from dls_barcode.gui.message_factory import MessageFactory
 from dls_barcode.scan.scan_result import ScanResult
 from dls_barcode.camera.camera_position import CameraPosition
@@ -11,7 +12,8 @@ class StreamManager:
         self.camera_config = camera_config
         self.camera_position = cam_position
         self.stream = None
-        self._scanner = None 
+        self._scanner = None
+        self._log = logging.getLogger(".".join([__name__]))
         
     def initialise_stream(self, ):
         self.stream = CaptureManager(self.camera_config)
@@ -32,6 +34,7 @@ class StreamManager:
 
         if plate_type == "None":
             self._scanner = OpenScanner(barcode_sizes)
+            self._log.debug("Open Geometry")
         else:
             self._scanner = GeometryScanner(plate_type, barcode_sizes)
 
