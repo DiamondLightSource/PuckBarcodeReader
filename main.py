@@ -37,7 +37,7 @@ def main(config_file, version):
     log.debug(version)
     app = QtWidgets.QApplication(sys.argv)
     config = BarcodeConfig(config_file, FileManager())
-    ui = DiamondBarcodeMainWindow(config, 'version', None)
+    ui = DiamondBarcodeMainWindow(config, VERSION, None)
     
    
     ui.set_actions_triger()
