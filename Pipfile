@@ -14,16 +14,16 @@ pytest-cov = "*"
 pytest-mypy = "*"
 pytest-flake8 = "*"
 isort = "*"
-pyinstaller = "*"
 
 [packages]
 pygelf = "*"
-opencv-python = "*"
 pyperclip = "*"
 scipy = "*"
 pyqt5 = "*"
 numpy = "*"
 pytest-isort = "*"
+pyinstaller = "<5"
+opencv-python = "<4.6"
 
 [scripts]
 tests_dls_util = "python -m pytest --cov dls_util tests/unit_tests"
