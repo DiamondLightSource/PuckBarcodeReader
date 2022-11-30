@@ -37,12 +37,15 @@ class DatamatrixByteInterpreter:
                 i += num_bytes
 
             elif byte == 231:
+                log.error(NotImplementedError("Datamatrix Base 256 decoding not implemented"))
                 raise NotImplementedError("Datamatrix Base 256 decoding not implemented")
 
             elif 232 <= byte <= 237:  # Other parts of the Data Matrix spec., not supported.
+                log.error(NotImplementedError("Datamatrix Base 256 decoding not implemented"))
                 raise NotImplementedError("Datamatrix encoded symbol {} not implemented".format(byte))
 
             elif byte == 238:
+                log.error(NotImplementedError("Datamatrix ANSI X12 decoding not implemented"))
                 raise NotImplementedError("Datamatrix ANSI X12 decoding not implemented")
 
             elif byte == 239:
@@ -51,23 +54,19 @@ class DatamatrixByteInterpreter:
                 i += num_bytes
 
             elif byte == 240:
-                #log = log = logging.getLogger(".".join([__name__]))
-                #log.error(NotImplementedError("Datamatrix EDIFACT decoding not implemented"))
+                log.error(NotImplementedError("Datamatrix EDIFACT decoding not implemented"))
                 raise NotImplementedError("Datamatrix EDIFACT decoding not implemented")
 
             elif byte == 241:
-                #log = log = logging.getLogger(".".join([__name__]))
-                #log.error(NotImplementedError("Datamatrix Extended Channel Interpretation code not implemented"))
+                log.error(NotImplementedError("Datamatrix Extended Channel Interpretation code not implemented"))
                 raise NotImplementedError("Datamatrix Extended Channel Interpretation code not implemented")
 
             elif 242 <= byte < 256:  # Unused parts of message space.
-                #log = log = logging.getLogger(".".join([__name__]))
                 error = ValueError("Code {} is not used in Datamatrix specification".format(byte))
-                #.error(error)
+                log.error(error)
                 raise error
             elif byte == 0:
                 error = ValueError("Code {} is not used in Datamatrix specification".format(byte))
-
                 log.error(error)
                 
         return ''.join(m for m in message)
@@ -78,6 +77,7 @@ class DatamatrixByteInterpreter:
         which can encode 3 characters in 2 bytes, as long as the characters are digits or capital
         letters. This function decodes those bytes.
         """
+        log = logging.getLogger(".".join([__name__]))
         encoded_bytes = []
         mode = None
         for b in data_bytes:
@@ -98,8 +98,10 @@ class DatamatrixByteInterpreter:
         num_encoded_bytes = len(encoded_bytes)
 
         if num_encoded_bytes == 0:
+            log.error(ValueError("No data bytes encoded in Datamatrix Text Mode encoding"))
             return ValueError("No data bytes encoded in Datamatrix Text Mode encoding")
         elif num_encoded_bytes % 2 != 0:
+            log.error(ValueError("Odd number of Text mode encoded bytes"))
             raise ValueError("Odd number of Text mode encoded bytes")
 
         byte_pairs = [encoded_bytes[i:i + 2] for i in range(0, len(encoded_bytes), 2)]
@@ -110,7 +112,10 @@ class DatamatrixByteInterpreter:
             decoded = DBI._decode_txt_mode_byte_pair(pair)
             decoded_bytes.extend(decoded)
 
-        ascii_chars = [DBI._interpret_decoded_text_byte(byte, mode) for byte in decoded_bytes]
+        ascii_chars = []
+        it = iter(decoded_bytes)
+        for byte in it:
+            ascii_chars.extend(DBI._interpret_decoded_text_byte(byte, next(byte),mode))
 
         num_bytes = num_encoded_bytes + 2
         return ascii_chars, num_bytes
@@ -127,9 +132,10 @@ class DatamatrixByteInterpreter:
         c3 = val16 - (c1 * 1600) - (c2 * 40) - 1
 
         return [c1, c2, c3]
-
+        
+    
     @staticmethod
-    def _interpret_decoded_text_byte(byte, mode):
+    def _interpret_decoded_text_byte(byte, next_byte, mode):
         """ Interpret the byte by lookup in the C40 or Text tables.
 
         C40 includes 4 encoding sets which each map the values 0-39 to a table of symbols. The first
@@ -140,24 +146,63 @@ class DatamatrixByteInterpreter:
 
         Text mode is exactly the same as C40 except that the upper and lower case characters are swapped
         """
+        log = logging.getLogger(".".join([__name__]))
         if mode not in ["C40", "Text"]:
+            log.error(ValueError("Unrecognised Text encoding mode"))
             raise ValueError("Unrecognised Text encoding mode")
 
         if 0 <= byte <= 2:  # Used to switch to other encoding tables - not implemented here
             # Todo: implement the other tables
-            raise NotImplementedError("{} Set 1, 2, and 3 encoding not implemented".format(mode))
+            # raise NotImplementedError("{} Set 1, 2, and 3 encoding not implemented".format(mode))
+            DatamatrixByteInterpreter._interpret_decoded_text_byte_other_table(byte, next_byte, mode)
+        else :
+            decoded_chars = []
+            for b in [byte, next_byte]:
+                if b == 3:  # C40 3 is space
+                    decoded_chars.append(" ")
 
-        elif byte == 3:  # C40 3 is space
-            return " "
+                elif 4 <= b <= 13:  # C40 number range, add 40 to get ascii value
+                    decoded_chars.append(chr(b + 44))
 
-        elif 4 <= byte <= 13:  # C40 number range, add 40 to get ascii value
-            return chr(byte + 44)
+                elif b <= 39:  # C40 range A-Z, add 51 to get ascii value
+                    if mode == "C40":
+                        decoded_chars.append(chr(b + 51))
+                    elif mode == "Text":
+                        decoded_chars.append(chr(b + 83))
 
-        elif byte <= 39:  # C40 range A-Z, add 51 to get ascii value
-            if mode == "C40":
-                return chr(byte + 51)
-            elif mode == "Text":
-                return chr(byte + 83)
+                else:
+                    log.error(ValueError("Value {} is not a valid C40 or Text symbol".format(b)))
+                    raise ValueError("Value {} is not a valid C40 or Text symbol".format(b))
+            return decoded_chars
 
-        else:
-            raise ValueError("Value {} is not a valid C40 or Text symbol".format(byte))
+    @staticmethod
+    def _interpret_decoded_text_byte_other_table(byte, next_byte, mode):
+        log = logging.getLogger(".".join([__name__]))
+        if byte == 1:
+            if 0 <= next_byte <= 31:
+                return chr(next_byte)
+            else:
+                log.error(ValueError("Value {} is not a valid C40 or Text symbol".format(next_byte)))
+                raise ValueError("Value {} is not a valid C40 or Text symbol".format(next_byte))
+        elif byte == 2:
+            if 0 <= next_byte <= 14:
+                return chr(next_byte + 33)
+            if 15 <= next_byte <= 21:
+                return chr(next_byte + 43)
+            if 22 <= next_byte <= 26:
+                return chr(next_byte + 69)
+            else:
+                log.error(ValueError("Value {} is not a valid C40 or Text symbol".format(next_byte)))
+                raise ValueError("Value {} is not a valid C40 or Text symbol".format(next_byte))
+        elif byte == 3:
+            if next_byte == 0:
+                return chr(next_byte + 96)
+            elif 1 <= next_byte <= 31 :
+                if mode == "C40":
+                    return chr(next_byte + 40)
+                elif mode == "Text":
+                    return chr(next_byte + 96)
+                
+                else:
+                    log.error(ValueError("Value {} is not a valid C40 or Text symbol".format(next_byte)))
+                    raise ValueError("Value {} is not a valid C40 or Text symbol".format(next_byte))

@@ -30,13 +30,14 @@ The following is the header from the original author:
 |    it shouldn't make a difference from an API perspective.
 --------------------------------------------------------------------------------------------------------
 """
-
+import logging
 
 class ReedSolomonError(Exception):
     pass
 
 
 class ReedSolomonDecoder:
+
     def __init__(self):
         self.gf = GaloisField(GaloisField.DATAMATRIX)
 
@@ -46,12 +47,16 @@ class ReedSolomonDecoder:
         try:
             decoded = self._correct_msg(encoded_msg, num_error_bytes)
         except ReedSolomonError as ex:
+            log = logging.getLogger(".".join([__name__]))
+            log.error(ReedSolomonError("Unable to correct encoding errors: {}".format(str(ex))))
             raise ReedSolomonError("Unable to correct encoding errors: {}".format(str(ex)))
 
         return decoded
 
     def _correct_msg(self, msg_in, num_symbols):
+        log = logging.getLogger(".".join([__name__]))
         if len(msg_in) > 255:
+            log.error(ReedSolomonError("Message too long"))
             raise ReedSolomonError("Message too long")
 
         msg_out = list(msg_in)  # copy of message
@@ -64,6 +69,7 @@ class ReedSolomonDecoder:
                 erase_pos.append(i)
 
         if len(erase_pos) > num_symbols:
+            log.error(ReedSolomonError("Too many erasures to correct"))
             raise ReedSolomonError("Too many erasures to correct")
 
         syndromes = self._calculate_syndromes(msg_out, num_symbols)
@@ -73,12 +79,14 @@ class ReedSolomonDecoder:
         forney_syndromes = self._forney_syndromes(syndromes, erase_pos, len(msg_out))
         err_pos = self._find_errors(forney_syndromes, len(msg_out))
         if err_pos is None:
+            log.error(ReedSolomonError("Could not locate error"))
             raise ReedSolomonError("Could not locate error")
 
         self._correct_errata(msg_out, syndromes, erase_pos + err_pos)
         syndromes = self._calculate_syndromes(msg_out, num_symbols)
 
         if max(syndromes) > 0:
+            log.error(ReedSolomonError("Could not correct message"))
             raise ReedSolomonError("Could not correct message")
 
         return msg_out[:-num_symbols]
@@ -113,6 +121,8 @@ class ReedSolomonDecoder:
 
         errs = len(err_poly) - 1
         if errs * 2 > len(syndromes):
+            log = logging.getLogger(".".join([__name__]))
+            log.error(ReedSolomonError("Too many errors to correct"))
             raise ReedSolomonError("Too many errors to correct")
 
         # find zeros of error polynomial
@@ -150,6 +160,8 @@ class ReedSolomonDecoder:
 
     def encode(self, msg_in, num_ecc_symbols):
         if len(msg_in) + num_ecc_symbols > 255:
+            log = logging.getLogger(".".join([__name__]))
+            log.error(ReedSolomonError("Message too long"))
             raise ReedSolomonError("Message too long")
 
         gen = self._generator_poly(num_ecc_symbols)
@@ -188,6 +200,8 @@ class GaloisField:
             self._primitive = self.QR_CODE_PRIMITIVE
             self._generator_base = self.QR_CODE_GEN_BASE
         else:
+            log = logging.getLogger(".".join([__name__]))
+            log.error(ReedSolomonError("Unknown Galois Field type"))
             raise ReedSolomonError("Unknown Galois Field type")
 
         # Generate the exponential and logarithm tables
@@ -221,6 +235,8 @@ class GaloisField:
 
     def div(self, x, y):
         if y == 0:
+            log = logging.getLogger(".".join([__name__]))
+            log.error( ZeroDivisionError())
             raise ZeroDivisionError()
         if x == 0:
             return 0
