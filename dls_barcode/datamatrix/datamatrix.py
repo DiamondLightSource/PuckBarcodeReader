@@ -5,6 +5,7 @@ from .read import DatamatrixBitReader
 from .read import DatamatrixByteExtractor
 from .read import ReedSolomonDecoder
 from .read import DatamatrixByteInterpreter
+from pylibdmtx.pylibdmtx import decode
 
 
 # We predict the location of the center of each square (pixel/bit) in the datamatrix based on the
@@ -104,6 +105,12 @@ class DataMatrix:
         return self._finder_pattern.radius
 
     def _read(self, gray_image, offsets):
+        if self.radius() >= 0.2*(gray_image.shape[0]):
+            self._read_single(gray_image)
+        else:
+            self._read_old(gray_image, offsets)
+            
+    def _read_old(self, gray_image, offsets):
         """ From the supplied grayscale image, attempt to read the barcode at the location
         given by the datamatrix finder pattern.
         """
@@ -137,6 +144,23 @@ class DataMatrix:
 
             if self._read_ok:
                 break
+        
+    def _read_single(self, gray_image):
+        try:
+            result = decode(gray_image)
+            if len(result) > 0:
+                d = result[0].data
+                decoded = d.decode('UTF-8')
+                new_line_removed = decoded.replace("\n","")
+                self._data = new_line_removed
+                self._read_ok = True
+                self._is_read_performed = True
+                self._error_message = ""
+            else:
+                self._read_ok = False
+        except(Exception) as ex:
+            self._read_ok = False
+            self._error_message = str(ex)
 
     def draw(self, img, color):
         """ Draw the lines of the finder pattern on the specified image. """

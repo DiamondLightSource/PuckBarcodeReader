@@ -53,10 +53,12 @@ class TestOpensScan():
         # Barcode data that is expected to appear in each image of the pucks
         side_code_old ='DF-039'
 
-        side_code_new ='ASAP02'
+        side_code_new1 ='ASAP-01'
+        
+        side_code_new2 ='ASAP-02'
 
         # List of files for Puck type 1
-        side_testcases = [('old_side.png', side_code_old),('new_side.jpg', side_code_new)]
+        side_testcases = [('new2.jpg', side_code_new2),('new1.png', side_code_new1),('old_side.png', side_code_old)]
 
         # Create a list of test cases
         test_cases = []
