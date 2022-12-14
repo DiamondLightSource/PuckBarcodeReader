@@ -57,7 +57,7 @@ class OpenScanner:
         barcodes = self._locate_all_barcodes_in_image()
 
         for barcode in barcodes:
-            barcode.perform_read(DataMatrix.DIAG_WIGGLES)
+            barcode.perform_read(self._frame_img)
 
             if self._is_barcode_new(barcode):
                 # todo: limit number of previous barcodes stored

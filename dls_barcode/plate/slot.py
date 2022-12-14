@@ -37,6 +37,9 @@ class Slot:
 
     def state(self):
         return self._state
+    
+    def total_frames(self):
+        return self._total_frames
 
     def barcode_position(self):
         """ Get the position (x,y) of the center of the barcode (not exactly the same as the
@@ -77,3 +80,9 @@ class Slot:
             return self._barcode.data()
         else:
             return NOT_FOUND_SLOT_SYMBOL
+
+    def find_matching_barcode(self, barcodes):
+        for bc in barcodes:
+            if self._bounds.contains_point(bc.center()):
+                return bc
+        return None

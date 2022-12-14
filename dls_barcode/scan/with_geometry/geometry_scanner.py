@@ -3,14 +3,12 @@ from dls_barcode.camera.scanner_message import ScanErrorMessage
 
 
 from dls_barcode.datamatrix import DataMatrix
-from dls_barcode.geometry.exception import GeometryAlignmentError
 from dls_barcode.geometry.unipuck_locator import UnipuckLocator
 from dls_barcode.plate import Plate, Slot
 from dls_barcode.plate.geometry_adjuster import UnipuckGeometryAdjuster, GeometryAdjustmentError
 from dls_barcode.geometry import Geometry, GeometryException
 from .empty_detector import EmptySlotDetector
 from .plate_scanner import PlateScanner
-from .slot_scanner import SlotScanner
 from ..scan_result import ScanResult
 from ..no_barcodes_detected_error import NoBarcodesDetectedError
 
@@ -106,29 +104,16 @@ class GeometryScanner:
         return geometry
 
     def _initialize_plate_from_barcodes(self):
-       
-        for bc in self._barcodes:
-            bc.perform_read()
-        
-        if self._any_valid_barcodes():
-            slot_scanner = self._create_slot_scanner()
+        if self._frame_img is not None:
             self._plate = Plate(self.plate_type)
             self._plate_scan = PlateScanner(self._plate, self._is_single_image)
-            self._plate_scan.new_frame(self._geometry, self._barcodes, slot_scanner)
+            self._plate_scan.new_frame(self._frame_img, self._geometry, self._barcodes)
 
     def _merge_frame_into_plate(self):
         # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
         # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
         # previous plate over to their slot in the new plate. Then read any that we haven't already read.
-        slot_scanner = self._create_slot_scanner()
-        self._plate_scan.new_frame(self._geometry, self._barcodes, slot_scanner)
-
-    def _any_valid_barcodes(self):
-        return any([bc.is_read() and bc.is_valid() for bc in self._barcodes])
-
-    def _create_slot_scanner(self):
-        slot_scanner = SlotScanner(self._frame_img, self._barcodes)
-        return slot_scanner
+        self._plate_scan.new_frame(self._geometry, self._barcodes)
 
     def _find_common_barcode(self, geometry, barcodes):
         """ Determine if the set of finder patterns has any barcodes in common with the existing plate.
