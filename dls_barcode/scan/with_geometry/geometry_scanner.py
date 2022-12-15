@@ -113,7 +113,7 @@ class GeometryScanner:
         # If one of the barcodes matches the previous frame and is aligned in the same slot, then we can
         # be fairly sure we are dealing with the same plate. Copy all of the barcodes that we read in the
         # previous plate over to their slot in the new plate. Then read any that we haven't already read.
-        self._plate_scan.new_frame(self._geometry, self._barcodes)
+        self._plate_scan.new_frame(self._frame_img, self._geometry, self._barcodes)
 
     def _find_common_barcode(self, geometry, barcodes):
         """ Determine if the set of finder patterns has any barcodes in common with the existing plate.
@@ -138,7 +138,7 @@ class GeometryScanner:
                 continue
 
             # Read the barcode
-            new_bc.perform_read()
+            new_bc.perform_read(self._frame_img)
 
             if not new_bc.is_valid():
                 continue

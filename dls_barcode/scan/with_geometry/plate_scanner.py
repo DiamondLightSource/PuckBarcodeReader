@@ -49,7 +49,7 @@ class PlateScanner:
         #cv2.imshow("Slot image", slot_image.img)
         #cv2.waitKey(0) 
 
-        slot_scanner = SlotScanner(self._frame_img, slot, barcode, self._force_deep_scan, self.radius_avg, self.brightness_threshold)
+        slot_scanner = SlotScanner(self._frame_img, slot, barcode, self.radius_avg, self.brightness_threshold)
         slot_scanner.scan_slot()
     
     def _calculate_average_radius(self):
