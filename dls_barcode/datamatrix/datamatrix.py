@@ -1,3 +1,4 @@
+import logging
 from dls_util.image.image import Image
 from .locate import Locator
 from pylibdmtx.pylibdmtx import decode
@@ -42,6 +43,7 @@ class DataMatrix:
         self._read_ok = False
         self._damaged_symbol = False
         self._is_read_performed = False
+        self.log = logging.getLogger(".".join([__name__]))
 
     def set_matrix_sizes(self, matrix_sizes):
         self._matrix_sizes = [int(v) for v in matrix_sizes]
@@ -64,6 +66,7 @@ class DataMatrix:
     def is_valid(self):
         """ True if the data matrix was read successfully. """
         if not self._is_read_performed:
+            self.log.debug("data matrix not read successfully")
             raise BarcodeReadNotPerformedException()
 
         return self._read_ok
@@ -71,6 +74,7 @@ class DataMatrix:
     def is_unreadable(self):
         """ True if the data matrix could not be decoded (because of damage to the symbol). """
         if not self._is_read_performed:
+            self.log.debug("data matrix not read successfully")
             raise BarcodeReadNotPerformedException()
 
         return self._damaged_symbol
@@ -78,6 +82,7 @@ class DataMatrix:
     def data(self):
         """ String representation of the barcode data. """
         if not self._is_read_performed:
+            self.log.debug("data matrix not read successfully")
             raise BarcodeReadNotPerformedException()
 
         if self._read_ok:
@@ -103,8 +108,7 @@ class DataMatrix:
         """
         try:
             
-            cv2.imshow("Erode", gray_image)
-            cv2.waitKey(0) 
+
             result = decode(gray_image, max_count = 1)
             if len(result) > 0:
                 d = result[0].data
@@ -115,6 +119,8 @@ class DataMatrix:
                 self._error_message = ""
             else:
                 self._read_ok = False
+                #cv2.imshow("Erode", gray_image)
+                #cv2.waitKey(0) 
         except(Exception) as ex:
             self._read_ok = False
             self._error_message = str(ex)

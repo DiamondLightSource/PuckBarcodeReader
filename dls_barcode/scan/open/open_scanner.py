@@ -1,3 +1,4 @@
+import logging
 from dls_barcode.camera.scanner_message import ScanErrorMessage
 from dls_barcode.datamatrix import DataMatrix
 
@@ -76,8 +77,9 @@ class OpenScanner:
             barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img, self.barcode_sizes)
         else:
             barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
-        # TODO: log the error
         if len(barcodes) == 0:
+            # log = logging.getLogger(".".join([__name__]))
+            # log.error(NoBarcodesDetectedError())
             raise NoBarcodesDetectedError()
         return barcodes
 

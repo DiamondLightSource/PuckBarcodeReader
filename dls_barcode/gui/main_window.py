@@ -207,12 +207,13 @@ class DiamondBarcodeMainWindow(QtWidgets.QMainWindow):
         self._record_table._load_store_records()
         
     def addRecordFrame(self, top_result, side_result):
-        holder_barcode = side_result.get_first_barcode().data()
-        plate = top_result.plate()
-        holder_image = side_result.get_frame_image()
-        pins_image = top_result.get_frame_image()
-        self._record_table.add_record_frame(holder_barcode, plate, holder_image, pins_image)
-        self._plate_beep(plate, self._config.get_scan_beep())
+        if top_result.error() is None:
+            holder_barcode = side_result.get_first_barcode().data()
+            plate = top_result.plate()
+            holder_image = side_result.get_frame_image()
+            pins_image = top_result.get_frame_image()
+            self._record_table.add_record_frame(holder_barcode, plate, holder_image, pins_image)
+            self._plate_beep(plate, self._config.get_scan_beep())
 
     def startCountdown(self, duration):
         self._log.debug("Countdown started")

@@ -1,3 +1,4 @@
+import logging
 import cv2
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit, QPushButton, QComboBox
@@ -15,6 +16,7 @@ class CameraConfigControl(ConfigControl):
         ConfigControl.__init__(self, camera_config)
         self._camera_config = camera_config
         self._init_ui()
+        self.log = logging.getLogger(".".join([__name__]))
 
     def _init_ui(self):
         # Set Camera Number
@@ -60,9 +62,10 @@ class CameraConfigControl(ConfigControl):
     def _test_camera(self):
         self.save_to_config()
         try:
-           self._test_camera_settings()
-           self._display_camera_preview()
+            self._test_camera_settings()
+            self._display_camera_preview()
         except ValueError:
+            self.log.error("Camera Error - Cannot find specified camera")
             QMessageBox.critical(self, "Camera Error", "Cannot find specified camera")
         
     
@@ -79,6 +82,7 @@ class CameraConfigControl(ConfigControl):
         stream.release_resources()
         if not read_ok:
             # Capture the next frame from the camera
+            self.log.error(ValueError("Read not OK"))
             raise ValueError
 
     def _display_camera_preview(self):

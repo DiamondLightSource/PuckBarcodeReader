@@ -72,8 +72,9 @@ class Locator:
             finder_patterns = self._filter_overlapping_patterns(finder_patterns)
 
         # If the fps are asymmetrical, correct the side lengths
-        side = expected_radius * (2 / math.sqrt(2))
-        finder_patterns = [fp.correct_lengths(side) for fp in finder_patterns]
+        if expected_radius is not None:
+            side = expected_radius * (2 / math.sqrt(2))
+            finder_patterns = [fp.correct_lengths(side) for fp in finder_patterns]
 
         return finder_patterns
 

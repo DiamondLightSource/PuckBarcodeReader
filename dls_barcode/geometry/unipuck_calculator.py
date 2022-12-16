@@ -1,4 +1,5 @@
 from __future__ import division
+import logging
 
 import time
 
@@ -32,13 +33,16 @@ class UnipuckCalculator:
         """
         self._num_slots = UnipuckTemplate.NUM_SLOTS
         self._slot_centers = slot_centers
+        self.log = logging.getLogger(".".join([__name__]))
 
     def perform_alignment(self):
         num_points = len(self._slot_centers)
 
         if num_points > self._num_slots:
+            self.log.debug("Too many slots detected to perform Unipuck alignment")
             raise GeometryAlignmentError("Too many slots detected to perform Unipuck alignment")
         elif num_points < MIN_POINTS_FOR_ALIGNMENT:
+            self.log.debug("Not enough slots detected to perform Unipuck alignment")
             raise GeometryAlignmentError("Not enough slots detected to perform Unipuck alignment")
 
         puck = self._calculate_puck_alignment()
@@ -58,6 +62,7 @@ class UnipuckCalculator:
             return puck
 
         except Exception:
+            self.log.error(GeometryAlignmentError("Unipuck alignment failed"))
             raise GeometryAlignmentError("Unipuck alignment failed")
 
     @staticmethod
@@ -125,6 +130,8 @@ class UnipuckCalculator:
 
         average_error = best_sse / (puck.radius() ** 2) / len(pin_centers)
         if average_error > 0.003:
+            log = logging.getLogger(".".join([__name__]))
+            log.debug("Unable to determine Unipuck orientation")
             raise GeometryAlignmentError("Unable to determine Unipuck orientation")
 
         return best_angle
@@ -179,6 +186,8 @@ def _partition(numbers):
     than the average of the first.
     """
     if len(numbers) < 3:
+        log = logging.getLogger(".".join([__name__]))
+        log.debug("Not enought elements to run partition")
         raise Exception("Not enought elements to run partition")
 
     numbers.sort()
@@ -187,6 +196,8 @@ def _partition(numbers):
 
     while s < len(numbers):
         if not numbers[:s + 1] or not numbers[-s - 1:]:
+            log = logging.getLogger(".".join([__name__]))
+            log.debug("Empty slice")
             raise Exception("Empty slice")
 
         gp1_average = np.mean(numbers[:s + 1])

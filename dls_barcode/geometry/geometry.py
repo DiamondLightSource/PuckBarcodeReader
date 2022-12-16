@@ -1,3 +1,4 @@
+import logging
 from .exception import GeometryException
 from .blank import BlankGeometry
 from .unipuck import Unipuck
@@ -46,8 +47,12 @@ class Geometry:
 
     @staticmethod
     def _raise_not_implemented(geo_name):
+        log = logging.getLogger(".".join([__name__]))
+        log.debug(Geometry._MSG_NOT_IMPLEMENTED.format(geo_name))
         raise GeometryException(Geometry._MSG_NOT_IMPLEMENTED.format(geo_name))
 
     @staticmethod
     def _raise_unknown(geo_name):
+        log = logging.getLogger(".".join([__name__]))
+        log.debug(Geometry._MSG_UNKNOWN.format(geo_name))
         raise GeometryException(Geometry._MSG_UNKNOWN.format(geo_name))

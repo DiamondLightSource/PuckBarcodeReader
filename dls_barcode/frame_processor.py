@@ -18,10 +18,10 @@ class SideProcessor(QObject):
     def run(self):
         side_result = self._side_camera_stream.process_frame(self._side_frame)
         if side_result.error() is not None:
-            self._log.debug(side_result.error().content())
+            # self._log.debug(side_result.error().content())
             self.side_scan_error_signal.emit(side_result.error())
         if side_result.has_valid_barcodes():
-            self._log.debug("side has valid barcodes")
+            # self._log.debug("side has valid barcodes")
             self.side_result_signal.emit(side_result)
             
         self.finished.emit()
@@ -39,7 +39,7 @@ class TopProcessor(QObject):
 
     def run(self):
         top_result = self._top_camera_stream.process_frame(self._top_frame)    
-                 
+
         if top_result.success():
             self.top_result_signal.emit(top_result)
             if top_result.is_full_valid():

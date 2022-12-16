@@ -58,7 +58,7 @@ class TestOpensScan():
         side_code_new2 ='ASAP-02'
 
         # List of files for Puck type 1
-        side_testcases = [('new2.jpg', side_code_new2),('new1.png', side_code_new1),('old_side.png', side_code_old)]
+        side_testcases = [('new2.png', side_code_new2),('new1.png', side_code_new1),('old_side.png', side_code_old)]
 
         # Create a list of test cases
         test_cases = []

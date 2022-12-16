@@ -1,4 +1,5 @@
 from __future__ import division
+import logging
 from dls_barcode.camera.scanner_message import ScanErrorMessage
 
 
@@ -26,8 +27,9 @@ class GeometryScanner:
         self._barcodes = []
         self._is_single_image = False
         self._frame_result = None
+        self.log = logging.getLogger(".".join([__name__]))
 
-    def scan_next_frame(self, frame,is_single_image=False):
+    def scan_next_frame(self, frame, is_single_image=False):
         self._new_frame()
 
         self._frame_img = frame.convert_to_gray()
@@ -39,6 +41,7 @@ class GeometryScanner:
             self._frame_result.set_frame(frame)
         #TODO: use logs
         except (NoBarcodesDetectedError, GeometryException, GeometryAdjustmentError) as ex:
+            self.log.error(ex)
             self._frame_result.set_error(ScanErrorMessage(str(ex)))
             self._frame_result.set_frame(frame)
 
@@ -61,7 +64,7 @@ class GeometryScanner:
         self._barcodes = self._locate_all_barcodes_in_image()
         self._frame_result.set_barcodes(self._barcodes)
         if self.plate_type == Geometry.UNIPUCK:
-            self._geometry = UnipuckLocator(self._frame_img).find_location()
+            self._geometry = UnipuckLocator(self._frame_img).find_location() # do something if location not found
         if self._geometry is None:
             self._geometry = self._calculate_geometry()
 
@@ -84,9 +87,10 @@ class GeometryScanner:
             self._merge_frame_into_plate()
 
     def _locate_all_barcodes_in_image(self):
-        barcodes = DataMatrix.locate_all_barcodes_in_image(self._frame_img, self.barcode_sizes)
-        # TODO: log this
+        barcodes = DataMatrix.locate_all_barcodes_in_image_deep(self._frame_img, self.barcode_sizes)
         if len(barcodes) == 0:
+            # log = logging.getLogger(".".join([__name__]))
+            # log.error(NoBarcodesDetectedError())
             raise NoBarcodesDetectedError()
 
         return barcodes

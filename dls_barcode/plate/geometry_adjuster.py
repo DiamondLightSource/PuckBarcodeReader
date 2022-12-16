@@ -29,6 +29,7 @@ class UnipuckGeometryAdjuster:
         # will cause this frame to be skipped).
         valid_barcodes = [bc for bc in barcodes if bc.is_read() and bc.is_valid()]
         if len(valid_barcodes) < 2:
+            log.debug("Geometry adjustment failed.")
             raise GeometryAdjustmentError("Geometry adjustment failed.")
 
         log.debug("ALIGNMENT ADJUSTMENT")  # DEBUG
