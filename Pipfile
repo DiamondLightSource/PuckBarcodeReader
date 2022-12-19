@@ -14,16 +14,15 @@ pytest-cov = "*"
 pytest-mypy = "*"
 pytest-flake8 = "*"
 isort = "*"
-pyinstaller = "*"
 
 [packages]
 pygelf = "*"
-opencv-python = "*"
 pyperclip = "*"
 scipy = "*"
 numpy = "*"
 pytest-isort = "*"
-pyqt5 = "*"
+pyinstaller = "<5"
+opencv-python = "<4.6"
 pylibdmtx = "*"
 
 [scripts]
