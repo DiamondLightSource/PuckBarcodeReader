@@ -24,13 +24,9 @@ class ContourLocator:
         """
         # Perform adaptive threshold, reducing to a binary image
         threshold_image = self._do_threshold(gray_image, blocksize, C)
-        cv2.imshow("threshold", threshold_image.img)
-        cv2.waitKey(0) 
-
+        
         # Perform a morphological close, removing noise and closing some gaps
         morphed_image = self._do_close_morph(threshold_image, close_size)
-        cv2.imshow("morph", threshold_image.img)
-        cv2.waitKey(0) 
 
         # Find a bunch of contours in the image.
         contours = self._get_contours(morphed_image)

@@ -117,18 +117,18 @@ class TestUnipuckCalculator(unittest.TestCase):
 
 
     # test _determine_puck_orientation
-    #a better test coverage could be added
+    # a better test coverage could be added
     def test_determine_puck_orientation_first_angle_checked_when_empty_pin_centers_mock_passed(self):
         puck = MagicMock()
         puck.angle.return_value = math.pi/2
         puck.radius.return_value = 12
-        first_angle_checked = (90 - 16) / (180 / math.pi)
+        first_angle_checked = 0
         pin_centers = MagicMock()
         pin_centers.__len__.return_value = 16 #has to be a number - division by 0
 
         calculator = self._create_unipuck_calculator()
         orientation = calculator._determine_puck_orientation(puck, pin_centers)
-        self.assertEqual(puck.set_rotation.call_count, 33) # checks 32 positions around the initial puck position
+        self.assertEqual(puck.set_rotation.call_count, 181)
         self.assertEqual(orientation, first_angle_checked)
 
     # test _shortest_sq_distance

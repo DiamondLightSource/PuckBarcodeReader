@@ -61,8 +61,9 @@ class Record:
             self.barcodes[i] = bc.replace(self.ITEM_SEPARATOR, "") # interesting where does ; come from?
 
         # Generate timestamp and uid if none are supplied
-        if timestamp == 0:
-            self.timestamp = time.time()
+        if self.timestamp == 0:
+            dt = datetime.datetime.now()    # for date and time
+            self.timestamp = datetime.datetime.timestamp(dt)
 
         if id == 0:
             self.id = str(uuid.uuid4())

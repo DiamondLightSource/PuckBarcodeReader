@@ -1,8 +1,12 @@
 import unittest
+from datetime import datetime
+
 from mock import MagicMock
+
 from dls_barcode.data_store.record import Record
 from dls_barcode.geometry.blank import BlankGeometry
-from dls_barcode.plate import NOT_FOUND_SLOT_SYMBOL, EMPTY_SLOT_SYMBOL
+from dls_barcode.plate import EMPTY_SLOT_SYMBOL, NOT_FOUND_SLOT_SYMBOL
+
 
 class TestRecord(unittest.TestCase):
 
@@ -37,7 +41,7 @@ class TestRecord(unittest.TestCase):
         self.assertEqual(len(barcodes), 3)
         self.assertTrue('DLSL-010' in barcodes)
         self.assertEqual(r.id, 'f59c92c1')
-        self.assertEqual(r.timestamp, 0.0) #could possibly generate a new timestamp instead
+        self.assertLessEqual(r.timestamp, datetime.timestamp(datetime.now()))
         self.assertEqual(r.image_path, 'test.png')
         self.assertEqual(r.plate_type, 'None')
         self.assertTrue(isinstance(r.geometry, BlankGeometry))
@@ -116,10 +120,3 @@ class TestRecord(unittest.TestCase):
         mock_plate.barcodes.return_value = barcodes
         mock_plate.geometry.return_value = geometry
         return mock_plate
-
-
-
-
-
-
-
