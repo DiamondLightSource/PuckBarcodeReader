@@ -5,7 +5,6 @@ import math
 import numpy as np
 
 from .locate_contour import ContourLocator
-from .locate_square import SquareLocator
 
 
 class Locator:
@@ -77,14 +76,6 @@ class Locator:
             finder_patterns = [fp.correct_lengths(side) for fp in finder_patterns]
 
         return finder_patterns
-
-    @staticmethod
-    def locate_square(img, side_length):
-        """ Use the square locator algorithm to find the most likely location of a single datamatrix in a small
-        image (i.e., an image that just contains the datamatrix and its immediate surroundings. This is a 'best
-        fit' algorithm so will always return a result regardless of what the image contains. """
-        finder_pattern = SquareLocator().locate(img, side_length)
-        return finder_pattern
 
     @staticmethod
     def _contours_shallow(img):
