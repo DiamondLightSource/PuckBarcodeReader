@@ -12,19 +12,23 @@ pylint = "*"
 coverage = "*"
 pytest-cov = "*"
 pytest-mypy = "*"
-pytest-flake8 = "*"
+pytest-flake8 = "<1.0"
 isort = "*"
+pytest-isort = "*"
 
 [packages]
-pygelf = "*"
 pyperclip = "*"
-scipy = "*"
+scipy = "<1.9"
 numpy = "*"
-pytest-isort = "*"
-pyinstaller = "<5"
-opencv-python = "<4.6"
+pyqt5 = "*"
 pylibdmtx = "*"
+opencv-python = "<4.6"
+pyinstaller = "<5"
+
 
 [scripts]
 tests_dls_util = "python -m pytest --cov dls_util tests/unit_tests"
 tests_dls_barcode = "pytest  --cov-config=.coveragerc --cov dls_barcode tests/unit_tests"
+
+[requires]
+python_version = "3.9"
