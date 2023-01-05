@@ -29,7 +29,9 @@ Creating a Self-Contained Executable
 ====================================
 A Python package called [PyInstaller](http://www.pyinstaller.org/) can be used to create a stand-alone windows executable (.exe) file.
 
-Activate your virtual environment (e.g.run in command line C:\Users\rqq82173\PycharmProjects\python_environments\barcode_qt5\Scripts\activate.bat) next run the `build.bat` in PuckBarcodeReader folder. This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). 
+Activate your virtual environment (e.g.run in command line C:\Users\rqq82173\PycharmProjects\python_environments\barcode_qt5\Scripts\activate.bat) next run the `build.bat` in PuckBarcodeReader folder. 
+Note build.bat includes hardcoded path to libdmtx-64.dll - it has to be updated accordingly before running `bin\barcode.exe`.
+This will create the file `bin\barcode.exe`. This will be fairly large (~40 MB). 
 Once .exe file is created add 'resources' folder to th bin folder (resources include the icon and the shape patter). 
 Zip the bin folder and add it to release files.
 
