@@ -1,8 +1,12 @@
 import logging
-from dls_util.image.image import Image
-from .locate import Locator
-from pylibdmtx.pylibdmtx import decode
 import string
+from string import ascii_lowercase
+
+from pylibdmtx.pylibdmtx import decode
+
+from dls_util.image.image import Image
+
+from .locate import Locator
 
 # We predict the location of the center of each square (pixel/bit) in the datamatrix based on the
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
@@ -25,9 +29,7 @@ class DataMatrix:
     DEFAULT_SIZE = 14
     DEFAULT_SIDE_SIZES = [12, 14]
     # allow only capitol letters, digits and dash in the decoded string
-    ALLOWED_CHARS = set(string.ascii_uppercase + string.digits + '-')
-    # allow up to 10 chars in the decoded string
-    ALLOWED_NUMBER_OF_CHARS = 11
+    ALLOWED_CHARS = set(string.ascii_uppercase + string.ascii_lowercase + string.digits + '-' + '_')
 
     def __init__(self, finder_pattern):
         """ Initialize the DataMatrix object with its finder pattern location in an image. To actually
@@ -114,7 +116,7 @@ class DataMatrix:
             if len(result) > 0:
                 d = result[0].data
                 decoded = d.decode('UTF-8')
-                if self._contains_allowed_chars_only(decoded) and len(decoded) < self.ALLOWED_NUMBER_OF_CHARS:
+                if self._contains_allowed_chars_only(decoded):
                     new_line_removed = decoded.replace("\n","")
                     self._data = new_line_removed
                     self._read_ok = True
