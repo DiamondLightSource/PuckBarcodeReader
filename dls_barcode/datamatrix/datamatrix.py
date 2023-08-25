@@ -1,9 +1,12 @@
 import logging
-from dls_util.image.image import Image
-from .locate import Locator
-from pylibdmtx.pylibdmtx import decode
-import cv2
+import string
+from string import ascii_lowercase
 
+from pylibdmtx.pylibdmtx import decode
+
+from dls_util.image.image import Image
+
+from .locate import Locator
 
 # We predict the location of the center of each square (pixel/bit) in the datamatrix based on the
 # size and location of the finder pattern, but this can sometimes be slightly off. If the initial
@@ -25,6 +28,8 @@ class DataMatrix:
     """
     DEFAULT_SIZE = 14
     DEFAULT_SIDE_SIZES = [12, 14]
+    # allow only capitol letters, digits and dash in the decoded string
+    ALLOWED_CHARS = set(string.ascii_uppercase + string.ascii_lowercase + string.digits + '-' + '_')
 
     def __init__(self, finder_pattern):
         """ Initialize the DataMatrix object with its finder pattern location in an image. To actually
@@ -107,16 +112,17 @@ class DataMatrix:
         given by the datamatrix finder pattern.
         """
         try:
-            
-
             result = decode(gray_image, max_count = 1)
             if len(result) > 0:
                 d = result[0].data
                 decoded = d.decode('UTF-8')
-                new_line_removed = decoded.replace("\n","")
-                self._data = new_line_removed
-                self._read_ok = True
-                self._error_message = ""
+                if self._contains_allowed_chars_only(decoded):
+                    new_line_removed = decoded.replace("\n","")
+                    self._data = new_line_removed
+                    self._read_ok = True
+                    self._error_message = ""
+                else:
+                    self._read_ok = False
             else:
                 self._read_ok = False
                 #cv2.imshow("Erode", gray_image)
@@ -132,6 +138,9 @@ class DataMatrix:
         fp = self._finder_pattern
         img.draw_line(fp.c1, fp.c2, color)
         img.draw_line(fp.c1, fp.c3, color)
+
+    def _contains_allowed_chars_only(self, text):
+        return (set(text)).issubset(self.ALLOWED_CHARS)
 
     @staticmethod
     def locate_all_barcodes_in_image(grayscale_img, matrix_sizes=[DEFAULT_SIZE]):
