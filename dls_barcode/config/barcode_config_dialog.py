@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QStyle
-from typing_extensions import Text
 
 from dls_util.config import ConfigDialog
 
