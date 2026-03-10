@@ -1,8 +1,8 @@
 Using the Source Code - Windows
 ===============================
-This application is written in Python (v3.6) and was developed under Windows but should be portable to other platforms.
+This application is written in Python and was developed under Windows but should be portable to other platforms. It as been updated to python 3.14 in release 1.10.0.
 
-The following steps will help you prepare an appropriate Python environment to run this program. These instructions assume that you will use the 64-bit version of Python 3.6.
+The following steps will help you prepare an appropriate Python environment to run this program. These instructions assume that you will use the 64-bit version of Python 3.14.
 
 * Install the appropriate version of Python by downloading the Windows binary installer from <https://www.python.org/downloads>
     * You want the one labelled 'Windows x86 MSI installer'
@@ -12,13 +12,16 @@ The following steps will help you prepare an appropriate Python environment to r
     * pyperclip
     * numpy
     * scipy
-    * opencv-python==3.1.0.5
+    * opencv-python
     * PyQt5
+    * pylibdmtx
+    * pyinstaller
     
 * Download the source code for the Barcode scanner program from <https://github.com/DiamondLightSource/PuckBarcodeReader> 
 * All of required packages can be installed using `pipenv`. To do this:
-    * To create a new virtual environment with all dependencies installed run `pipenv install --dev`
+    * To create a new virtual environment with all dependencies installed run `pipenv install --dev`. Alternatively you can use pip to install each of the needed dependency after creating and activating a new virtual envirolment.
 *  Activate the virtual envirolment
+* You may encounter a missing dll error - libdmtx-64.dll - which is required by pylibdmt. You can work around this problem by downloading the dll from: https://github.com/NaturalHistoryMuseum/pylibdmtx/issues/64  and manually adding it to you virtual env (.venv\Lib\site-packages\pylibdmtx\libdmtx-64.dll).
 *  `cd` into the dls_barcode folder. Then type `python main.py` to run the program.
 
 Running Tests
