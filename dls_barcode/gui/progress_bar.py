@@ -45,7 +45,8 @@ class ProgressBox(QGroupBox):
     def display(self):
         if self.count <= self.max:
             self.count = self.count + 1
-            self.pbar.setValue(100 * (self.count / self.max))          
+            to_set = int(100 *(self.count / self.max))
+            self.pbar.setValue(to_set)          
 
     def scan_completed(self):
         self.count = 100
